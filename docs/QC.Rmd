@@ -1,0 +1,28 @@
+---
+title: "QC"
+author: "Gijsje"
+date: "1/25/2021"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+setwd("~/Documents/MiGASti /Databases")
+multi_qc_data = "~/Downloads/multiqc_general_stats_533s.txt"
+general_stats <- read.table("multiqc_general_stats_533s.txt", header=T, stringsAsFactors = FALSE)
+mean_aligned = mean(general_stats$STAR_mqc.generalstats.star.uniquely_mapped, na.rm = T)
+max_aligned = max(general_stats$STAR_mqc.generalstats.star.uniquely_mapped, na.rm = T)
+na.omit(general_stats[general_stats$STAR_mqc.generalstats.star.uniquely_mapped == max_aligned, c("Sample", "STAR_mqc.generalstats.star.uniquely_mapped")]) 
+
+```
+
+Mean of uniquely mapped reads
+gi
+```{r cars}
+mean_aligned
+max_aligned
+```
+
+
+
+
