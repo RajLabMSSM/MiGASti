@@ -4,7 +4,7 @@
 
 > If you want to check the 1st or 2nd pass results for these analyses (OLD plots) you just need to navigate the folders above. :point_up_2: 
 
- - [QC](https://rajlabmssm.github.io/MiGASti/docs/QC.html) plots. Quality control check of all samples.
+ - [QC](https://rajlabmssm.github.io/MiGASti/QC.html) plots. Quality control check of all samples.
 
  - [Top 20 genes](https://rajlabmssm.github.io/glia_omics/3rd_pass_mic_255s/01_VP_255s_Aug2020.html) for the biological covariates (from the VP analysis). 
 
