@@ -1,0 +1,263 @@
+---
+title: "02092021_PCAs_heatmap"
+author: "Gijsje"
+date: "2/9/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r echo=FALSE}
+#==========================================================================================================#
+#                                              required packages                                           #
+#==========================================================================================================#
+library(devtools)
+library(factoextra)
+library(ggfortify)
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(variancePartition)
+library(pheatmap)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(Hmisc)
+library(matrixStats)
+```
+
+```{r echo=FALSE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+#remove low count genes
+cpm <- cpm(genes_counts) 
+# CPM >= 1 in at least 50% of the samples
+keep.exp <- rowSums(cpm > 1) >= (0.5 * ncol(genes_counts) )
+genes_counts5 <- genes_counts[ keep.exp, ] #18625 genes 
+#performing voom normalisation on data
+counts_voom <- limma::voom(genes_counts5)
+genes_counts_voom <- counts_voom$E
+#order metadata and genes counts
+rownames(metadata)
+colnames(genes_counts_voom)
+genes_counts_ordered <- genes_counts_voom[,rownames(metadata)]
+head(genes_counts_ordered)
+all(rownames(metadata) == colnames (genes_counts_ordered)) #TRUE
+```
+
+## PCA with no scaling and centering of all 533 samples (also uncultured samples)
+
+```{r echo=FALSE}
+res.pca = prcomp(t(genes_counts_ordered))
+autoplot(res.pca, colour = "Stimulation", data = metadata)
+```
+
+## PCA with scaling and centering of all 533 samples (also uncultured samples)
+
+```{r echo=FALSE}
+pca = prcomp(t(genes_counts_ordered), scale. = TRUE, center = TRUE)
+autoplot(pca, colour = "Stimulation", data = metadata)
+```
+
+#PCA with scaling and centering + labeling of all 533 samples
+
+```{r echo=FALSE}
+pca = prcomp(t(genes_counts_ordered), scale. = TRUE, center = TRUE)
+autoplot(pca, data= metadata, colour = 'Stimulation', shape = FALSE, label.size = 2)
+```
+
+#Variances per PC of all samples 
+
+```{r echo=FALSE}
+plot(pca)
+```
+
+
+## Boxplots of PC1 of all 533 samples
+
+```{r echo=FALSE}
+PC1 <- pca$x[,1]
+Stimulation <- metadata$Stimulation
+df = data.frame(Stimulation, PC1)
+ggplot(data = df, mapping = aes(x = Stimulation, y = PC1)) +
+geom_boxplot()
+```
+
+# Boxplots of PC2 of all 533 samples 
+
+```{r echo=FALSE}
+PC2 <- pca$x[,2]
+Stimulation <- metadata$Stimulation
+df = data.frame(Stimulation, PC2)
+ggplot(data = df, mapping = aes(x = Stimulation, y = PC2)) +
+geom_boxplot()
+```
+
+
+#removal of uncultured samples (ununstim) 
+
+```{r echo=FALSE}
+#label ununstim samples in metadata
+metadata_cultured <- metadata[metadata$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata$Stimulation)
+#remove samples in genes counts datafile 
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+```
+
+#PCA of cultured samples with centering and scaling
+
+```{r echo=FALSE}
+pca = prcomp(t(genes_counts_cultured), scale. = TRUE, center = TRUE)
+autoplot(pca, colour = "Stimulation", data = metadata_cultured)
+```
+
+#PCA of cultured samples with labeling of samples 
+
+```{r echo=FALSE}
+autoplot(pca, data= metadata_cultured, colour = 'Stimulation', shape = FALSE, label.size = 2)
+```
+
+#Variances per PC of cultured samples with centering and scaling
+
+```{r echo=FALSE}
+plot(pca)
+```
+
+#Boxplot PC1
+
+```{r echo=FALSE}
+PC1 <- pca$x[,1]
+Stimulation <- metadata_cultured$Stimulation
+df = data.frame(Stimulation, PC1)
+ggplot(data = df, mapping = aes(x = Stimulation, y = PC1)) +
+  geom_boxplot()
+```
+
+#Boxplot PC2 
+
+```{r echo=FALSE}
+PC2 <- pca$x[,2]
+Stimulation <- metadata_cultured$Stimulation
+df = data.frame(Stimulation, PC2)
+ggplot(data = df, mapping = aes(x = Stimulation, y = PC2)) +
+  geom_boxplot()
+```
+
+#Boxplot PC3
+
+```{r echo=FALSE}
+PC3 <- pca$x[,3]
+Stimulation <- metadata_cultured$Stimulation
+df = data.frame(Stimulation, PC3)
+ggplot(data = df, mapping = aes(x = Stimulation, y = PC3)) +
+  geom_boxplot()
+```
+
+#Scatterplot PC1 + PC2 
+
+```{r echo=FALSE}
+PCdf <- data.frame(sample = rownames(pca$x), pc1 = pca$x[,1], pc2 = pca$x[,2], Stimulation = metadata_cultured$Stimulation)
+ggplot(data = PCdf, mapping = aes(x = PC1, y = PC2, colour = Stimulation)) +
+  geom_point()
+```
+
+#create heatmap first 10 PCs + variables of metadata_cultured
+
+```{r echo=FALSE}
+#set metadata to no capitals
+names(metadata_cultured) = tolower(names(metadata_cultured))
+indx <- sapply(metadata, is.character)
+metadata[indx] <- lapply(metadata[indx], function(x) as.factor(x))
+
+#include covariates
+covariates = c( "donor_id", 
+                "region",
+                "stimulation",
+                "number",
+                "average_library_size",
+                "qubit_conc",
+                "diagnosis",
+                "main_diagnosis",
+                "sex",
+                "age",
+                "pmd_minutes",
+                "ph",
+                "cause_of_death_categories",
+                "smoking",
+                "alcohol_dependence_daily_use",
+                "autoimmune_diseases",
+                "infection_2weeks",
+                "opiates",
+                "benzodiazepines",
+                "psychopharmaca",
+                "donor_baseline_pmg",
+                "trimmomatic_dropped_pct", 
+                "picard_pct_mrna_bases",
+                "picard_pct_ribosomal_bases",
+                "picard_pct_intronic_bases",
+                "picard_pct_intergenic_bases",
+                "picard_pct_pf_reads_aligned",
+                "picard_summed_median",
+                "picard_summed_mean",
+                "picard_pct_percent_duplication",
+                "star_total_reads",
+                "star_uniquely_mapped", 
+                "star_uniquely_mapped_percent",
+                "featurecounts_assigned")
+
+#create format matrix 
+matrix_rsquared = matrix(NA, nrow = length(covariates), ncol = 10) #Number of factors
+matrix_pvalue = matrix(NA, nrow = length(covariates), ncol = 10)
+
+#lineair model function 
+for (x in 1:length(covariates)){
+  for (y in 1:10){
+    matrix_rsquared[x,y] <- summary( lm(pca$x[,y] ~ metadata_cultured[,covariates[x]]) )$adj.r.squared
+    matrix_pvalue[x,y] <- tidy( lm(pca$x[,y] ~ metadata_cultured[,covariates[x]]) )$p.value[2] #To insert pvalues in the heatmap
+  }
+}
+
+#fill matrix with values 
+matrix_rsquared <- as.data.frame(matrix_rsquared)
+matrix_pvalue <- as.data.frame(matrix_pvalue)
+rownames(matrix_rsquared) <- covariates
+rownames(matrix_pvalue) <- covariates 
+
+#create heatmap with rsquared values 
+pheatmap(matrix_rsquared)
+#create heatmap with pvalue 
+pheatmap(matrix_pvalue)
+```
+
+# Create heatmap with first 15 PCs
+
+
+#Boxplot PC5 
+
+```{r echo=FALSE}
+PC5 <- pca$x[,5]
+Stimulation <- metadata_cultured$stimulation
+df = data.frame(Stimulation, PC5)
+ggplot(data = df, mapping = aes(x = Stimulation, y = PC5)) +
+  geom_boxplot()
+```
+
+#Boxplot PC7
+
+```{r echo=FALSE}
+PC7 <- pca$x[,7]
+Stimulation <- metadata_cultured$stimulation
+df = data.frame(Stimulation, PC7)
+ggplot(data = df, mapping = aes(x = Stimulation, y = PC7)) +
+  geom_boxplot()
+```
+
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

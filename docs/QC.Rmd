@@ -1,28 +1,298 @@
 ---
 title: "QC"
 author: "Gijsje"
-date: "1/25/2021"
-output: github_document
+date: "2/3/2021"
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-setwd("~/Documents/MiGASti /Databases")
-multi_qc_data = "~/Downloads/multiqc_general_stats_533s.txt"
+```
+```{r echo=FALSE}
+#Required packages
+library(data.table)
+library(ggplot2)
+library(readxl)
+library(data.table)
+library(UpSetR)
+
+#Loading data
+setwd("~/Documents/MiGASti/Databases")
+multi_qc_data = "~/Documents/MiGASti/Databases/multiqc_general_stats_533s.txt"
 general_stats <- read.table("multiqc_general_stats_533s.txt", header=T, stringsAsFactors = FALSE)
+dim(general_stats)
+multiqc_picard_coverage = read.table("mqc_picard_rna_coverage_1.txt", header = T, stringsAsFactors = F, check.names = F, sep = "\t", row.names = 1)
+picard_rnaseqmetrics = read.table("mqc_picard_rnaseqmetrics_assignment_plot_1.txt", header = T, stringsAsFactors = F, check.names = F, sep = '\t')
+```
+
+# Mean aligned uniquely mapped reads : 27823519
+
+```{r echo=FALSE}
 mean_aligned = mean(general_stats$STAR_mqc.generalstats.star.uniquely_mapped, na.rm = T)
+mean_aligned
+```
+
+```{r echo=FALSE}
+median_aligned = median(general_stats$STAR_mqc.generalstats.star.uniquely_mapped, na.rm = T)
+median_aligned
+```
+
+# Mapped reads  * (1- percent duplication) 
+
+```{r echo=FALSE}
+mapped_duplicates = general_stats$STAR_mqc.generalstats.star.uniquely_mapped * (1- general_stats$Picard_mqc.generalstats.picard.PERCENT_DUPLICATION) 
+ggplot() + geom_histogram(aes(mapped_duplicates))
+median(mapped_duplicates)
+sd(mapped_duplicates)
+```
+
+
+# Maximum aligned uniquely mapped reads: 127595848
+
+```{r echo=FALSE}
 max_aligned = max(general_stats$STAR_mqc.generalstats.star.uniquely_mapped, na.rm = T)
 na.omit(general_stats[general_stats$STAR_mqc.generalstats.star.uniquely_mapped == max_aligned, c("Sample", "STAR_mqc.generalstats.star.uniquely_mapped")]) 
-
 ```
 
-Mean of uniquely mapped reads
-gi
-```{r cars}
-mean_aligned
-max_aligned
+# Minimum aligned uniquely mapped reads:    64850
+
+```{r echo=FALSE}
+min_aligned = min(general_stats$STAR_mqc.generalstats.star.uniquely_mapped , na.rm = T)
+na.omit(general_stats[general_stats$STAR_mqc.generalstats.star.uniquely_mapped == min_aligned, c("Sample", "STAR_mqc.generalstats.star.uniquely_mapped")]) 
+```
+
+# Distrubution plot aligned uniquely mapped reads
+
+```{r echo=FALSE}
+ggplot(general_stats, aes(x=STAR_mqc.generalstats.star.uniquely_mapped)) +
+  geom_histogram(bins = 100,
+                 colour="black", fill="white", xlab="test") +
+  labs(x="Uniquely mapped reads", y="Number of samples") +
+  geom_vline(xintercept = 10000000, linetype="dotted", color="red", size=0.7) + 
+  scale_y_continuous(breaks = (1:100))
+```
+
+# STAR < 10 million reads 
+
+```{r echo=FALSE}
+star_alignment_10m = general_stats$Sample[which(general_stats$STAR_mqc.generalstats.star.uniquely_mapped < 10000000)]
+length(star_alignment_10m)
+unique(star_alignment_10m)
+```
+
+# STAR < 5 million reads 
+
+```{r echo=FALSE}
+star_alignment_5m = general_stats$Sample[which(general_stats$STAR_mqc.generalstats.star.uniquely_mapped < 5000000)]
+length(star_alignment_5m)
+unique(star_alignment_5m)
+```
+
+```{r echo=FALSE}
+star_alignment_1m = general_stats$Sample[which(general_stats$STAR_mqc.generalstats.star.uniquely_mapped < 1000000)]
+length(star_alignment_1m)
+unique(star_alignment_1m)
+```
+
+# Ribosomal bases > 30%
+
+```{r echo=FALSE}
+ribosomal_bases_30  = general_stats$Sample[which(general_stats$Picard_mqc.generalstats.picard.PCT_RIBOSOMAL_BASES > 30)]
+as.data.frame(ribosomal_bases_30)
+```
+
+# Ribosomal bases > 20%
+
+```{r echo=FALSE}
+ribosomal_bases_20 = general_stats$Sample[which(general_stats$Picard_mqc.generalstats.picard.PCT_RIBOSOMAL_BASES > 20)]
+as.data.frame(ribosomal_bases_20)
+```
+
+# Distribution plot PICARD: % ribosomal RNA
+
+```{r echo=FALSE}
+ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_RIBOSOMAL_BASES)) +
+  geom_histogram(bins = 100,
+                 colour="black", fill="white", xlab="test") +
+  labs(x="Percentage of rRNA", y="Number of samples") +
+  geom_vline(xintercept = 20, linetype="dotted", color="red", size=0.7) + 
+  scale_y_continuous(breaks = (1:100))
+```
+
+# mRNA mapping < 10%
+
+```{r echo=FALSE}
+mrna_mapping_10 = general_stats$Sample[which(general_stats$Picard_mqc.generalstats.picard.PCT_MRNA_BASES < 10)]
+as.data.frame(mrna_mapping_10)
+```
+
+# mRNA mapping < 5%
+
+```{r echo=FALSE}
+mrna_mapping_5 = general_stats$Sample[which(general_stats$Picard_mqc.generalstats.picard.PCT_MRNA_BASES < 5)]
+as.data.frame(mrna_mapping_5)
+```
+
+# Distribution plot PICARD: < 5% coding regions 
+
+```{r echo=FALSE}
+ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
+  geom_histogram(bins = 100,
+                 colour="black", fill="white", xlab="test") +
+  labs(x="Percentage of rRNA", y="Number of samples") +
+  geom_vline(xintercept = 5, linetype="dotted", color="red", size=0.7) + 
+  scale_y_continuous(breaks = (1:100))
+```
+
+# Distribution plot PICARD: 10% coding regions
+
+```{r echo=FALSE}
+ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
+  geom_histogram(bins = 100,
+                 colour="black", fill="white", xlab="test") +
+  labs(x="Percentage of rRNA", y="Number of samples") +
+  geom_vline(xintercept = 10, linetype="dotted", color="red", size=0.7) + 
+  scale_y_continuous(breaks = (1:100))
+```
+
+# Gene coverage plot 
+
+```{r echo=FALSE}
+
+#check dataframe
+multiqc_picard_coverage[1:10, 1:6]
+
+#create plot 
+x = colnames(multiqc_picard_coverage)
+x = as.numeric(x)
+colfunc <- colorRampPalette(c("#4DBBD5FF", "#3C5488FF")) # Blue colors
+colors = alpha(colfunc(nrow(multiqc_picard_coverage)), alpha = 0.5) # Ajuste o alpha pra ter mais ou menos transparencia
+y = multiqc_picard_coverage[1,]
+plot(x, y, type = "l", xlab = "Gene body", ylab = "Read coverage", col=colors[1], ylim = c(0,2))
+for (i in 2:nrow(multiqc_picard_coverage))
+{
+  y = multiqc_picard_coverage[i,]
+  lines(x,y, col=colors[i])
+}
+```
+
+# Make table with samples 95 position (degraded: '3 end)
+
+```{r echo=FALSE}
+cov_95 = multiqc_picard_coverage$'95'
+cov_95 = as.data.frame(cov_95)
+rownames(cov_95) = rownames(multiqc_picard_coverage)
+colnames(cov_95) = c("position_95")
+cov_95_ordered = cov_95[order(cov_95$position_95, decreasing = T),,drop=F]
+data.table(cov_95_ordered)
+```
+
+# Show list of samples 95 coverage 
+
+```{r echo=FALSE}
+cov_95 = multiqc_picard_coverage$'95'
+cov_95 = as.data.frame(cov_95)
+rownames(cov_95) = rownames(multiqc_picard_coverage)
+colnames(cov_95) = c("position_95")
+cov_95_ordered = cov_95[order(cov_95$position_95, decreasing = T),,drop=F]
+data.table(cov_95_ordered)
+```
+
+# Exclude samples 95 coverage 
+526 position 95 1.26 MG-24-HIP-RNA
+494 position 95 1.12 MG-12-CER-RNA
+130 position 95 1.06 15-089-GTS-unstim
+503 position 95 1.04 MG-15-SVZ-RNA
+492 position 95 1.04 MG-08-CER-RNA
+
+```{r echo=FALSE}
+exclude = rownames(cov_95_ordered)[1:6]
+multiqc_picard_coverage_filt = multiqc_picard_coverage[! rownames(multiqc_picard_coverage) %in% exclude ,]
+```
+
+# Make gene coverage plot again 
+
+```{r echo=FALSE}
+x = colnames(multiqc_picard_coverage_filt)
+x = as.numeric(x)
+colfunc <- colorRampPalette(c("#4DBBD5FF", "#3C5488FF")) # Blue colors
+colors = alpha(colfunc(nrow(multiqc_picard_coverage_filt)), alpha = 0.5) # Ajuste o alpha pra ter mais ou menos transparencia
+y = multiqc_picard_coverage_filt[1,]
+plot(x, y, type = "l", xlab = "Gene body", ylab = "Read coverage", col=colors[1], ylim = c(0,2))
+for (i in 2:nrow(multiqc_picard_coverage_filt))
+{
+  y = multiqc_picard_coverage_filt[i,]
+  lines(x,y, col=colors[i])
+}
+```
+
+# Samples with < 5% coding regions
+
+```{r echo=FALSE}
+coding_mapping = picard_rnaseqmetrics[,"Coding"] / rowSums(picard_rnaseqmetrics[,-1])
+names(coding_mapping) = picard_rnaseqmetrics$Sample
+filter_coding = coding_mapping < 0.05 
+
+names(filter_coding)[which(filter_coding == TRUE)]
+data.table(filter_coding)
+```
+
+# Filters
+# Filter 1 < 5 M mapped reads: 21 samples
+# Filter 2 mRNA mapping < 5%: 11 samples
+# Filter 3 Ribosomal bases > 20%: 11 samples
+# Filter 4 Outlier samples PCA: 10 samples
+# Filter 5 Degraded RNA: 5 samples
+
+```{r echo=FALSE}
+outlier_samples = c("MG-16-CER-RNA", "MG-08-CER-RNA", "13-095-GTS-unstim", "MG-15-SVZ-RNA", "MG-24-MGF-RNA", "14-046-GTS-unstim", "14-046-GFM-IL4", "16-117-THA-LPS", "16-074-GFM-unstim", "16-003-SVZ-TNFa")
+
+Degraded_RNA = c("MG-24-HIP-RNA", "MG-12-CER-RNA", "15-089-GTS-unstim", "MG-15-SVZ-RNA", "MG-08-CER-RNA") 
+
+list_filters = list(filter1 = star_alignment_1m, filter2 = mrna_mapping_5, filter3 = ribosomal_bases_20, filter4 = outlier_samples, filter5 = Degraded_RNA)
+list_filters
+samples2remove = unlist(list_filters)
+samples2remove
+unique(samples2remove)
+```
+
+# Filters
+# Filter 1 < 5 M mapped reads: 21 samples
+# Filter 2 mRNA mapping < 5%: 11 samples
+# Filter 3 Ribosomal bases > 20%: 11 samples
+# Filter 4 Degraded RNA: 5 samples
+
+```{r echo=FALSE}
+Degraded_RNA = c("MG-24-HIP-RNA", "MG-12-CER-RNA", "15-089-GTS-unstim", "MG-15-SVZ-RNA", "MG-08-CER-RNA") 
+
+list_filters = list(filter1 = star_alignment_5m, filter2 = mrna_mapping_5, filter3 = ribosomal_bases_20, filter4 = Degraded_RNA)
+list_filters
+samples2remove = unlist(list_filters)
+samples2remove
+unique(samples2remove)
+```
+
+# filters
+# filter 1: < 1 M reads
+# filter 2: mRNA mapping < 5%
+# filter 3: ribosomal bases > 20%
+# filter 4: gene_coverage_plot
+# filter 5: outlier plots
+# filter 6: duplicates
+
+```{r echo=FALSE}
+setwd("~/Documents/MiGASti/Databases")
+Degraded_RNA = c("MG-24-HIP-RNA", "MG-12-CER-RNA", "15-089-GTS-unstim", "MG-15-SVZ-RNA", "MG-08-CER-RNA") 
+outlier_plots =c("13-095-GTS-unstim")
+duplicates =c("15-024-GFM_unstim", "16-074-GFM-unstim")
+
+list_filters = list(filter1 = star_alignment_1m, filter2 = mrna_mapping_5, filter3 = ribosomal_bases_20, filter4 = Degraded_RNA, filter5 = outlier_plots, filter6 = duplicates)
+list_filters
+samples2remove = unlist(list_filters)
+samples2remove
+unique(samples2remove)
+write.table(samples2remove, "samples2remove.txt")
 ```
 
 
-
-
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

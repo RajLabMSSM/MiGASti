@@ -1,0 +1,116 @@
+---
+title: "Formatting_metadata"
+author: "Gijsje"
+date: "2/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r echo=FALSE}
+#required packages
+library(readxl)
+```
+
+# create metadata file
+
+```{r echo=FALSE}
+metadata = "~/Documents/MiGASti/Old versions databases/Metadata.xlsx"
+metadata = read_excel(metadata, col_names = TRUE) 
+metadata = as.data.frame(metadata)
+setwd("~/Documents/MiGASti/Databases")
+general_stats <- read.table("multiqc_general_stats_533s.txt", header=T, stringsAsFactors = FALSE)
+
+metadata <- merge(metadata, general_stats, by = "Sample")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+```
+
+# change names in metadata and set to correct data types 
+
+```{r echo=FALSE}
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_MRNA_BASES"] <- "picard_pct_mrna_bases"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PERCENT_DUPLICATION"] <- "picard_pct_percent_duplication"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.summed_mean"] <- "picard_summed_mean"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.summed_median"] <- "picard_summed_median"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_RIBOSOMAL_BASES"] <- "picard_pct_ribosomal_bases"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_PF_READS_ALIGNED"] <- "picard_pct_pf_reads_aligned"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_PF_READS_ALIGNED"] <- "picard_pct_pf_reads_aligned"
+names(metadata)[names(metadata) == "featureCounts_mqc.generalstats.featurecounts.Assigned"] <- "featurecounts_assigned"
+names(metadata)[names(metadata) == "STAR_mqc.generalstats.star.uniquely_mapped"] <- "star_uniquely_mapped"
+names(metadata)[names(metadata) == "STAR_mqc.generalstats.star.uniquely_mapped_percent"] <- "star_uniquely_mapped_percent"
+names(metadata)[names(metadata) == "STAR_mqc.generalstats.star.total_reads"] <- "star_total_reads"
+names(metadata)[names(metadata) == "Trimmomatic_mqc.generalstats.trimmomatic.dropped_pct"] <- "trimmomatic_dropped_pct"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_INTERGENIC_BASES"] <- "picard_pct_intergenic_bases"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_INTRONIC_BASES"] <- "picard_pct_intronic_bases"
+```
+
+# change to correct data format
+
+```{r echo=FALSE}
+metadata$picard_pct_mrna_bases <- as.numeric(metadata$picard_pct_mrna_bases)
+length(metadata$picard_pct_mrna_bases)
+
+metadata$picard_pct_percent_duplication <- as.numeric(metadata$picard_pct_percent_duplication)
+length(metadata$picard_pct_percent_duplication)
+
+metadata$picard_summed_mean <- as.numeric(metadata$picard_summed_mean)
+length(metadata$picard_summed_mean)
+
+metadata$picard_summed_median <- as.numeric(metadata$picard_summed_median)
+length(metadata$picard_summed_median)
+
+metadata$picard_pct_ribosomal_bases <- as.numeric(metadata$picard_pct_ribosomal_bases)
+length(metadata$picard_pct_ribosomal_bases)
+
+metadata$picard_pct_pf_reads_aligned <- as.numeric(metadata$picard_pct_pf_reads_aligned)
+length(metadata$picard_pct_pf_reads_algined)
+
+metadata$featurecounts_assigned <- as.numeric(metadata$featurecounts_assigned)
+length(metadata$featurecounts_assigned)
+
+metadata$star_uniquely_mapped <- as.numeric(metadata$star_uniquely_mapped)
+length(metadata$star_uniquely_mapped)
+
+metadata$star_uniquely_mapped_percent <- as.numeric(metadata$star_uniquely_mapped_percent)
+length (metadata$star_uniquely_mapped_percent)
+
+metadata$star_total_reads <- as.numeric(metadata$star_total_reads)
+length(metadata$star_total_reads)
+
+metadata$trimmomatic_dropped_pct <- as.numeric(metadata$trimmomatic_dropped_pct)
+length(metadata$trimmomatic_dropped_pct)
+
+metadata$picard_pct_ribosomal_bases <- as.numeric(metadata$picard_pct_ribosomal_bases)
+length(metadata$picard_pct_ribosomal_bases)
+
+metadata$picard_pct_intronic_bases <- as.numeric(metadata$picard_pct_intronic_bases)
+length(metadata$picard_pct_intronic_bases)
+
+metadata$picard_pct_intergenic_bases <- as.numeric(metadata$picard_pct_intergenic_bases)
+length(metadata$picard_pct_intergenic_bases)
+
+metadata$featurecounts_assigned <- as.numeric(metadata$featurecounts_assigned)
+
+metadata$Region <- as.factor(metadata$Region)
+metadata$Stimulation <- as.factor(metadata$Stimulation)
+metadata$Average_library_size <- as.numeric(metadata$Average_library_size)
+metadata$Qubit_conc <- as.numeric(metadata$Qubit_conc)
+metadata$Diagnosis <- as.factor (metadata$Diagnosis)
+metadata$Main_diagnosis <- as.factor (metadata$Main_diagnosis)
+```
+
+# QC: name samples TRUE or FALSE (outlier = TRUE)
+
+```{r echo=FALSE}
+exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove.txt")
+samplenames <- exclude
+metadata$outlier <- NA
+metadata[metadata$Sample %in% samplenames$x,]$outlier <- "TRUE"
+metadata[!metadata$Sample %in% samplenames$x,]$outlier <- "FALSE"
+write.table(metadata, "metadata.txt")
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
