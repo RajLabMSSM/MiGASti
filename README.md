@@ -1,20 +1,15 @@
-## Omics analysis for Microglia project
+## Omics analysis for cultured and stimulated microglia 
 
 > This repository includes code and plots. Exploratory analysis and intermediate processing files are too large for this repository. 
 
-> If you want to check the 1st or 2nd pass results for these analyses (OLD plots) you just need to navigate the folders above. :point_up_2: 
-
- - [QC](https://rajlabmssm.github.io/MiGASti/QC.html) plots. Quality control check of all samples.
-
- - [Top 20 genes](https://rajlabmssm.github.io/glia_omics/3rd_pass_mic_255s/01_VP_255s_Aug2020.html) for the biological covariates (from the VP analysis). 
-
+ 1. [QC](https://rajlabmssm.github.io/MiGASti/QC.html) plots. Quality control of all samples.
+ 
 2.Exploratory Analysis: 
- - [Exploratory plots after filters](https://rajlabmssm.github.io/glia_omics/3rd_pass_mic_255s/02_exploratory_filtered.html). General counts for age, sex, cause of death ... with 255 samples. 
+ - [Exploratory plots before filters](https://rajlabmssm.github.io/MiGASti/02092021_PCA_heatmap.html). PCA's, heatmaps with linear regression between the first 10 PCs and covariates with (533 samples) and without (483 samples) uncultured samples.
+ - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/02102021_PCAs_afterfiltering.html). PCA's, heatmaps with linear regression between the first 20 PCs with (496 samples) and without uncultured (455 samples) samples.  
+ 
+3. [Variance partition](https://rajlabmssm.github.io/MiGASti/Variance_partition.html) 
 
- - The [PCAs are here](https://rajlabmssm.github.io/glia_omics/3rd_pass_mic_255s/03_PCAs_3rd.html). 
+4.[Expression of stimulated specific markers](https://rajlabmssm.github.io/MiGASti/Markers.html) genes for 496 samples. 
 
- - [Linear regression](https://rajlabmssm.github.io/glia_omics/3rd_pass_mic_255s/linear_reg_pinkheatmap.html) between the first 15 PCs and the covariates. 
 
-3.[Expression of markers](https://rajlabmssm.github.io/glia_omics/3rd_pass_mic_255s/04_check_markers.html) genes for 255 samples. 
-
-4.[Deconvolution update](https://rajlabmssm.github.io/glia_omics/3rd_pass_mic_255s/deconv_3rd_pass/deconv_3rd.html) for 255 samples. Tool: DSA, Reference: Darmanis. 
