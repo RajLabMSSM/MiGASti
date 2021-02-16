@@ -63,16 +63,6 @@ median_aligned = median(general_stats$STAR_mqc.generalstats.star.uniquely_mapped
 median_aligned
 ```
 
-### Mapped reads  * (1- percent duplication) 
-
-```{r mapped.reads_duplicates, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
-mapped_duplicates = general_stats$STAR_mqc.generalstats.star.uniquely_mapped * (1- general_stats$Picard_mqc.generalstats.picard.PERCENT_DUPLICATION) 
-ggplot() + geom_histogram(aes(mapped_duplicates))
-median(mapped_duplicates)
-sd(mapped_duplicates)
-```
-
-
 ### Maximum aligned uniquely mapped reads: 127595848
 
 ```{r mapped.reads_max, echo=TRUE}
@@ -97,6 +87,16 @@ ggplot(general_stats, aes(x=STAR_mqc.generalstats.star.uniquely_mapped)) +
   geom_vline(xintercept = 10000000, linetype="dotted", color="red", size=0.7) + 
   scale_y_continuous(breaks = (1:100))
 ```
+
+### Mapped reads  * (1- percent duplication) 
+
+```{r mapped.reads_duplicates, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
+mapped_duplicates = general_stats$STAR_mqc.generalstats.star.uniquely_mapped * (1- general_stats$Picard_mqc.generalstats.picard.PERCENT_DUPLICATION) 
+ggplot() + geom_histogram(aes(mapped_duplicates))
+median(mapped_duplicates)
+sd(mapped_duplicates)
+```
+
 
 ### STAR < 10 million reads 
 
@@ -167,7 +167,7 @@ as.data.frame(mrna_mapping_5)
 ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
   geom_histogram(bins = 100,
                  colour="black", fill="white", xlab="test") +
-  labs(x="Percentage of rRNA", y="Number of samples") +
+  labs(x="Percent of aligned bases overlapping UTRs and coding regions", y="Number of samples") +
   geom_vline(xintercept = 5, linetype="dotted", color="red", size=0.7) + 
   scale_y_continuous(breaks = (1:100))
 ```
@@ -178,7 +178,7 @@ ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
 ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
   geom_histogram(bins = 100,
                  colour="black", fill="white", xlab="test") +
-  labs(x="Percentage of rRNA", y="Number of samples") +
+  labs(x="Percent of aligned bases overlapping UTRs and coding regions", y="Number of samples") +
   geom_vline(xintercept = 10, linetype="dotted", color="red", size=0.7) + 
   scale_y_continuous(breaks = (1:100))
 ```
@@ -330,7 +330,6 @@ samples2remove = unlist(list_filters)
 samples2remove
 unique(samples2remove)
 write.table(samples2remove, "samples2remove.txt")
-upset(fromList(list_filters), order.by = "freq")
 ```
 
 ### Upset plot
