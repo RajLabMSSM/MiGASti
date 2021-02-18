@@ -1,15 +1,22 @@
 ## Omics analysis for cultured and stimulated microglia 
 
-> This repository includes code and plots. Exploratory analysis and intermediate processing files are too large for this repository. 
+> This repository includes code and plots. Exploratory analysis and intermediate processing files are too large for this repository.
 
- 1. [QC](https://rajlabmssm.github.io/MiGASti/docs/QC.html) plots. Quality control of all samples.
- 
-2.Exploratory Analysis: 
- - [Exploratory plots before filters](https://rajlabmssm.github.io/MiGASti/docs/02092021_PCA_heatmap.html). PCA's, heatmaps with linear regression between the first 10 PCs and covariates with (533 samples) and without (483 samples) uncultured samples.
- - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/02102021_PCAs_afterfiltering.html). PCA's, heatmaps with linear regression between the first 20 PCs with (496 samples) and without uncultured (455 samples) samples.  
- 
-3. [Variance partition](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html) 
+1. [Metadata](https://rajlabmssm.github.io/MiGASti/docs/Metadata.html). Organizing of the metadata
 
-4.[Expression of stimulated specific markers](https://rajlabmssm.github.io/MiGASti/docs/Markers.html) genes for 496 samples. 
+2. [QC](https://rajlabmssm.github.io/MiGASti/docs/QC.html) plots. Quality control of all samples.
+ 
+3.Exploratory Analysis: 
+ - [Exploratory plots before filters](https://rajlabmssm.github.io/MiGASti/docs/20210209_PCA_before_filtering.html). PCA's between the first 10 PCs and covariates with (533 samples) and without (483 samples) uncultured samples.
+ - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with (496 samples) and without uncultured (455 samples) samples.  
+ 
+4. [Variance partition](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html) 
+
+5. Expression of stimulation specific markers
+- [Expression of markers after culturing](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_homeostatic.html)
+- [Expression of markers after stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_allstims.html) genes for 496 samples per stimulation and heatmap.
+
+6. DEG analysis
+-[DESeq2](https://rajlabmssm.github.io/MiGASti/docs/2021022017_DiffExpression_GFM.html). DESeq2 analysis of GFM samples: unstimulated samples (baseline) compared to LPS and IFNy stimulation seperatly. 
 
 
