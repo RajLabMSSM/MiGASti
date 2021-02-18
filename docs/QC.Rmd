@@ -330,7 +330,7 @@ upset(fromList(list_filters), order.by = "freq")
 ```
 
 # Filters option 3 (used)
-#filter 1: < 1 M reads: 11 samples
+#filter 1: < 1 M reads: 10 samples
 #filter 2: mRNA mapping < 5%: 11 samples
 #filter 3: ribosomal bases > 20%: 11 samples
 #filter 4: RNA degraded: 5 samples

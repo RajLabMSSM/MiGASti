@@ -4,10 +4,10 @@
 
 1. [Metadata](https://rajlabmssm.github.io/MiGASti/docs/Metadata.html). Organizing of the metadata.
 
-2. [QC](https://rajlabmssm.github.io/MiGASti/docs/QC.html). Quality control of all samples.
+2. [QC](https://rajlabmssm.github.io/MiGASti/docs/QC_cor.html). Quality control of all samples.
  
 3.Exploratory Analysis: 
- - [Exploratory plots before filters](https://rajlabmssm.github.io/MiGASti/docs/20210209_PCA_before_filtering.html). PCA's between the first 10 PCs and covariates with (533 samples) and without (483 samples) uncultured samples.
+ - [Exploratory plots before filters](https://rajlabmssm.github.io/MiGASti/docs/20210209_PCA_heatmap_before_filtering.html). PCA's between the first 10 PCs and covariates with (533 samples) and without (483 samples) uncultured samples.
  - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with (496 samples) and without uncultured (455 samples) samples.  
  
 4. [Variance partition](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html) 
