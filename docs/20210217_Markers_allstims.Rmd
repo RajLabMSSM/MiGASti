@@ -1,0 +1,499 @@
+---
+title: "Markers homeostatic"
+author: "Gijsje"
+date: "2/16/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+```{r check, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/Markers_stim.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+setDT(genes_tpm_filt, keep.rownames = "ensembl")
+genes_tpm_filt$ensembl
+res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+```
+
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+marker_expression = merge(res_name, markers, by ="symbol")
+dim (marker_expression)
+head (marker_expression)
+metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
+metadata_filt_ordered = metadata_filt_ordered[-1,]
+all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
+Stimulation <- metadata_filt_ordered$Stimulation
+```
+
+# Inflammatory markers (LPS)
+### IL1B 
+#expected to be increased in LPS
+
+```{r data_load_IL1B, echo = TRUE}
+IL1B <- marker_expression[13, ] 
+IL1B$ensembl = NULL
+IL1B$symbol = NULL
+IL1B_new<-as.data.frame(t(IL1B))
+df = data.frame(Stimulation, IL1B_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("IL1B") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### IL6
+#expected to be increased in LPS
+
+```{r data_load_IL6, echo = TRUE}
+IL6 <- marker_expression[14, ] 
+IL6$ensembl = NULL
+IL6$symbol = NULL
+IL6_new<-as.data.frame(t(IL6))
+df = data.frame(Stimulation, IL6_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("IL6") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### TNF
+#expected to be increased in LPS
+
+```{r data_load_TNF, echo = TRUE}
+TNF <- marker_expression[25, ] 
+TNF$ensembl = NULL
+TNF$symbol = NULL
+TNF_new<-as.data.frame(t(TNF))
+df = data.frame(Stimulation, TNF_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("TNF") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+# Inflammatory markers (IFNy)
+
+### CXCL9 
+#expected to be increased in IFNy
+
+```{r data_load_CXCL9, echo = TRUE}
+CXCL9 <- marker_expression[9, ] 
+CXCL9$ensembl = NULL
+CXCL9$symbol = NULL
+CXCL9_new<-as.data.frame(t(CXCL9))
+df = data.frame(Stimulation, CXCL9_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("CXCL9") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### CXCL10
+#expected to be increased in IFNy
+
+```{r data_load_CXCL10, echo = TRUE}
+CXCL10 <- marker_expression[7, ] 
+CXCL10$ensembl = NULL
+CXCL10$symbol = NULL
+CXCL10_new<-as.data.frame(t(CXCL10))
+df = data.frame(Stimulation, CXCL10_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() +
+ggtitle("CXCL10") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### CXCL11
+#expected to be increased in IFNy
+
+```{r data_load_CXCL11, echo = TRUE}
+CXCL11 <- marker_expression[8, ] 
+CXCL11$ensembl = NULL
+CXCL11$symbol = NULL
+CXCL11_new<-as.data.frame(t(CXCL11))
+df = data.frame(Stimulation, CXCL11_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("CXCL11") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+# Inflammatory markers (TNF)
+
+### CCL2
+#expected to be increased in TNF
+
+```{r data_load_CCL2, echo = TRUE}
+CCL2 <- marker_expression[3, ] 
+CCL2$ensembl = NULL
+CCL2$symbol = NULL
+CCL2_new<-as.data.frame(t(CCL2))
+df = data.frame(Stimulation, CCL2_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CCL2") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### VCAM1
+#expected to be increased in TNF
+
+```{r data_load_VCAM1, echo = TRUE}
+VCAM1 <- marker_expression[26, ] 
+VCAM1$ensembl = NULL
+VCAM1$symbol = NULL
+VCAM1_new<-as.data.frame(t(VCAM1))
+df = data.frame(Stimulation, VCAM1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("VCAM1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+# Inflammatory markers (R848)
+
+### SAA3P
+##expected to be MyD88 dependent based on Lin et al. 2017
+
+```{r data_load_SAA3P, echo = TRUE}
+SAA3P <- marker_expression[22, ] 
+SAA3P$ensembl = NULL
+SAA3P$symbol = NULL
+SAA3P_new<-as.data.frame(t(SAA3P))
+df = data.frame(Stimulation, SAA3P_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("SAA3P") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### SLC13A3
+#expected to be MyD88 dependent based on Lin et al. 2017
+
+```{r data_load_SLC13A3, echo = TRUE}
+SLC13A3 <- marker_expression[23, ] 
+SLC13A3$ensembl = NULL
+SLC13A3$symbol = NULL
+SLC13A3_new<-as.data.frame(t(SLC13A3))
+df = data.frame(Stimulation, SLC13A3_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("SLC13A3") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### CXCL1
+#expected to be MyD88 dependent based on Lin et al. 2017
+
+```{r data_load_CXCL1, echo = TRUE}
+CXCL1 <- marker_expression[6, ] 
+CXCL1$ensembl = NULL
+CXCL1$symbol = NULL
+CXCL1_new<-as.data.frame(t(CXCL1))
+df = data.frame(Stimulation, CXCL1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CXCL1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+# Anti-inflammatory markers (IL-4/dexamethasone)
+
+### NR3C1 
+#expected to be reduced: Breen et al. 
+
+```{r data_load_NR3C1, echo = TRUE}
+NR3C1 <- marker_expression[17, ] 
+NR3C1$ensembl = NULL
+NR3C1$symbol = NULL
+NR3C1_new<-as.data.frame(t(NR3C1))
+df = data.frame(Stimulation, NR3C1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() +
+  ggtitle("NR3C1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### NR3C2 
+#expected to be reduced: Breen et al. 
+
+```{r data_load_NR3C2, echo = TRUE}
+NR3C2 <- marker_expression[18, ] 
+NR3C2$ensembl = NULL
+NR3C2$symbol = NULL
+NR3C2_new<-as.data.frame(t(NR3C2))
+df = data.frame(Stimulation, NR3C2_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("NR3C2") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+# Anti-inflammatory (dexamethasone) 
+### FKBP5
+#expected to be increased in Dex
+
+```{r data_load_FKBP5, echo = FALSE}
+FKBP5 <- marker_expression[11, ] 
+FKBP5$ensembl = NULL
+FKBP5$symbol = NULL
+FKBP5_new<-as.data.frame(t(FKBP5))
+df = data.frame(Stimulation, FKBP5_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("FKBP5") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### CD163
+#expected to be increased in Dex/Il4
+
+```{r data_load_CD163, echo = TRUE}
+CD163 <- marker_expression[4, ] 
+CD163$ensembl = NULL
+CD163$symbol = NULL
+CD163_new<-as.data.frame(t(CD163))
+df = data.frame(Stimulation, CD163_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() +
+  ggtitle("CD163") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### CD206
+#expected to be increased in dex/il4
+
+```{r data_load_CD206, echo = TRUE}
+CD206 <- marker_expression[16, ] 
+CD206$ensembl = NULL
+CD206$symbol = NULL
+CD206_new<-as.data.frame(t(CD206))
+df = data.frame(Stimulation, CD206_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() +
+  ggtitle("CD206") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+# Anti-inflammatory (IL-4)
+
+### IL10
+#expected to be increased in IL4 based on Li et al. 2018 
+
+```{r data_load_IL10, echo = TRUE}
+IL10 <- marker_expression[12, ] 
+IL10$ensembl = NULL
+IL10$symbol = NULL
+IL10_new<-as.data.frame(t(IL10))
+df = data.frame(Stimulation, IL10_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() +
+  ggtitle("IL10") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### RETNLB (FIZZ1)
+#expected to be increased in IL4 based on Li et al. 2018
+
+```{r data_load_FIZZ1, echo = TRUE}
+RETNLB <- marker_expression[21, ] 
+RETNLB$ensembl = NULL
+RETNLB$symbol = NULL
+RETNLB_new<-as.data.frame(t(RETNLB))
+df = data.frame(Stimulation, RETNLB_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("RETNLB") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### ARG1
+#expected to be increased in IL4 based on Li et al. 2018 
+
+```{r data_load_ARG1, echo = TRUE, results = 'hide'}
+ARG1 <- marker_expression[1, ] 
+ARG1$ensembl = NULL
+ARG1$symbol = NULL
+ARG1_new<-as.data.frame(t(ARG1))
+df = data.frame(Stimulation, ARG1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("ARG1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### ENTPD1
+
+```{r data_load_ENTPD1, echo = TRUE}
+ENTPD1 <- marker_expression[10, ] 
+ENTPD1$ensembl = NULL
+ENTPD1$symbol = NULL
+ENTPD1_new<-as.data.frame(t(ENTPD1))
+df = data.frame(Stimulation, ENTPD1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() +
+  ggtitle("ENTPD1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+# Other markers (ATP)
+
+### P2RY4
+#purinergic receptors increase after ATP stimulation
+
+```{r data_load_ATP, echo = TRUE}
+P2RY4 <- marker_expression[20, ] 
+P2RY4$ensembl = NULL
+P2RY4$symbol = NULL
+P2RY4_new<-as.data.frame(t(P2RY4))
+df = data.frame(Stimulation, P2RY4_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("P2RY4") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### P2RX7
+#purinergic receptors increase after ATP stimulation
+
+```{r data_load_P2RX7, echo = TRUE}
+P2RX7 <- marker_expression[19, ] 
+P2RX7$ensembl = NULL
+P2RX7$symbol = NULL
+P2RX7_new<-as.data.frame(t(P2RX7))
+df = data.frame(Stimulation, P2RX7_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("P2RX7") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### TMEM163 
+#expected to be increased after ATP stimulation 
+
+```{r data_load_TMEM163, echo = TRUE}
+TMEM163 <- marker_expression[24, ] 
+TMEM163$ensembl = NULL
+TMEM163$symbol = NULL
+TMEM163_new<-as.data.frame(t(TMEM163))
+df = data.frame(Stimulation, TMEM163_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("TMEM163") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+# Homeostatic markers 
+
+###  MAFB: 
+#expected to be increased in culture based on Gosselin 2017
+
+```{r data_load_MAFB, echo = TRUE}
+MAFB <- marker_expression[15, ] 
+MAFB$ensembl = NULL
+MAFB$symbol = NULL
+MAFB_new<-as.data.frame(t(MAFB))
+df = data.frame(Stimulation, MAFB_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("MAFB") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### CX3CR1 
+#expected to be reduced in culture based on review Roy/Frederieke
+
+```{r data_load_CX3CR1, echo = TRUE}
+CX3CR1 <- marker_expression[5, ] 
+CX3CR1$ensembl = NULL
+CX3CR1$symbol = NULL
+CX3CR1_new<-as.data.frame(t(CX3CR1))
+df = data.frame(Stimulation, CX3CR1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CX3CR1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### C3 (down)
+#expected to be reduced in culture based on review Roy/Frederieke
+
+```{r data_load_C3, echo = TRUE}
+C3 <- marker_expression[2, ] 
+C3$ensembl = NULL
+C3$symbol = NULL
+C3_new<-as.data.frame(t(C3))
+df = data.frame(Stimulation, C3_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("C3") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+# Heatmap with all markers 
+
+
+```{r data_load_heatmap, echo = TRUE, fig.width=12, fig.height=8, dpi=300}
+marker_expression$ensembl = NULL
+marker_expression$symbol = NULL
+marker_expression = as.matrix(marker_expression)
+heatmap(marker_expression)
+```
+
+
+
+
+
+
+
+
+
+
