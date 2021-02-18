@@ -195,32 +195,41 @@ summary {
 </div>
 
 
-<div id="create-metadata-file" class="section level1">
-<h1>create metadata file</h1>
+<div id="create-metadata-file" class="section level3">
+<h3>Create metadata file</h3>
+<pre class="r"><code>metadata = &quot;~/Documents/MiGASti/Old versions databases/Metadata.xlsx&quot;
+metadata = read_excel(metadata, col_names = TRUE) 
+metadata = as.data.frame(metadata)
+setwd(&quot;~/Documents/MiGASti/Databases&quot;)
+general_stats &lt;- read.table(&quot;multiqc_general_stats_533s.txt&quot;, header=T, stringsAsFactors = FALSE)
+
+metadata &lt;- merge(metadata, general_stats, by = &quot;Sample&quot;)
+#set rownames to Sample
+row.names(metadata) &lt;- metadata$Sample </code></pre>
 </div>
 <div id="change-names-in-metadata-and-set-to-correct-data-types" class="section level1">
 <h1>change names in metadata and set to correct data types</h1>
+<pre class="r"><code>names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.PCT_MRNA_BASES&quot;] &lt;- &quot;picard_pct_mrna_bases&quot;
+names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.PERCENT_DUPLICATION&quot;] &lt;- &quot;picard_pct_percent_duplication&quot;
+names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.summed_mean&quot;] &lt;- &quot;picard_summed_mean&quot;
+names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.summed_median&quot;] &lt;- &quot;picard_summed_median&quot;
+names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.PCT_RIBOSOMAL_BASES&quot;] &lt;- &quot;picard_pct_ribosomal_bases&quot;
+names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.PCT_PF_READS_ALIGNED&quot;] &lt;- &quot;picard_pct_pf_reads_aligned&quot;
+names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.PCT_PF_READS_ALIGNED&quot;] &lt;- &quot;picard_pct_pf_reads_aligned&quot;
+names(metadata)[names(metadata) == &quot;featureCounts_mqc.generalstats.featurecounts.Assigned&quot;] &lt;- &quot;featurecounts_assigned&quot;
+names(metadata)[names(metadata) == &quot;STAR_mqc.generalstats.star.uniquely_mapped&quot;] &lt;- &quot;star_uniquely_mapped&quot;
+names(metadata)[names(metadata) == &quot;STAR_mqc.generalstats.star.uniquely_mapped_percent&quot;] &lt;- &quot;star_uniquely_mapped_percent&quot;
+names(metadata)[names(metadata) == &quot;STAR_mqc.generalstats.star.total_reads&quot;] &lt;- &quot;star_total_reads&quot;
+names(metadata)[names(metadata) == &quot;Trimmomatic_mqc.generalstats.trimmomatic.dropped_pct&quot;] &lt;- &quot;trimmomatic_dropped_pct&quot;
+names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.PCT_INTERGENIC_BASES&quot;] &lt;- &quot;picard_pct_intergenic_bases&quot;
+names(metadata)[names(metadata) == &quot;Picard_mqc.generalstats.picard.PCT_INTRONIC_BASES&quot;] &lt;- &quot;picard_pct_intronic_bases&quot;</code></pre>
+<div id="change-to-correct-data-format" class="section level3">
+<h3>Change to correct data format</h3>
+<p>[1] 533 [1] 533 [1] 533 [1] 533 [1] 533 [1] 0 [1] 533 [1] 533 [1] 533 [1] 533 [1] 533 [1] 533 [1] 533 [1] 533</p>
 </div>
-<div id="change-to-correct-data-format" class="section level1">
-<h1>change to correct data format</h1>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 0</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
-<pre><code>## [1] 533</code></pre>
 </div>
-<div id="qc-name-samples-true-or-false-outlier-true" class="section level1">
-<h1>QC: name samples TRUE or FALSE (outlier = TRUE)</h1>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the code chunk to prevent printing of the R code that generated the plot.</p>
+<div id="qc-name-samples-true-or-false-outlier-true-based-on-qc-filtering-in-metadatafile" class="section level1">
+<h1>QC: name samples TRUE or FALSE (outlier = TRUE) based on QC filtering in metadatafile</h1>
 </div>
 
 

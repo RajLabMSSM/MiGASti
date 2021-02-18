@@ -3,7 +3,7 @@ title: "QC"
 author: "Gijsje"
 date: "2/3/2021"
 output:
-rmarkdown::html_document:
+ rmarkdown::html_document:
    theme: united
    highlight: tango
    code_folding: hide
@@ -12,7 +12,7 @@ rmarkdown::html_document:
    df_print: paged
    smooth_scroll: true
    number_sections: false
-   self_contained: true 
+   self_contained: true
 ---
 
 ```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
@@ -49,28 +49,29 @@ multiqc_picard_coverage = read.table("mqc_picard_rna_coverage_1.txt", header = T
 picard_rnaseqmetrics = read.table("mqc_picard_rnaseqmetrics_assignment_plot_1.txt", header = T, stringsAsFactors = F, check.names = F, sep = '\t')
 ```
 
-### Mean aligned uniquely mapped reads : 27823519
+# Uniquely mapped reads
+### Mean aligned uniquely mapped reads 
 
 ```{r mapped.reads_mean, echo=TRUE}
 mean_aligned = mean(general_stats$STAR_mqc.generalstats.star.uniquely_mapped, na.rm = T)
 mean_aligned
 ```
 
-### Median aligned uniquely mapped reads: 2782664
+### Median aligned uniquely mapped reads
 
 ```{r mapped.reads_median, echo=TRUE}
 median_aligned = median(general_stats$STAR_mqc.generalstats.star.uniquely_mapped, na.rm = T)
 median_aligned
 ```
 
-### Maximum aligned uniquely mapped reads: 127595848
+### Maximum aligned uniquely mapped reads
 
 ```{r mapped.reads_max, echo=TRUE}
 max_aligned = max(general_stats$STAR_mqc.generalstats.star.uniquely_mapped, na.rm = T)
 na.omit(general_stats[general_stats$STAR_mqc.generalstats.star.uniquely_mapped == max_aligned, c("Sample", "STAR_mqc.generalstats.star.uniquely_mapped")]) 
 ```
 
-### Minimum aligned uniquely mapped reads:    64850
+### Minimum aligned uniquely mapped reads
 
 ```{r mapped.reads_min, echo=TRUE}
 min_aligned = min(general_stats$STAR_mqc.generalstats.star.uniquely_mapped , na.rm = T)
@@ -79,7 +80,7 @@ na.omit(general_stats[general_stats$STAR_mqc.generalstats.star.uniquely_mapped =
 
 ### Distrubution plot aligned uniquely mapped reads
 
-```{r mapped.reads_plot, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
+```{r mapped.reads_plot, echo=TRUE}
 ggplot(general_stats, aes(x=STAR_mqc.generalstats.star.uniquely_mapped)) +
   geom_histogram(bins = 100,
                  colour="black", fill="white", xlab="test") +
@@ -88,16 +89,26 @@ ggplot(general_stats, aes(x=STAR_mqc.generalstats.star.uniquely_mapped)) +
   scale_y_continuous(breaks = (1:100))
 ```
 
-### Mapped reads  * (1- percent duplication) 
+# Mapped reads  * (1- percent duplication) 
 
-```{r mapped.reads_duplicates, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
+```{r mapped.reads_duplicates, echo=TRUE}
 mapped_duplicates = general_stats$STAR_mqc.generalstats.star.uniquely_mapped * (1- general_stats$Picard_mqc.generalstats.picard.PERCENT_DUPLICATION) 
 ggplot() + geom_histogram(aes(mapped_duplicates))
+```
+
+### Median 
+
+```{r mapped.reads_duplicates_med, echo=TRUE}
 median(mapped_duplicates)
+```
+
+### Standard deviation
+
+```{r mapped.reads_duplicates_sd, echo=TRUE}
 sd(mapped_duplicates)
 ```
 
-
+# STAR
 ### STAR < 10 million reads 
 
 ```{r STAR_reads10, echo=TRUE}
@@ -122,6 +133,7 @@ length(star_alignment_1m)
 unique(star_alignment_1m)
 ```
 
+# Ribosomal bases 
 ### Ribosomal bases > 30%
 
 ```{r ribosomal_bases_30, echo=TRUE}
@@ -138,7 +150,7 @@ as.data.frame(ribosomal_bases_20)
 
 ### Distribution plot PICARD: % ribosomal RNA
 
-```{r PICARD_ribosomal, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
+```{r PICARD_ribosomal, echo=TRUE}
 ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_RIBOSOMAL_BASES)) +
   geom_histogram(bins = 100,
                  colour="black", fill="white", xlab="test") +
@@ -147,6 +159,7 @@ ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_RIBOSOMAL_BASES))
   scale_y_continuous(breaks = (1:100))
 ```
 
+# mRNA mapping 
 ### mRNA mapping < 10%
 
 ```{r mRNA_mapping_10, echo=TRUE}
@@ -161,9 +174,20 @@ mrna_mapping_5 = general_stats$Sample[which(general_stats$Picard_mqc.generalstat
 as.data.frame(mrna_mapping_5)
 ```
 
+### PICARD < 5% coding mapping
+
+```{r coding_regions_5, echo=TRUE}
+coding_mapping = picard_rnaseqmetrics[,"Coding"] / rowSums(picard_rnaseqmetrics[,-1])
+names(coding_mapping) = picard_rnaseqmetrics$Sample
+filter_coding = coding_mapping < 0.05 
+
+names(filter_coding)[which(filter_coding == TRUE)]
+data.table(filter_coding)
+```
+
 ### Distribution plot PICARD: < 5% coding regions 
 
-```{r PICARD_coding_5, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
+```{r PICARD_coding_5, echo=TRUE}
 ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
   geom_histogram(bins = 100,
                  colour="black", fill="white", xlab="test") +
@@ -174,7 +198,7 @@ ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
 
 ### Distribution plot PICARD: 10% coding regions
 
-```{r PICARD_coding_10, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
+```{r PICARD_coding_10, echo=TRUE}
 ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
   geom_histogram(bins = 100,
                  colour="black", fill="white", xlab="test") +
@@ -183,9 +207,9 @@ ggplot(general_stats, aes(x=Picard_mqc.generalstats.picard.PCT_MRNA_BASES)) +
   scale_y_continuous(breaks = (1:100))
 ```
 
-### Gene coverage plot 
+# Gene coverage plot 
 
-```{r gene_coverage_all, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
+```{r gene_coverage_all, echo=TRUE}
 
 #check dataframe
 multiqc_picard_coverage[1:10, 1:6]
@@ -204,7 +228,7 @@ for (i in 2:nrow(multiqc_picard_coverage))
 }
 ```
 
-### Make table with samples 95 position (degraded: '3 end)
+### Table with samples 95 position (degraded: '3 end)
 
 ```{r gene_coverage_95, echo=TRUE}
 cov_95 = multiqc_picard_coverage$'95'
@@ -215,7 +239,7 @@ cov_95_ordered = cov_95[order(cov_95$position_95, decreasing = T),,drop=F]
 data.table(cov_95_ordered)
 ```
 
-### Show list of samples 95 coverage 
+### List of samples 95 coverage 
 
 ```{r gene_coverage_95_exclude, echo=TRUE}
 cov_95 = multiqc_picard_coverage$'95'
@@ -226,7 +250,7 @@ cov_95_ordered = cov_95[order(cov_95$position_95, decreasing = T),,drop=F]
 data.table(cov_95_ordered)
 ```
 
-### Exclude samples 95 coverage 
+### Exclude samples 95 coverage in gene coverage plot 
 526 position 95 1.26 MG-24-HIP-RNA
 494 position 95 1.12 MG-12-CER-RNA
 130 position 95 1.06 15-089-GTS-unstim
@@ -236,11 +260,6 @@ data.table(cov_95_ordered)
 ```{r gene_coverage_exclude, echo=TRUE}
 exclude = rownames(cov_95_ordered)[1:6]
 multiqc_picard_coverage_filt = multiqc_picard_coverage[! rownames(multiqc_picard_coverage) %in% exclude ,]
-```
-
-### Make gene coverage plot again 
-
-```{r gene_coverage_subsample, echo=TRUE, fig.width=6, fig.height=6, dpi=300}
 x = colnames(multiqc_picard_coverage_filt)
 x = as.numeric(x)
 colfunc <- colorRampPalette(c("#4DBBD5FF", "#3C5488FF")) # Blue colors
@@ -254,23 +273,13 @@ for (i in 2:nrow(multiqc_picard_coverage_filt))
 }
 ```
 
-### Samples with < 5% coding regions
 
-```{r coding_regions_5, echo=TRUE}
-coding_mapping = picard_rnaseqmetrics[,"Coding"] / rowSums(picard_rnaseqmetrics[,-1])
-names(coding_mapping) = picard_rnaseqmetrics$Sample
-filter_coding = coding_mapping < 0.05 
-
-names(filter_coding)[which(filter_coding == TRUE)]
-data.table(filter_coding)
-```
-
-### Filters
-# Filter 1 < 5 M mapped reads: 21 samples
-# Filter 2 mRNA mapping < 5%: 11 samples
-# Filter 3 Ribosomal bases > 20%: 11 samples
-# Filter 4 Outlier samples PCA: 10 samples
-# Filter 5 Degraded RNA: 5 samples
+# Filters option 1
+#Filter 1 < 5 M mapped reads: 21 samples
+#Filter 2 mRNA mapping < 5%: 11 samples
+#Filter 3 Ribosomal bases > 20%: 11 samples
+#Filter 4 Outlier samples PCA: 10 samples
+## Filter 5 Degraded RNA: 5 samples
 
 ```{r filters_5, echo=TRUE}
 outlier_samples = c("MG-16-CER-RNA", "MG-08-CER-RNA", "13-095-GTS-unstim", "MG-15-SVZ-RNA", "MG-24-MGF-RNA", "14-046-GTS-unstim", "14-046-GFM-IL4", "16-117-THA-LPS", "16-074-GFM-unstim", "16-003-SVZ-TNFa")
@@ -280,20 +289,25 @@ Degraded_RNA = c("MG-24-HIP-RNA", "MG-12-CER-RNA", "15-089-GTS-unstim", "MG-15-S
 list_filters = list(filter1 = star_alignment_1m, filter2 = mrna_mapping_5, filter3 = ribosomal_bases_20, filter4 = outlier_samples, filter5 = Degraded_RNA)
 list_filters
 samples2remove = unlist(list_filters)
+```
+
+### Unique samples 2 remove 
+
+```{r filters_upset8, echo=TRUE}
 unique(samples2remove)
 ```
 
 ### Upset plot
 
-```{r filters_upset1, echo=TRUE, fig.width=6, fig.height=6, dpi=300 }
+```{r filters_upset1, echo=TRUE}
 upset(fromList(list_filters), order.by = "freq")
 ```
 
-# Filters
-# Filter 1 < 5 M mapped reads: 21 samples
-# Filter 2 mRNA mapping < 5%: 11 samples
-# Filter 3 Ribosomal bases > 20%: 11 samples
-# Filter 4 Degraded RNA: 5 samples
+# Filters option 2
+#Filter 1 < 5 M mapped reads: 21 samples
+#Filter 2 mRNA mapping < 5%: 11 samples
+#Filter 3 Ribosomal bases > 20%: 11 samples
+#Filter 4 Degraded RNA: 5 samples
 
 ```{r filters_4, echo=TRUE}
 Degraded_RNA = c("MG-24-HIP-RNA", "MG-12-CER-RNA", "15-089-GTS-unstim", "MG-15-SVZ-RNA", "MG-08-CER-RNA") 
@@ -301,22 +315,27 @@ Degraded_RNA = c("MG-24-HIP-RNA", "MG-12-CER-RNA", "15-089-GTS-unstim", "MG-15-S
 list_filters = list(filter1 = star_alignment_5m, filter2 = mrna_mapping_5, filter3 = ribosomal_bases_20, filter4 = Degraded_RNA)
 list_filters
 samples2remove = unlist(list_filters)
+```
+
+### Unique samples 2 remove
+
+```{r filters_12, echo=TRUE}
 unique(samples2remove)
 ```
- 
+
 ### Upset plot
  
-```{r filters_upset2, echo=TRUE, fig.width=6, fig.height=6, dpi=300 }
+```{r filters_upset2, echo=TRUE}
 upset(fromList(list_filters), order.by = "freq")
 ```
 
-### Filters
-# filter 1: < 1 M reads
-# filter 2: mRNA mapping < 5%
-# filter 3: ribosomal bases > 20%
-# filter 4: RNA degraded
-# filter 5: duplicates
-# filter 6: outlier (PCA)
+# Filters option 3 (used)
+#filter 1: < 1 M reads: 11 samples
+#filter 2: mRNA mapping < 5%: 11 samples
+#filter 3: ribosomal bases > 20%: 11 samples
+#filter 4: RNA degraded: 5 samples
+#filter 5: duplicates: 2 samples
+#filter 6: outlier (PCA): 1 sample 
 
 ```{r filters_6, echo=TRUE}
 setwd("~/Documents/MiGASti/Databases")
@@ -327,15 +346,19 @@ outliers =c("13-095-GTS-unstim")
 list_filters = list(filter1 = star_alignment_1m, filter2 = mrna_mapping_5, filter3 = ribosomal_bases_20, filter4 = Degraded_RNA, filter5 = duplicates, filter6 = outliers)
 list_filters
 samples2remove = unlist(list_filters)
-samples2remove
-unique(samples2remove)
 write.table(samples2remove, "samples2remove.txt")
 ```
 
+### Unique samples 2 remove 
+
+```{r filters_10, echo=TRUE}
+unique(samples2remove)
+```
+
+
 ### Upset plot
  
-```{r filters_3, echo=TRUE, fig.width=6, fig.height=6, dpi=300 }
+```{r filters_3, echo=TRUE}
 upset(fromList(list_filters), order.by = "freq")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

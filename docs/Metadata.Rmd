@@ -2,20 +2,35 @@
 title: "Formatting_metadata"
 author: "Gijsje"
 date: "2/10/2021"
-output: html_document
+output: 
+rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-```{r echo=FALSE}
-#required packages
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
 library(readxl)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
 ```
 
-# create metadata file
+### Create metadata file
 
-```{r echo=FALSE}
+```{r echo=TRUE}
 metadata = "~/Documents/MiGASti/Old versions databases/Metadata.xlsx"
 metadata = read_excel(metadata, col_names = TRUE) 
 metadata = as.data.frame(metadata)
@@ -29,7 +44,7 @@ row.names(metadata) <- metadata$Sample
 
 # change names in metadata and set to correct data types 
 
-```{r echo=FALSE}
+```{r metadata, echo=TRUE}
 names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_MRNA_BASES"] <- "picard_pct_mrna_bases"
 names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PERCENT_DUPLICATION"] <- "picard_pct_percent_duplication"
 names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.summed_mean"] <- "picard_summed_mean"
@@ -46,9 +61,9 @@ names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_INTERGENI
 names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_INTRONIC_BASES"] <- "picard_pct_intronic_bases"
 ```
 
-# change to correct data format
+### Change to correct data format
 
-```{r echo=FALSE}
+```{r metadata, echo=TRUE}
 metadata$picard_pct_mrna_bases <- as.numeric(metadata$picard_pct_mrna_bases)
 length(metadata$picard_pct_mrna_bases)
 
@@ -101,9 +116,9 @@ metadata$Diagnosis <- as.factor (metadata$Diagnosis)
 metadata$Main_diagnosis <- as.factor (metadata$Main_diagnosis)
 ```
 
-# QC: name samples TRUE or FALSE (outlier = TRUE)
+# QC: name samples TRUE or FALSE (outlier = TRUE) based on QC filtering in metadatafile
 
-```{r echo=FALSE}
+```{r metadata_QC, echo=TRUE}
 exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove.txt")
 samplenames <- exclude
 metadata$outlier <- NA
@@ -113,4 +128,3 @@ write.table(metadata, "metadata.txt")
 ```
 
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
