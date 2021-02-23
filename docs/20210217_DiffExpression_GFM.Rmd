@@ -136,16 +136,26 @@ head(dds)
 
 #Run Differential Expression Analysis 
 dds <- DESeq(dds)
-res <- results(dds)
+res <- results(dds, contrasts())
 sum(res$padj < 0.05, na.rm=TRUE)
 resOrdered <- res[order(res$pvalue),] 
 resOrdered <- as.data.frame(resOrdered)
-write.table(resOrdered, "DEG_LPS_GFM.txt")
+#write.table(resOrdered, "DEG_LPS_GFM.txt")
 
 #PCA
 vsd <- vst(dds, blind=FALSE) 
 plotPCA(vsd, intgroup = "Stimulation")
 ```
+
+# MA plot 
+#In DESeq2, the function plotMA shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. Points will be colored red if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.
+
+```{r data_load_MA, echo = TRUE}
+plotMA(res, ylim=c(-2,2))
+```
+
+
+
 
 # DESEQ2 for IFNy
 
