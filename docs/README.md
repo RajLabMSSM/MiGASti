@@ -21,14 +21,14 @@
 
 6. DEG analysis (with only cultured samples)
 - [DESeq2_GFM_subset](https://rajlabmssm.github.io/MiGASti/docs/20210217_DiffExpression_GFM.html). DESeq2 analysis of GFM samples: unstimulated samples (baseline) compared to LPS and IFNy stimulation seperatly. 
-- [DESeq2_GFM_all]((https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_GFM_all.html). DESeq2 analysis with contrasts of GFM samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_SVZ_all]((https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_SVZ_all.html). DESeq2 analysis with contrasts of SVZ samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_GTS_all]((https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_GTS_all.html). DESeq2 analysis with contrasts of GTS samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_CC_all]((https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_CC_all.html). DESeq2 analysis with contrasts of CC samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_THA_all]((https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_THA_all.html). DESeq2 analysis with contrasts of THA samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_GFM_all](https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_GFM_all.html). DESeq2 analysis with contrasts of GFM samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_SVZ_all](https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_SVZ_all.html). DESeq2 analysis with contrasts of SVZ samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_GTS_all](https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_GTS_all.html). DESeq2 analysis with contrasts of GTS samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_CC_all](https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_CC_all.html). DESeq2 analysis with contrasts of CC samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_THA_all](https://rajlabmssm.github.io/MiGASti/docs/20210223_DiffExpression_THA_all.html). DESeq2 analysis with contrasts of THA samples only: stimuli vs unstim for all conditions. Number of differentially expressed genes, Vulcano plots, MA plots, list of top genes. 
 
 7. Differential expression across regions
-- [DGE_all_stimuli_across_regions]((https://rajlabmssm.github.io/MiGASti/docs/20210224_DEG_FC_heatmap.html). Heatmaps, PCAs, upset plots with differentially expressed genes per stimulation seperate across brain regions with filter Log FC > 1 or Log FC < -1. 
+- [DGE_all_stimuli_across_regions](https://rajlabmssm.github.io/MiGASti/docs/20210224_DEG_FC_heatmap.html). Heatmaps, PCAs, upset plots with differentially expressed genes per stimulation seperate across brain regions with filter Log FC > 1 or Log FC < -1. 
 - [DGE_2_regions_compared](https://rajlabmssm.github.io/MiGASti/docs/20210223_DEG_FC_scatterplot.html). Scatterplots of logFC of genelist with all differentially expressed genes compared between two brain regions for a subset of the different stimuli (LPS, IFNy, R848, TNFa)
 
 8. DREAM
