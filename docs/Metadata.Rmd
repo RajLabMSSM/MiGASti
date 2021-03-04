@@ -1,5 +1,5 @@
 ---
-title: "Formatting_metadata"
+title: "Metadata"
 author: "Gijsje"
 date: "2/10/2021"
 output: 
@@ -32,7 +32,8 @@ knitr::opts_chunk$set(
   fig.show = "hold")
 ```
 
-### Create metadata file
+# Preparing metadata
+### Create metadata file 
 
 ```{r load_file, echo=TRUE}
 metadata = "~/Documents/MiGASti/Old versions databases/Metadata.xlsx"
@@ -46,9 +47,10 @@ metadata <- merge(metadata, general_stats, by = "Sample")
 row.names(metadata) <- metadata$Sample 
 ```
 
-# change names in metadata and set to correct data types 
+### Change names
 
 ```{r metadata1, echo=TRUE, results = 'hide'}
+# change names in metadata and set to correct data types 
 names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_MRNA_BASES"] <- "picard_pct_mrna_bases"
 names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PERCENT_DUPLICATION"] <- "picard_pct_percent_duplication"
 names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.summed_mean"] <- "picard_summed_mean"
@@ -120,9 +122,9 @@ metadata$Diagnosis <- as.factor (metadata$Diagnosis)
 metadata$Main_diagnosis <- as.factor (metadata$Main_diagnosis)
 ```
 
-# QC: name samples TRUE or FALSE (outlier = TRUE) based on QC filtering in metadatafile
+### QC: name samples TRUE or FALSE (outlier = TRUE) based on QC filtering 
 
-```{r metadata_QC, echo=TRUE}
+```{r metadata_QC, echo=TRUE, results = 'hide'}
 setwd("~/Documents/MiGASti/Databases")
 exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove.txt")
 samplenames <- exclude
@@ -141,7 +143,6 @@ exclude <- exclude$x
 metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
 length(unique(metadata_filt$Donor_id)) 
 ```
-
 
 # Number of stimulations 
 
@@ -183,6 +184,8 @@ as.data.frame(t(as.matrix(unclass(table(donor_region$Region, useNA = "ifany")  )
 kable(row.names = F) %>%
 kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
+
+
 # Number of donors per sex
 
 ```{r metadata_sample_stim7, echo=TRUE}
@@ -192,6 +195,7 @@ as.data.frame(t(as.matrix(unclass(table(sexByDonor$sex, useNA = "ifany"))))) %>%
  kable(row.names = F) %>%
  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
+
 
 # Age
 ### Maximum age 
@@ -208,7 +212,7 @@ max(ageByDonor$age, na.rm = T)
 min(ageByDonor$age, na.rm = T)
 ```
 
-### Distrubtion plot age/sex by donor 
+### Distribution plot age/sex by donor 
 
 ```{r metadata_sample_stim10, echo=TRUE}
 mean_f = mean(ageByDonor[ageByDonor$sex == "f", "age"], na.rm = T)
@@ -223,9 +227,10 @@ ggplot(ageByDonor, aes(x=age, fill=sex)) +
   geom_vline(xintercept=mean_m, color = "blue", linetype="dashed") +
   theme_classic()
 ```
+
 # Main diagnosis by donor 
 
-```{r metadata_sample_stim24, echo=TRUE}
+```{r metadata_sample_stim24, echo=TRUE, results = 'hide'}
 Main_diagnosisByDonnor = unique(metadata_filt[,c("Donor_id", "Main_diagnosis")])
 table(Main_diagnosisByDonnor)
 ```
@@ -236,7 +241,6 @@ table(Main_diagnosisByDonnor)
 length(unique(metadata$Main_diagnosis))
 ```
 
-
 ### Number of different main diagnosis 
 
 ```{r metadata_sample_stim11, echo=TRUE}
@@ -245,6 +249,7 @@ as.data.frame(t(as.matrix(unclass(table(Main_diagnosisByDonor$Main_diagnosis, us
  kable(row.names = F) %>%
  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
+
 ### Pie chart main_diagnosis 
 
 ```{r metadata_sample_stim12, echo=TRUE}
@@ -262,6 +267,7 @@ as.data.frame(table(metadata_filt$Main_diagnosis), useNA = "ifany"  ) %>%
  kable(row.names = F) %>%
  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
+
 ### Samples by main diagnosis and region 
 
 ```{r metadata_sample_stim14, echo=TRUE}
@@ -269,6 +275,7 @@ as.data.frame(table(metadata_filt[,c("Main_diagnosis", "Region")]), useNA = "ifa
  kable(row.names = F) %>%
  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
+
 # Cause of death 
 
 ### Categories
@@ -280,6 +287,7 @@ as.data.frame(t(as.matrix(unclass(  table(DonorByDeath$Cause_of_death_categories
  kable(row.names = F) %>%
  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 ```
+
 ### Chart
 
 ```{r metadata_sample_stim16, echo=TRUE}
