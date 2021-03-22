@@ -74,6 +74,7 @@ p <- ggplot(df, aes(x=GFM, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -94,6 +95,7 @@ p <- ggplot(df, aes(x=CC, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -114,6 +116,7 @@ p <- ggplot(df, aes(x=GTS, y=THA) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -134,6 +137,7 @@ p <- ggplot(df, aes(x=GFM, y=CC) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -154,6 +158,7 @@ p <- ggplot(df, aes(x=GFM, y=GTS) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -175,6 +180,7 @@ p <- ggplot(df, aes(x=GFM, y=THA) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -197,6 +203,7 @@ p <- ggplot(df, aes(x=GFM, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -217,6 +224,7 @@ p <- ggplot(df, aes(x=GFM, y=GTS) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -237,6 +245,7 @@ p <- ggplot(df, aes(x=GFM, y=THA) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -257,6 +266,7 @@ p <- ggplot(df, aes(x=GFM, y=CC) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -278,6 +288,7 @@ p <- ggplot(df, aes(x=GFM, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```
@@ -299,6 +310,7 @@ p <- ggplot(df, aes(x=GFM, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
 p + stat_cor(method = "spearman")
 ```

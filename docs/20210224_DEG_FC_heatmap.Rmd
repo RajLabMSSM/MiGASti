@@ -243,6 +243,30 @@ strsplit(as.character(x),split = "\\\\")[[1]][1])
 pheatmap(df_num_scale,scale = "row",main = "Differentially expressed genes across stimulations in SVZ")
 ```
 
+### PCA across stimulations SVZ
+
+```{r PCA_SVZ, echo=TRUE, message=FALSE}
+dat <- data.frame(df_num_scale)
+cov <- colnames(dat)
+as.data.frame(cov)
+dat <- data.frame(dat)
+pca <- prcomp(t(dat), scale=TRUE)
+PoV <- round((pca$sdev^2/sum(pca$sdev^2))*100)
+#Grab covariates to plot:
+library(ggplot2)
+library(ggfortify)
+
+
+#Plot:
+ggplot(pca, aes(PC1, PC2, color=cov)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",PoV[1],"% variance")) +
+  ylab(paste0("PC2: ",PoV[2],"% variance")) +
+  theme_classic()
+
+```
+
+
 # DGE across stimulations GTS
 
 ```{r heatmap_GTS, echo = TRUE, results = 'hide'}
@@ -303,7 +327,7 @@ strsplit(as.character(x),split = "\\\\")[[1]][1])
 
 ```{r Heatmap_GTS2, echo=TRUE, message=FALSE}
 # heatmap on row scaling
-pheatmap(df_num_scale,scale = "row",main = "Differentially expressed genes across stimulations in GTS")
+pheatmap(df_num_scale, scale = 'row', main = "Differentially expressed genes across stimulations in GTS")
 ```
 
 
@@ -364,7 +388,7 @@ strsplit(as.character(x),split = "\\\\")[[1]][1])
 
 ```{r Heatmap_THA2, echo=TRUE, message=FALSE}
 # heatmap on row scaling
-pheatmap(df_num_scale,scale = "row",main = "Differentially expressed genes across stimulations in THA")
+pheatmap(df_num_scale, main = "Differentially expressed genes across stimulations in THA")
 ```
 
 # DGE across stimulations in CC 
@@ -418,16 +442,14 @@ df_num_scale = scale(df_num)
 # make rownames as function
 rownames(df_num) = sapply(DF_log2FC$symbol,function(x) 
 strsplit(as.character(x),split = "\\\\")[[1]][1])
-# heatmap on row scaling
-pheatmap(df_num_scale,scale = "row",main = "Differentially expressed genes across stimulations in GTS")
 ```
 
-### Heatmap THA DGE
+### Heatmap CC DGE
 #120 genes 
 
 ```{r Heatmap_CC2, echo=TRUE, message=FALSE}
 # heatmap on row scaling
-pheatmap(df_num_scale,scale = "row",main = "Differentially expressed genes across stimulations in CC")
+pheatmap(df_num_scale, main = "Differentially expressed genes across stimulations in CC")
 ```
 
 # DGE LPS across regions
