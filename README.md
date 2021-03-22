@@ -32,12 +32,13 @@
 - [DESeq2_SVZ_all](https://rajlabmssm.github.io/MiGASti/docs/20210223DiffExpression_SVZ_all.html). DESeq2 analysis with contrasts of SVZ samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
 - [DESeq2_GTS_all](https://rajlabmssm.github.io/MiGASti/docs/20210223DiffExpression_GTS_all.html). DESeq2 analysis with contrasts of GTS samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
 - [DESeq2_CC_all](https://rajlabmssm.github.io/MiGASti/docs/20210223DiffExpression_CC_all.html). DESeq2 analysis with contrasts of CC samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_THA_all](https://rajlabmssm.github.io/MiGASti/docs/20210223DiffExpression_THA_all.html). DESeq2 analysis with contrasts of THA samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_THA_all](https://rajlabmssm.github.io/MiGASti/docs/20210225DiffExpression_THA_all.html). DESeq2 analysis with contrasts of THA samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
 
 7. Differential expression across regions
 - [DGE_all_stimuli_across_regions](https://rajlabmssm.github.io/MiGASti/docs/20210224_DEG_FC_heatmap.html). Heatmaps, PCAs, upset plots with differentially expressed genes per stimulation seperate across brain regions with filter Log FC > 1 or Log FC < -1. 
 - [DGE_2_regions_compared](https://rajlabmssm.github.io/MiGASti/docs/20210303_DEG_FC_scatterplot.html). Scatterplots of logFC of genelist with all differential expressed genes compared between two brain regions for a subset of the different stimuli (LPS, IFNy, R848, TNFa). No logFC treshold.
-- [DGE_2_regions_compared_logFC](https://rajlabmssm.github.io/MiGASti/docs/20210303_DEG_FC_scatterplot.html) Scatterplots of logFC of genelist with all differential expressed genes compared between two brain regions for a subset of the different stimuli (LPS, IFNy, R848, TNFa). logFC treshold < -1 or > 1. 
+- [DGE_2_regions_compared_logFC](https://rajlabmssm.github.io/MiGASti/docs/20210303_DEG_FC_scatterplot_LOGFC1.html). Scatterplots of logFC of genelist with all differential expressed genes compared between two brain regions for a subset of the different stimuli (LPS, IFNy, R848, TNFa). logFC treshold < -1 or > 1. 
+- [DGE_2_regions_compared_logFC](https://rajlabmssm.github.io/MiGASti/docs/20210303_DEG_FC_scatterplot_LOGFC0.5.html). Scatterplots of logFC of genelist with all differential expressed genes compared between two brain regions for a subset of the different stimuli (LPS, IFNy, R848, TNFa). logFC treshold < 0.5 or > 0.5. 
 
 8. DREAM
 - [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Contrast plot. 

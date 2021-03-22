@@ -75,15 +75,6 @@ genes_counts_ordered <- genes_counts_filt[,rownames(metadata_filt)]
 all(rownames(metadata_filt) == colnames (genes_counts_ordered)) #TRUE
 ```
 
-
-```{r data_load_outline, echo = TRUE}
-# Counts, TPM, voom and metadata filtered 
-# 496 samples!  
-# Filter for genes not expressed: 50 % of the samples! 
-# dim(genes_counts_ordered) #18997   496
-# dim(metadata_filt) #496  38
-```
-
 # Preparing the samples for DEG
 
 ```{r preparing, echo = TRUE}
