@@ -121,7 +121,7 @@ metadata_GFM$picard_pct_percent_duplication = scale(metadata_GFM$picard_pct_perc
 #createDeSEQ2 object for LPS
 dds <- DESeqDataSetFromMatrix(countData = genes_counts_GFM_ordered,
                               colData = metadata_GFM,
-                              design = ~ age + sex + picard_pct_ribosomal_bases + picard_pct_mrna_bases + picard_pct_percent_duplication + picard_pct_pf_reads_aligned + Stimulation) 
+                              design = ~ age + sex + picard_pct_ribosomal_bases + picard_pct_mrna_bases + picard_pct_percent_duplication + picard_pct_pf_reads_aligned + Stimulation) Ye
 #variable of interest at end of the formula
 
 #Make sure that control group is set as the reference group

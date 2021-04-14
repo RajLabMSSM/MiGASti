@@ -1,0 +1,146 @@
+---
+title: "Markers homeostatic"
+author: "Gijsje"
+date: "2/16/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+```{r data_load, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/Markers.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+setDT(genes_tpm_filt, keep.rownames = "ensembl")
+genes_tpm_filt$ensembl
+res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+```
+
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+metadata_subset <- subset(metadata, Donor_id == "MG-01" | Donor_id == "MG-02" | Donor_id == "MG-03")
+res_name <- res_name[,metadata_subset$Donor_id]
+exp_LPS <- genes_counts_GFM_ordered[, rownames(pheno_LPS)]
+marker_expression = merge(res_name, markers, by ="symbol")
+dim (marker_expression)
+head (marker_expression)
+metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
+metadata_filt_ordered = metadata_filt_ordered[-1,]
+all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
+Stimulation <- metadata_filt_ordered$Stimulation
+```
+
+### Boxplot BIN1 
+
+```{r data_load_BIN1, echo = TRUE}
+BIN1 <- marker_expression[1, ] 
+BIN1$ensembl = NULL
+BIN1$symbol = NULL
+BIN1_new<-as.data.frame(t(BIN1))
+df = data.frame(Stimulation, BIN1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("BIN1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot CD74 
+
+```{r data_load_CD74, echo = TRUE}
+CD74 <- marker_expression[2, ] 
+CD74$ensembl = NULL
+CD74$symbol = NULL
+CD74_new<-as.data.frame(t(CD74))
+df = data.frame(Stimulation, CD74_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CD74") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot CSF1R
+
+```{r data_load_CSF1R, echo = TRUE}
+CSF1R <- marker_expression[3, ] 
+CSF1R$ensembl = NULL
+CSF1R$symbol = NULL
+CSF1R_new<-as.data.frame(t(CSF1R))
+df = data.frame(Stimulation, CSF1R_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CSF1R") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot IFNGR1
+
+```{r data_load_IFNGR1, echo = TRUE}
+IFNGR1 <- marker_expression[5, ] 
+IFNGR1$ensembl = NULL
+IFNGR1$symbol = NULL
+IFNGR1_new<-as.data.frame(t(IFNGR1))
+df = data.frame(Stimulation, IFNGR1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("IFNGR1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot MEF2C
+
+```{r data_load_MEF2C, echo = TRUE}
+MEF2C <- marker_expression[6, ] 
+MEF2C $ensembl = NULL
+MEF2C$symbol = NULL
+MEF2C_new<-as.data.frame(t(MEF2C))
+df = data.frame(Stimulation, MEF2C_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("MEF2C") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```

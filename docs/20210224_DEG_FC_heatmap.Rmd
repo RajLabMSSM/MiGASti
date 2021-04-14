@@ -130,9 +130,8 @@ strsplit(as.character(x),split = "\\\\")[[1]][1])
 #1201 genes
 
 ```{r heatmap_GFM_cor, echo=TRUE, message=FALSE}
-pheatmap(df_num_scale,scale = "row",main = "Differentially expressed genes across stimulations in GFM")
+pheatmap(df_num, scale = "row", show_rownames = F, main = "Differentially expressed genes across stimulations in GFM")
 ```
-
 
 
 ### Correlation plot GFM DGE (Spearman)
