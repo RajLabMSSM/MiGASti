@@ -15,12 +15,12 @@
  
 4. Variance partition 
 - [Variance partition_all](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html). Variance partition for all samples.
-- [Variance partition_cultured](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_GFM](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_GTS](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_SVZ](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_THA](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_CC](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html). Variance partition for only cultured samples.
+- [Variance partition_cultured](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_cultured.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_GFM](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_GFM.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_GTS](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_GTS.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_SVZ](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_SVZ.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_THA](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_THA.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_CC](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_CC.html). Variance partition for only cultured samples.
 
 5. Expression of stimulation specific markers
 - [Expression of pre-selected markers specific for culturing](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_homeostatic.html). Boxplots with TPM expression of genes that are expected to go down after culturing based on the literature.
@@ -41,13 +41,14 @@
 - [DESeq2_THA_all](https://rajlabmssm.github.io/MiGASti/docs/20210225DiffExpression_THA_all.html). DESeq2 analysis with contrasts of THA samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
 
 7. Differential expression across regions
-- [DGE_all_stimuli_across_regions](https://rajlabmssm.github.io/MiGASti/docs/20210224_DEG_FC_heatmap_genes_names.html). Heatmaps, PCAs, upset plots with differentially expressed genes per stimulation seperate across brain regions with filter Log FC > 1 or Log FC < -1. 
+- [DGE_all_stimuli_across_regions](https://rajlabmssm.github.io/MiGASti/docs/20210224_DEG_FC_heatmap_gene_names.html). Heatmaps, PCAs, upset plots with differentially expressed genes per stimulation seperate across brain regions with filter Log FC > 1 or Log FC < -1. 
 - [DGE_2_regions_compared](https://rajlabmssm.github.io/MiGASti/docs/20210303_DEG_FC_scatterplot.html). Scatterplots of logFC of genelist with all differential expressed genes compared between two brain regions for a subset of the different stimuli (LPS, IFNy, R848, TNFa). No logFC treshold.
 
 8. DREAM only cultured + stimulated samples 
 - [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Contrast plot. 
 - [DREAM_plots](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Number of differential expressed genes, Vulcano plots, MA plots, FDR distribution plots, FC plots. 
-- [DREAM_boxplots](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_Boxplots.html). Directionality of top 6 genes for each condition.
+- [DREAM_boxplots_voom](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_Boxplots.html). Directionality of top 6 genes for each condition. Gene counts voom normalized.
+- [DREAM_boxplots_tpm](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_Boxplots.html). Directionality of top 6 genes for each condition. Log2((tpm)+1)
 - [DREAM_lists](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_DEG_download.html).  DEG genelists for download. No logFC treshold. 
 - [DREAM_downstream_logFC](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Heatmaps, PCAs, upsetplot, scatterplots showing results of different stimuli for logFC > 1 or -1. 
 - [DREAM_downstream_FDR5](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Heatmaps, PCAs, upsetplot, showing results of different stimuli for FDR < 0.05.
