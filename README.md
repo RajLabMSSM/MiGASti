@@ -26,11 +26,11 @@
 - [Expression of pre-selected markers specific for culturing](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_homeostatic.html). Boxplots with TPM expression of genes that are expected to go down after culturing based on the literature.
 - [Expression of pre-selected markers specific for stimulated conditions](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_allstims.html). Boxplots with TPM expression for genes that respond to specific stimuli and heatmap with all markers combined. 
 - [Expression of pre-selected markers specific for TNFa stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210225_Markers_TNFa.html). Boxplots with genes that respond to TNFa in cultured monocytes (effect most striking after 24h).
-- [Expression of pre-selected markers for apoptosis/cell death](https://rajlabmssm.github.io/MiGASti/docs/20210224_Markers_apoptotic.html). Boxplots with TPM expression of genes that are involved in apoptotic processes. 
+- [Expression of pre-selected markers for apoptosis/cell death](https://rajlabmssm.github.io/MiGASti/docs/20210224_Markers_apoptotic.html). Boxplots with TPM expression of genes that are involved in apoptotic processes (CASP3; specific) 
 - [Expression of pre-selected neurotransmitter markers](https://rajlabmssm.github.io/MiGASti/docs/20210304_Markers_neurotransmitters.html). Boxplots with TPM expression of genes that are involved neurotransmitter activity. 
-- [Expression of microglia markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_braincells.html). Expression of microglia, astrocyte, oligodendrocyte, neuron markers in all samples
+- [Expression of brain markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_braincells.html). Expression of microglia, astrocyte, oligodendrocyte, neuron markers in all samples
 - [Expression of myeloid markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_myeloid.html). Expression of monocyte, macrophage and microglia markers in all samples. 
-
+- [Mitochondrial_genes](https://rajlabmssm.github.io/MiGASti/docs/20210511_mitochondrial_genes.html). Percentage of mitochondrial genes in total dataset after filtering out lowly expressed genes (< 1 in 50% of the samples).
 
 6. DEG analysis (with only cultured samples)
 - [DESeq2_GFM_subset](https://rajlabmssm.github.io/MiGASti/docs/20210217_DiffExpression_GFM.html). DESeq2 analysis of GFM samples: unstimulated samples (baseline) compared to LPS and IFNy stimulation seperatly. 
@@ -47,26 +47,33 @@
 8. DREAM only cultured + stimulated samples 
 - [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Contrast plot. 
 - [DREAM_plots](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Number of differential expressed genes, Vulcano plots, MA plots, FDR distribution plots, FC plots. 
-- [DREAM_boxplots_voom](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_Boxplots.html). Directionality of top 6 genes for each condition. Gene counts voom normalized.
-- [DREAM_boxplots_tpm](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_Boxplots.html). Directionality of top 6 genes for each condition. Log2((tpm)+1)
+- [DREAM_boxplots](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_Boxplots.html). Directionality of top 6 genes for each condition. Genes counts + log2((tpm)+1).
 - [DREAM_lists](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_DEG_download.html).  DEG genelists for download. No logFC treshold. 
-- [DREAM_downstream_logFC](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Heatmaps, PCAs, upsetplot, scatterplots showing results of different stimuli for logFC > 1 or -1. 
-- [DREAM_downstream_FDR5](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Heatmaps, PCAs, upsetplot, showing results of different stimuli for FDR < 0.05.
-- [DREAM_downstream_FDR5_2stim](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Heatmaps, PCAs, upsetplot, showing results of different stimuli for FDR < 0.05 in 2 or more stimuli.
+- [DREAM_downstream](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds.html). Heatmaps, PCAs, upsetplot, scatterplots showing results of different stimuli for FDR 5% log FC > 1 or < -1 (1204 genes), FDR 5% in 2 stimulations (3161 genes) and FDR 5% (8521 genes). 
+- [DREAM_downstream](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds_LPS_IFNy.html), Heatmaps, PCAs, upsetplot, scatterplots showing results of LPS and IFNy  for FDR 5% log FC > 1 or < -1 (210 genes), FDR 5% in 2 stimulations (348) and FDR 5% (6571). 
 
-9. K-means clustering on cultured + stimulated samples
-- [kmeans_clustering_plots_logFC](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes logFC > 1 or -1. 
-- [kmeans_clustering_plots_FDR5](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes FDR < 5.
-- [kmeans_clustering_plots_FDR5_2stim](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_plots.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes FDR < 5 in 2 or more stimulations.
- 
-10. DREAM all samples
-- [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Contrast plot.
-- [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). DEG table for download. 
+9. K-means clustering on all cultured + stimulated samples
+- [kmeans_clustering_plots_all](https://rajlabmssm.github.io/MiGASti/docs/20210514_kmeans_dream_stimulations.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for FDR 5% log FC > 1 or < -1 (1204 genes).
 
-11. Aging 
-- [DREAM_age](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Age as coefficient in all cultured and stimulated samples. 
-- [DREAM_age_plots](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Number of differential expressed genes, Vulcano plots, MA plots, FDR distribution plots, FC plots.  
-- [DREAM_age_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Interaction analysis age * stimulation. Differentially expressed genes per stimulation associated with aging. 
+10. K-means clustering on LPS and IFNy samples
+- [kmeans_clustering_plots_LPS_IFNy_FDR5](https://rajlabmssm.github.io/MiGASti/docs/2021049_kmeans_dream_LPS_IFNy_FDR5.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for FDR 5% () of a subset of LPS and IFNy genes. 
+- [kmeans_clustering_plots_LPS_IFNy_LOGFC](https://rajlabmssm.github.io/MiGASti/docs/2021049_kmeans_dream_LPS_IFNy_logFC1.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for logFC > 1 or logFC < -1, FDR 5% () of a subset of LPS and IFNy genes. 
 
-12. Differential transcript usage
-- [DTU](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). 
+11. DREAM all samples
+- [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Cultured versus uncultured. 
+
+12. Aging
+- [Age_plots](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Plots of effect of aging on immune response genes. 
+- [DREAM_age](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Age as coefficient in all cultured and stimulated samples. Number of differential expressed genes, Volcano plots, MA plots, FDR distribution plots, FC plots.  
+- [DREAM_age_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Interaction analysis age * stimulation. 0 differentially expressed genes in LPS and IFNy associated with aging. 
+
+13. Differential transcript usage
+- [DTU_plots_download](https://rajlabmssm.github.io/MiGASti/docs/20210511_DTU_plots_download.html). Summary of results including table for download of significant results. Code for DTU analysis can be found in docs. 
+- [DTU_overlaps_genes](https://rajlabmssm.github.io/MiGASti/docs/20210512_DTU_genes_overlap.html). Overlap between transcripts DTU and genes per stimulation and significance of overlap between background of 20.000 genes. 
+
+14. Sex
+- [DREAM_sex](https://rajlabmssm.github.io/MiGASti/docs/20211305_DREAM_SEX_CHRXY.html). Differential expression analysis male/female in all cultured samples. 0 differentially expressed genes.
+
+15. Comparison with monocyte data (Elisa) and microglia (MiGA) 
+- [PCA](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia.html). PCA plot of cultured LPS and IFNy microglia, cultured, LPS and IFNy monocytes and baseline microglia. 
+

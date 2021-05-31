@@ -79,13 +79,21 @@ rownames(res_name) = res_name$ensembl
 marker_expression = merge(res_name, markers, by ="symbol")
 dim (marker_expression)
 head (marker_expression)
+
+marker_expression 
+pheno <- subset(metadata_filt, Stimulation == "unstim" | Stimulation == "ununstim")
+exp <- genes_tpm_filt[, rownames(pheno)]
+exp2 <- as.data.frame(exp)
+
+
 metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
 metadata_filt_ordered = metadata_filt_ordered[-1,]
 all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
+pheno <- subset(metadata_filt_ordered, Stimulation == "unstim" | Stimulation == "ununstim")
 Stimulation <- metadata_filt_ordered$Stimulation
 ```
 
-# Myeloid marker expression in all 496 samples
+# Myeloid marker expression in cultured versus uncultured samples 
 
 ```{r data_load_heatmap, echo = TRUE, fig.width=10, fig.height=6, dpi=300}
 rownames(marker_expression) = marker_expression$symbol
@@ -100,6 +108,13 @@ cell_type_df = left_join(data.frame(cell_type = cell_type), cell_type_colors, by
 res <- unlist(lapply(split(cell_type_colors$color, cell_type_colors$cell_type), unlist))
 row_ha = rowAnnotation(`Cell Type` = as.factor(cell_type_df$cell_type), col = list(`Cell Type` = res), show_annotation_name = F)
 
+select <- order(metadata_comparison$X), decreasing=TRUE))
+
+col_ha = columnAnnotation(Stimulation = c("unstim", "ununstim",
+                          col = list(Stimulation = c(unstim="#FF6F00FF", ununstim="#C71000FF")),
+                          na_col = "white",
+                          border = F)
+
 # pdf(paste0(work_plots, "HM_markers_255s.pdf"), width = 10, height = 6)
 colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(496)
 Heatmap(df_num,
@@ -110,6 +125,7 @@ Heatmap(df_num,
         show_column_dend = F, 
         show_column_names = F,
         show_row_names = T,
+        top_annotation = col_ha,
         right_annotation = row_ha)
 #dev.off()
 ```

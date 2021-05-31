@@ -139,14 +139,9 @@ pheatmap(df_num_scale,scale = "row",main = "Differentially expressed genes acros
 pheatmap(df_num_scale, main = "Differentially expressed genes across stimulations in GFM")
 ```
 
-#1201 genes (row scaling data)
-
-```{r heatmap_GFM_cor3, echo=TRUE, message=FALSE}
-pheatmap(df_num, scale = "row", main = "Differentially expressed genes across stimulations in GFM")
-```
 
 ### Heatmap GFM DGE
-#1201 genes
+#1201 genes (row scaling with labeling of a few genes )
 
 ```{r heatmap_GFM_cor4, echo=TRUE, message=FALSE}
 rownames(DF_log2FC) = DF_log2FC$symbol
@@ -164,6 +159,7 @@ pheatmap(df_num, scale = "row", labels_row = labels, fontsize_row = 6)
 ```{r corrplot_GFM_cor, echo=TRUE, message=FALSE}
 com = DF_log2FC[,2:8]
 cc = cor(com, method = "spearman")
+pheatmap(cc)
 ```
 
 
@@ -357,6 +353,7 @@ df_num_scale = scale(df_num)
 rownames(df_num) = sapply(DF_log2FC$symbol,function(x) 
 strsplit(as.character(x),split = "\\\\")[[1]][1])
 ```
+
 ### Heatmap GTS DGE
 #115 genes 
 
@@ -418,6 +415,7 @@ df_num_scale = scale(df_num)
 rownames(df_num) = sapply(DF_log2FC$symbol,function(x) 
 strsplit(as.character(x),split = "\\\\")[[1]][1])
 ```
+
 ### Heatmap THA DGE
 #126 genes 
 
