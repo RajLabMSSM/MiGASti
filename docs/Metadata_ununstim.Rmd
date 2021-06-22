@@ -142,9 +142,10 @@ row.names(metadata) <- metadata$Sample
 exclude <- exclude$x
 metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
 #only continue with ununstim samples
-metadata_uncultured <- subset(metadata, Stimulation == "ununstim")
+metadata_uncultured <- subset(metadata_filt, Stimulation == "ununstim")
 #check numbers
-length(unique(metadata_uncultured$Donor_id)) 
+length(unique(metadata_uncultured$Donor_id))
+save(metadata_uncultured, file = "metadata_uncultured.Rdata")
 ```
 
 # Number of stimulations 

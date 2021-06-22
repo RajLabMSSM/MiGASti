@@ -1,0 +1,322 @@
+---
+title: "age_stimulation_plots"
+author: "Gijsje"
+date: "5/13/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+
+```{r setup, include = FALSE}
+library('variancePartition')
+library('edgeR')
+library(dplyr)
+library(tidyr)
+library(rtracklayer)
+library(ggplot2)
+library(kableExtra)
+library(data.table)
+library(ggplot2)
+library(tidyverse)
+library(readxl)
+library(pheatmap)
+library(reshape2)
+library(kableExtra)
+library(RColorBrewer)
+require(gridExtra)
+library(ggfortify)
+library(dplyr)
+library(tidyr)
+library(tidyverse)
+library(circlize)
+library(tidyverse)
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+
+```
+
+# Load data
+
+```{r data_load, echo=TRUE, results='hide'}
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+#exclude samples that did not pass QC filtering
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+#Excludes the samples from filters. 
+#dim(genes_counts_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+
+#load gene matrix
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+genes_counts_filt = genes_counts[, !colnames(genes_counts) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_counts_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#remove low count genes
+cpm <- cpm(genes_counts_filt) 
+# CPM >= 1 in at least 50% of the samples
+keep.exp <- rowSums(cpm > 1) >= (0.5 * ncol(genes_counts_filt) )
+genes_counts_filt1 <- genes_counts_filt[ keep.exp, ] #18997 genes 
+#order metadata and genes counts
+genes_counts_ordered <- genes_counts_filt1[,rownames(metadata_filt)]
+#head(genes_counts_ordered)
+all(rownames(metadata_filt) == colnames (genes_counts_ordered)) #TRUE
+```
+
+
+# Metadata: Distribution of age in LPS and IFNy
+
+
+```{r distribution, echo=TRUE}
+#remove uncultured samples
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+#dim(metadata_cultured)
+#check numbers per stimulation
+#table(metadata_filt$Stimulation)
+#select only GFM samples in metadata
+metadata_unstim = metadata_cultured[metadata_cultured$Stimulation=="unstim",]
+metadata_LPS1 = metadata_cultured[metadata_cultured$Stimulation=="LPS",]
+metadata_IFNy1 = metadata_cultured[metadata_cultured$Stimulation=="IFNy",]
+
+set.seed(1)
+LPS=metadata_LPS1$age
+IFNy=metadata_IFNy1$age
+ 
+# LPS distribution
+hist(LPS, breaks=30, xlim=c(0,120), col=rgb(1,0,0,0.5), xlab="age", 
+     ylab="samples", main="Distribution of age" )
+# Add legend
+legend("topright", legend=c("LPS"), col=c(rgb(1,0,0,0.5), 
+     rgb(0,0,1,0.5)), pt.cex=2, pch=15 )
+
+# IFNy
+hist(IFNy, breaks=30, xlim=c(0,120), col=rgb(0,0,1,0.5), xlab="age", 
+     ylab="samples", main="Distribution of age" )
+# Add legend
+legend("topright", legend=c("IFNy"), col=c(rgb(0,0,1,0.5), 
+     rgb(0,0,1,0.5)), pt.cex=2, pch=15 )
+
+
+# Add legend
+legend("topright", legend=c("LPS","IFNy"), col=c(rgb(1,0,0,0.5), 
+     rgb(0,0,1,0.5)), pt.cex=2, pch=15 )
+```
+
+# Aging in samples that are stimulated with LPS/IFNy? Does the immune response change in aging? 
+
+### Input: colMeans of the 6270 genes that respond to LPS in 128 LPS stimulated samples across aging
+
+```{r LPS, echo=TRUE, results='hide'}
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata_filt$Stimulation)
+#remove samples in genes counts datafile 
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+voom(genes_counts_cultured)
+#table(metadata_filt$stimulation)
+#length(metadata_cultured)
+
+genes_counts_cultured <- cbind(ensembl = rownames(genes_counts_cultured), genes_counts_cultured)
+genes_counts_cultured
+rownames(genes_counts_cultured) <- NULL
+```
+
+```{r LPS2, echo = TRUE, results = 'hide'}
+#data load 
+load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
+load("~/Documents/MiGASti/docs/res_name_IFNy2.Rdata")
+DEG_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
+DEG_IFNy <- subset(res_name_IFNy2, adj.P.Val < 0.05)
+
+# select only sign LPS genes 
+LPS <- genes_counts_cultured[genes_counts_cultured$ensembl %in% DEG_LPS$ensembl, ]
+#select only LPS samples 
+metadata_LPS = metadata_cultured[metadata_cultured$Stimulation=="LPS",]
+#select only LPS samples in genes counts
+LPS2 <-LPS[,metadata_LPS$Sample]
+#order metadata and genes_counts
+LPS_ordered <- LPS2[,rownames(metadata_LPS)]
+
+#select only sign IFNy genes
+IFNy <- genes_counts_cultured[genes_counts_cultured$ensembl %in% DEG_IFNy$ensembl, ]
+#select only IFNy samples
+metadata_IFNy = metadata_cultured[metadata_cultured$Stimulation=="IFNy",]
+#select only IFNy samples in genes counts
+IFNy2 <-IFNy[,metadata_IFNy$Sample]
+#order metadata and genes_counts
+IFNy_ordered <- IFNy[,rownames(metadata_IFNy)]
+
+#create plot for LPS
+LPS.mic <- data.frame(cbind(LPS = scale(colMeans(LPS_ordered)), Age = metadata_LPS$age))
+colnames(LPS.mic) <- c("LPS", "Age")
+library(ggpmisc)
+formula <- y ~ x
+ggplot(LPS.mic, aes_string(y = as.matrix(LPS.mic["LPS"]), x = as.matrix(LPS.mic["Age"]))) + 
+    geom_point() + scale_colour_gradient(low = "gray90", high = "black") + stat_smooth(method = lm) + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + geom_smooth(method = lm, 
+    linetype = "dashed") + labs(y = "Average expression LPS response genes", x = "Age") + 
+    stat_poly_eq(aes(label = c(paste(..adj.rr.label..))), label.x = "right", label.y = 0.37, 
+        formula = formula, parse = TRUE, size = 3) + # geom_cor(method='pearson')+
+stat_fit_glance(method = "lm", method.args = list(formula = formula), geom = "text", 
+    aes(label = paste("P-value = ", signif(..p.value.., digits = 3), sep = "")), 
+    label.x = "right", label.y = 0.3, size = 3)
+```
+
+
+### Input: colMeans of the 658 genes that respond to IFNy in 79 IFNy stimulated samples across aging
+
+```{r IFNy, echo = TRUE}
+IFNy.mic <- data.frame(cbind(IFNy = scale(colMeans(IFNy_ordered)), Age = metadata_IFNy$age))
+colnames(IFNy.mic) <- c("IFNy", "Age")
+library(ggpmisc)
+formula <- y ~ x
+ggplot(IFNy.mic, aes_string(y = as.matrix(IFNy.mic["IFNy"]), x = as.matrix(IFNy.mic["Age"]))) + 
+    geom_point() + scale_colour_gradient(low = "gray90", high = "black") + stat_smooth(method = lm) + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + geom_smooth(method = lm, 
+    linetype = "dashed") + labs(y = "Average expression IFNy response genes", x = "Age") + 
+    stat_poly_eq(aes(label = c(paste(..adj.rr.label..))), label.x = "right", label.y = 0.37, 
+        formula = formula, parse = TRUE, size = 3) + # geom_cor(method='pearson')+
+stat_fit_glance(method = "lm", method.args = list(formula = formula), geom = "text", 
+    aes(label = paste("P-value = ", signif(..p.value.., digits = 3), sep = "")), 
+    label.x = "right", label.y = 0.3, size = 3)
+```
+
+# How many of the age related genes are in the stimulation genes? 
+#151 genes are both in aging dataset and LPS stimulation dataset
+#17 genes are both in aging dataset and IFNy stimulation dataset
+
+```{r overlapbetweensets, echo = TRUE}
+load("/Users/gijsjesnijders/Documents/MiGASti/Databases/res_age.Rdata")
+load("~/Downloads/genes_counts_cultured.Rdata")
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+res_age <- tibble::rownames_to_column(res_age, "ensembl")
+res_name_age <- merge(res_age, gencode_30, by = "ensembl")
+sign_age <- subset(res_age, adj.P.Val < 0.05)
+length(rownames(sign_age))
+load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
+load("~/Documents/MiGASti/docs/res_name_IFNy2.Rdata")
+LPS2_overlap <- merge(DEG_LPS, sign_age, by = "ensembl")
+length(LPS2_overlap$ensembl)
+IFNy2_overlap <- merge(DEG_IFNy, sign_age, by = "ensembl")
+length(IFNy2_overlap$ensembl)
+list(LPS2_overlap$symbol)
+list(IFNy2_overlap$symbol)
+```
+
+
+### Aging in samples that are stimulated with LPS and known to show effect in aging and after LPS stimulation? Does the immune response change in aging? 
+#Input: colMeans of the 151 genes that respond to LPS and are found to be differentially expressed in aging in 128 LPS stimulated samples across aging
+ 
+
+```{r LPS_plot1, echo = TRUE, results = 'hide'}
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata_filt$Stimulation)
+#remove samples in genes counts datafile 
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+voom(genes_counts_cultured)
+#table(metadata_filt$stimulation)
+#length(metadata_cultured)
+
+
+genes_counts_cultured <- cbind(ensembl = rownames(genes_counts_cultured), genes_counts_cultured)
+genes_counts_cultured
+rownames(genes_counts_cultured) <- NULL
+```
+
+```{r LPS_plot22, echo = TRUE}
+LPS <- genes_counts_cultured[genes_counts_cultured$ensembl %in% LPS2_overlap$ensembl, ]
+#select only LPS samples 
+metadata_LPS = metadata_cultured[metadata_cultured$Stimulation=="LPS",]
+#select only LPS samples in genes counts
+LPS2 <-LPS[,metadata_LPS$Sample]
+#order metadata and genes_counts
+LPS_ordered <- LPS[,rownames(metadata_LPS)]
+
+LPS.mic <- data.frame(cbind(LPS = scale(colMeans(LPS_ordered)), Age = metadata_LPS$age))
+colnames(LPS.mic) <- c("LPS", "Age")
+library(ggpmisc)
+formula <- y ~ x
+ggplot(LPS.mic, aes_string(y = as.matrix(LPS.mic["LPS"]), x = as.matrix(LPS.mic["Age"]))) + 
+    geom_point() + scale_colour_gradient(low = "gray90", high = "black") + stat_smooth(method = lm) + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + geom_smooth(method = lm, 
+    linetype = "dashed") + labs(y = "Average expression LPS response genes", x = "Age") + 
+    stat_poly_eq(aes(label = c(paste(..adj.rr.label..))), label.x = "right", label.y = 0.37, 
+        formula = formula, parse = TRUE, size = 3) + # geom_cor(method='pearson')+
+stat_fit_glance(method = "lm", method.args = list(formula = formula), geom = "text", 
+    aes(label = paste("P-value = ", signif(..p.value.., digits = 3), sep = "")), 
+    label.x = "right", label.y = 0.3, size = 3)
+```
+
+
+### Aging in samples that are stimulated with IFNy and known to show effect in aging and after IFNy stimulation? Does the immune response change in aging? 
+#Input: colMeans of the 17 genes that respond to IFNy and are found to be differentially expressed in aging in 79 LPS stimulated samples across aging
+
+```{r 58genes_plot, echo = TRUE, results = 'hide'}
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata_filt$Stimulation)
+#remove samples in genes counts datafile 
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+voom(genes_counts_cultured)
+#table(metadata_filt$stimulation)
+#length(metadata_cultured)
+
+
+genes_counts_cultured <- cbind(ensembl = rownames(genes_counts_cultured), genes_counts_cultured)
+genes_counts_cultured
+rownames(genes_counts_cultured) <- NULL
+```
+
+```{r 17genes_plot, echo = TRUE, results = 'hide'}
+IFNy <- genes_counts_cultured[genes_counts_cultured$ensembl %in% IFNy2_overlap$ensembl, ]
+#select only IFNy samples
+metadata_IFNy = metadata_cultured[metadata_cultured$Stimulation=="IFNy",]
+#select only IFNy samples in genes counts
+IFNy2 <-IFNy[,metadata_IFNy$Sample]
+#order metadata and genes_counts
+IFNy_ordered <- IFNy[,rownames(metadata_IFNy)]
+
+IFNy.mic <- data.frame(cbind(IFNy = scale(colMeans(IFNy_ordered)), Age = metadata_IFNy$age))
+colnames(IFNy.mic) <- c("IFNy", "Age")
+library(ggpmisc)
+formula <- y ~ x
+ggplot(IFNy.mic, aes_string(y = as.matrix(IFNy.mic["IFNy"]), x = as.matrix(IFNy.mic["Age"]))) + 
+    geom_point() + scale_colour_gradient(low = "gray90", high = "black") + stat_smooth(method = lm) + 
+    theme_bw() + theme(plot.title = element_text(hjust = 0.5)) + geom_smooth(method = lm, 
+    linetype = "dashed") + labs(y = "Average expression IFNy response genes", x = "Age") + 
+    stat_poly_eq(aes(label = c(paste(..adj.rr.label..))), label.x = "right", label.y = 0.37, 
+        formula = formula, parse = TRUE, size = 3) + # geom_cor(method='pearson')+
+stat_fit_glance(method = "lm", method.args = list(formula = formula), geom = "text", 
+    aes(label = paste("P-value = ", signif(..p.value.., digits = 3), sep = "")), 
+    label.x = "right", label.y = 0.3, size = 3)
+```
+
+

@@ -556,10 +556,9 @@ div.tocify {
 <span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>genes_counts_monocytes <span class="ot">&lt;-</span> genes_counts</span>
 <span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>metadata_monocytes <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;~/Documents/Monocytes/merged_meta_lrrk2_105.csv&quot;</span>, <span class="at">header=</span><span class="cn">TRUE</span>)</span>
 <span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(metadata_monocytes) <span class="ot">=</span> metadata_monocytes<span class="sc">$</span>sample_id</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># check ordering of data </span></span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>genes_counts_monocytes <span class="ot">&lt;-</span> genes_counts_monocytes[,<span class="fu">rownames</span>(metadata_monocytes)]</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">rownames</span>(metadata_monocytes) <span class="sc">==</span> <span class="fu">colnames</span> (genes_counts_monocytes)) <span class="co">#TRUE</span></span></code></pre></div>
-<p>[1] TRUE</p>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="co"># check ordering of data</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a><span class="fu">all</span>(<span class="fu">rownames</span>(metadata_monocytes) <span class="sc">==</span> <span class="fu">colnames</span> (genes_counts_monocytes)) <span class="co">#TRUE</span></span></code></pre></div>
+<p>[1] FALSE</p>
 <div id="number-of-samples-monocytes-lps-24-hours" class="section level3">
 <h3>number of samples monocytes LPS 24 hours</h3>
 <div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>cultured <span class="ot">&lt;-</span><span class="fu">subset</span>(metadata_monocytes, treatment <span class="sc">==</span> <span class="st">&quot;LPS&quot;</span>)</span>

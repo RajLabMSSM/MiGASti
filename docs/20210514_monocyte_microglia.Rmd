@@ -240,8 +240,7 @@ load("~/Documents/Monocytes/gene_matrix.RData")
 genes_counts_monocytes <- genes_counts
 metadata_monocytes <- read.csv("~/Documents/Monocytes/merged_meta_lrrk2_105.csv", header=TRUE)
 rownames(metadata_monocytes) = metadata_monocytes$sample_id
-# check ordering of data 
-genes_counts_monocytes <- genes_counts_monocytes[,rownames(metadata_monocytes)]
+# check ordering of data
 all(rownames(metadata_monocytes) == colnames (genes_counts_monocytes)) #TRUE
 ```
 

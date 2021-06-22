@@ -50,30 +50,67 @@
 - [DREAM_boxplots](https://rajlabmssm.github.io/MiGASti/docs/20210331_DREAM_Boxplots_tpm.html). Directionality of top 6 genes for each condition. Genes counts + log2((tpm)+1).
 - [DREAM_lists](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_DEG_download.html).  DEG genelists for download. No logFC treshold. 
 - [DREAM_downstream_all](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds.html). Heatmaps, PCAs, upsetplot, scatterplots showing results of different stimuli for FDR 5% log FC > 1 or < -1 (1204 genes), FDR 5% in 2 stimulations (3161 genes) and FDR 5% (8521 genes). 
-- [DREAM_downstream_LPS_IFNy](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds_LPS_IFNy.html), Heatmaps, PCAs, upsetplot, scatterplots showing results of LPS and IFNy  for FDR 5% log FC > 1 or < -1 (210 genes), FDR 5% in 2 stimulations (348) and FDR 5% (6571). 
+- [DREAM_downstream_LPS_IFNy](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds_LPS_IFNy.html), Heatmaps, PCAs, upsetplot, scatterplots showing results of LPS and IFNy  for FDR 5% log FC > 1 or < -1 (210 genes), FDR 5% in 2 stimulations (348) and FDR 5% (6571).
+
 
 9. K-means clustering on all cultured + stimulated samples
 - [kmeans_clustering_plots_all](https://rajlabmssm.github.io/MiGASti/docs/20210514_kmeans_dream_stimulations.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for FDR 5% log FC > 1 or < -1 (1204 genes).
 
 10. K-means clustering on LPS and IFNy samples
 - [kmeans_clustering_plots_LPS_IFNy_FDR5](https://rajlabmssm.github.io/MiGASti/docs/2021049_kmeans_dream_LPS_IFNy_FDR5.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for FDR 5% (6571) of a subset of LPS and IFNy genes. 
-- [kmeans_clustering_plots_LPS_IFNy_LOGFC](https://rajlabmssm.github.io/MiGASti/docs/2021049_kmeans_dream_LPS_IFNy_logFC1.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for logFC > 1 or logFC < -1, FDR 5% (210) of a subset of LPS and IFNy genes. 
+- [kmeans_clustering_plots_LPS_IFNy_LOGFC](https://rajlabmssm.github.io/MiGASti/docs/2021049_kmeans_dream_LPS_IFNy_logFC1.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for logFC > 1 or logFC < -1, FDR 5% (210) of a subset of LPS and IFNy genes.
+- [kmeans_heatmap](https://rajlabmssm.github.io/MiGASti/docs/2021059_heatmap_kmeans.html). Heatmap kmeans clustering with 4 clusters.
 
 11. DREAM all samples
-- [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Cultured versus uncultured. 
+- [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20210609_DREAM_cultured_uncultured.html). Cultured versus uncultured. Not corrected for region, since 3 regions were NA. Dream model. Number of differential expressed genes, Volcano plots, MA plots, FDR distribution plots, FC plots, boxplots top 6 genes and table for download. 
+- [DREAM_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/20210806_DREAM_vulcanos_ms.html). Some vulcano plots for DEGs. 
 
 12. Aging
-- [Age_plots](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Plots of effect of aging on immune response genes. 
-- [DREAM_age](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Age as coefficient in all cultured and stimulated samples. Number of differential expressed genes, Volcano plots, MA plots, FDR distribution plots, FC plots.  
+- [DREAM_age](https://rajlabmssm.github.io/MiGASti/docs/20210608_DREAM_AGE.html). Age as coefficient in all cultured and stimulated samples. Number of differential expressed genes, Volcano plots, MA plots, FDR distribution plots, FC plots.  
+- [Age_plots](https://rajlabmssm.github.io/MiGASti/docs/20210806_age_plots_LPS_IFNy.html). Metadata, plots of effect of aging on immune response genes (6270 LPS and 79 IFNy genes) and overlapping genes between aging and immune response (151 LPS and 17 IFNy). Counts are voom normalized. 
+- [Age_plots_pairwise](https://rajlabmssm.github.io/MiGASti/docs/20210806_age_plots_LPS_IFNy_pairwise.html). Effects overlapping genes between aging and immune response with direct pairwise comparisons. Not incorporated. File is too big. 
 - [DREAM_age_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Interaction analysis age * stimulation. 0 differentially expressed genes in LPS and IFNy associated with aging. 
 
 13. Differential transcript usage
 - [DTU_plots_download](https://rajlabmssm.github.io/MiGASti/docs/20210511_DTU_plots_download.html). Summary of results including table for download of significant results. Code for DTU analysis can be found in docs. 
 - [DTU_overlaps_genes](https://rajlabmssm.github.io/MiGASti/docs/20210512_DTU_genes_overlap.html). Overlap between transcripts DTU and genes per stimulation and significance of overlap between background of 20.000 genes. 
+- [DTU_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/20210806_DTU_vulcanos_ms.html). Some vulcano plots for DTU. 
 
 14. Sex
 - [DREAM_sex](https://rajlabmssm.github.io/MiGASti/docs/20211305_DREAM_SEX_CHRXY.html). Differential expression analysis male/female in all cultured samples. 0 differentially expressed genes.
 
 15. Comparison with monocyte data (Elisa) and microglia (MiGA) 
-- [PCA](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia.html). PCA plot of cultured LPS and IFNy microglia, cultured, LPS and IFNy monocytes and baseline microglia. 
+- [Ranking_myeloid_genes](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia_ranking_top400.html). Ranking of microglia/monocyte/macrophage genes across the myeloid datasets top 400. 
+- [PCA_myeloid]((https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia_macrophage.html). PCA plot of different myeloid datasets (MiGA, Gosselin, monocytes, macrophages).
+- [PCA_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia.html). PCA plot of cultured LPS and IFNy microglia, cultured, LPS and IFNy monocytes and baseline microglia.
+- [Monocyte_comparison](https://rajlabmssm.github.io/MiGASti/docs/20210806_DREAM_monocytes_comparison.html). Comparison of LPS and INFy genes up/down in microglia and monocytes. 
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

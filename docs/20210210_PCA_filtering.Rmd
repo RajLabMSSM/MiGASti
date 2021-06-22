@@ -78,6 +78,41 @@ pca = prcomp(t(genes_counts_ordered), scale. = TRUE, center = TRUE)
 autoplot(pca, data= metadata_filt, colour = 'Stimulation', shape = FALSE, label.size = 2)
 ```
 
+# PCA excluding uncultured samples  
+#After filtering: 454 samples in total 
+
+```{r remove_uunnstim, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata_filt$Stimulation)
+#remove samples in genes counts datafile
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+
+res.pca = prcomp(t(genes_counts_cultured)) 
+
+g1 <- autoplot(res.pca, data = metadata_cultured, colour = 'Stimulation') +
+  scale_color_futurama() +
+  easy_add_legend_title("Stimulation") +
+theme_classic()
+
+allResiduals <- removeBatchEffect(x = genes_counts_cultured, 
+                                  design = model.matrix(~ Stimulation, data = metadata_cultured), 
+                                  covariates = as.matrix(metadata_cultured[, c("picard_pct_mrna_bases", "picard_pct_ribosomal_bases", "picard_pct_pf_reads_aligned", "picard_pct_percent_duplication")]))
+
+res.pca = prcomp(t(allResiduals)) 
+
+g6 <- autoplot(res.pca, data = metadata_cultured, colour = 'Stimulation') +
+  scale_colour_futurama() +
+  easy_add_legend_title("Stimulation") +
+ # scale_colour_viridis_c() +
+  theme_classic()
+# dev.off()
+ggarrange(g1,g6, labels = c("a", "b"))
+```
+
 ### Summary of the PCA
 #how many PCS with > 95% variance in total?
 

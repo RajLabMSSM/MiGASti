@@ -108,9 +108,7 @@ cell_type_df = left_join(data.frame(cell_type = cell_type), cell_type_colors, by
 res <- unlist(lapply(split(cell_type_colors$color, cell_type_colors$cell_type), unlist))
 row_ha = rowAnnotation(`Cell Type` = as.factor(cell_type_df$cell_type), col = list(`Cell Type` = res), show_annotation_name = F)
 
-select <- order(metadata_comparison$X), decreasing=TRUE))
-
-col_ha = columnAnnotation(Stimulation = c("unstim", "ununstim",
+col_ha = columnAnnotation(Stimulation = c("ununstim",
                           col = list(Stimulation = c(unstim="#FF6F00FF", ununstim="#C71000FF")),
                           na_col = "white",
                           border = F)
