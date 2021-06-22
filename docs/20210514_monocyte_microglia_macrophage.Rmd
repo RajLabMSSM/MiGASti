@@ -1,0 +1,290 @@
+---
+title: "Microglia_monocyte_comparisons"
+author: "Gijsje"
+date: "2/24/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(devtools)
+library(factoextra)
+library(ggfortify)
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(variancePartition)
+library(pheatmap)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(Hmisc)
+library(matrixStats)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+# Load MiGASTi
+#metadata + genes_counts
+
+```{r data_load, echo = TRUE}
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+#exclude samples that did not pass QC filtering
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+#Excludes the samples from filters. 
+#dim(genes_counts_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+
+#load gene matrix
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+genes_counts_filt = genes_counts[, !colnames(genes_counts) %in% exclude] 
+#Excludes the samples from filters. 
+
+metadata <- subset(metadata_filt, Stimulation == "unstim" | Stimulation == "ununstim")
+genes_counts_filt2 <- genes_counts_filt[, colnames(genes_counts_filt) %in% metadata$Sample]
+head(rownames(genes_counts_filt2))
+genes_counts_migasti <- genes_counts_filt2
+metadata_migasti <- metadata
+#check ordering
+genes_counts_migasti <- genes_counts_migasti[,rownames(metadata_migasti)]
+all(rownames(metadata_migasti) == colnames (genes_counts_migasti)) #TRUE
+```
+
+### number of samples Migasti cultured 30 hours 
+
+```{r no_migasti_cultured, echo = TRUE}
+cultured <-subset(metadata_migasti, Stimulation == "unstim")
+length(cultured$Sample)
+list(cultured$Sample)
+```
+
+### number of samples Migasti baseline (pMG t = 0)
+
+```{r no_migasti_uncultured, echo = TRUE}
+uncultured <-subset(metadata_migasti, Stimulation == "ununstim")
+length(uncultured$Sample)
+list(uncultured$Sample)
+```
+
+# Load MiGA dataset 
+#genes_counts + metadata
+
+```{r data_loadmiga, echo = TRUE}
+load("~/Documents/MiGA/gene_matrix.RData")
+load("~/Documents/MiGA/metadata_255filt_eng_29jun2020.Rdata")
+genes_counts_miga <- genes_counts
+metadata_miga <- metadata3rd_pass
+genes_counts_miga <- genes_counts_miga[, colnames(genes_counts_miga) %in% metadata_miga$donor_tissue]
+rownames(metadata_miga) <- metadata_miga$donor_tissue
+genes_counts_miga <- genes_counts_miga[,rownames(metadata_miga)]
+all(rownames(metadata_miga) == colnames (genes_counts_miga)) #TRUE
+```
+
+### number of samples Miga baseline (pMG t = 0)
+
+```{r no_miga, echo = TRUE}
+length(metadata_miga$donor_tissue)
+list(metadata_miga$donor_tissue)
+```
+
+# Load monocyte dataset 
+#genes_counts + metadata
+#only monocytes baseline cultured
+
+```{r data_loadmonocyte, echo = TRUE, results = 'hide'}
+load("~/Documents/Monocytes/gene_matrix.RData")
+genes_counts_monocytes <- genes_counts
+metadata_monocytes <- read.csv("~/Documents/Monocytes/merged_meta_lrrk2_105.csv", header=TRUE)
+
+metadata_monocytes <- subset(metadata_monocytes, treatment == "Basal")
+genes_counts_monocytes <- genes_counts_monocytes[, colnames(genes_counts_monocytes) %in% metadata_monocytes$sample_id]
+rownames(metadata_monocytes) = metadata_monocytes$sample_id
+# check ordering of data 
+genes_counts_monocytes <- genes_counts_monocytes[,rownames(metadata_monocytes)]
+all(rownames(metadata_monocytes) == colnames (genes_counts_monocytes)) #TRUE
+```
+
+### number of samples monocytes cultured 24hours
+
+```{r no_monocytes, echo = TRUE}
+length(metadata_monocytes$sample_id)
+list(metadata_monocytes$sample_id)
+```
+
+# Load macrophage dataset
+
+```{r data_loadmacrophage, echo = TRUE}
+load("~/Documents/MiGASti/Databases/macrophage_data.Rdata")
+macrophage_data$V2 <- as.numeric(macrophage_data$V2)
+macrophage_data$V2.1 <- as.numeric(macrophage_data$V2.1)
+macrophage_data$V2.2 <- as.numeric(macrophage_data$V2.2)
+macrophage_data$V2.3 <- as.numeric(macrophage_data$V2.3)
+macrophage_data$V2.4 <- as.numeric(macrophage_data$V2.4)
+macrophage_data$V2.5 <- as.numeric(macrophage_data$V2.5)
+macrophage_data$V2.6 <- as.numeric(macrophage_data$V2.6)
+macrophage_data$V2.7 <- as.numeric(macrophage_data$V2.7)
+```
+
+### number of samples macrophage data 
+
+```{r macrophage_data, echo = TRUE}
+data <- macrophage_data[,3:10]
+length(data)
+colnames(data)
+```
+
+# Load ex vivo Gosselin
+
+```{r EV_gos, echo = TRUE}
+EV = "~/Documents/MiGASti/Databases/Gosselin_ex_vivo.xlsx"
+EV = read_excel(EV, sheet = "Read Counts", col_names = TRUE) 
+EV = as.data.frame(EV)
+```
+
+### number of samples ex vivo Gosselin data 
+
+```{r no_gosselinev, echo = TRUE}
+data <- EV[,2:10]
+length(data)
+colnames(data)
+```
+
+# Load in vivo Gosselin
+
+```{r iv_gos, echo = TRUE, results = 'hide'}
+IV = "~/Documents/MiGASti/Databases/Gosselin_invitro.xlsx"
+IV = read_excel(IV, sheet = "Read Counts", col_names = TRUE) 
+IV = as.data.frame(IV)
+```
+
+### number of samples ex vivo Gosselin data 
+
+```{r no_gosseliniv, echo = TRUE}
+data <- IV[,2:23]
+length(data)
+colnames(data)
+```
+
+
+# Load monocytes Gosselin
+
+```{r mono_gos, echo = TRUE}
+mono = "~/Documents/MiGASti/Databases/Gosselin_monocytes.xlsx"
+mono = read_excel(mono, sheet = "Read Counts", col_names = TRUE) 
+mono = as.data.frame(mono)
+```
+
+### number of samples monocytes Gosselin data 
+
+```{r no_gosselinmono, echo = TRUE}
+data <- mono[,2:11]
+length(data)
+colnames(data)
+```
+
+# Create one dataframe for all samples 
+
+```{r dataframe_one, echo = TRUE, results = 'hide'}
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+setDT(genes_counts_monocytes, keep.rownames = "ensembl")
+genes_counts_monocytes$ensembl
+res_name_monocytes = merge(genes_counts_monocytes, gencode_30, by="ensembl")
+rownames(res_name_monocytes) = res_name_monocytes$ensembl
+
+setDT(genes_counts_miga, keep.rownames = "ensembl")
+genes_counts_miga$ensembl
+res_name_miga = merge(genes_counts_miga, gencode_30, by="ensembl")
+rownames(res_name_miga) = res_name_miga$ensembl
+
+setDT(genes_counts_migasti, keep.rownames = "ensembl")
+genes_counts_migasti$ensembl
+res_name_migasti = merge(genes_counts_migasti, gencode_30, by="ensembl")
+rownames(res_name_migasti) = res_name_migasti$ensembl
+
+genes_counts_total <- merge(macrophage_data, res_name_monocytes, by = "symbol")
+genes_counts_total <- merge(genes_counts_total, res_name_miga, by = "symbol")
+genes_counts_total <- merge(genes_counts_total, res_name_migasti, by = "symbol")
+genes_counts_total <- merge(genes_counts_total, EV, by = "symbol")
+genes_counts_total <- merge(genes_counts_total, IV, by = "symbol")
+genes_counts_total <- merge(genes_counts_total, mono, by = "symbol")
+genes_counts_total$symbol <- NULL
+genes_counts_total$ensembl.x <- NULL
+genes_counts_total$ensembl.y <- NULL
+genes_counts_total$ensembl.x <- NULL
+genes_counts_total$symbol <- NULL
+genes_counts_total$ensembl.y <- NULL
+genes_counts_total$ensembl.x <- NULL
+
+#21229 genes 
+
+df <- colnames(genes_counts_total)
+metadata_total <- as.data.frame(df)
+metadata_total[1:8, 1] <- "macrophages_exvivo"
+metadata_total[9:43, 1] <- "cultured_monocytes"
+metadata_total[44:298, 1] <- "miga_exvivo"
+metadata_total[299:433, 1] <- "migasti_invitro"
+metadata_total[434:475, 1] <- "migasti_exvivo"
+metadata_total[476:499, 1] <- "gosselin_exvivo"
+metadata_total[500:521, 1] <- "gosselin_invitro"
+metadata_total[522:531, 1] <- "gosselin_monocytes"
+
+colnames(metadata_total)[1] <- "experiment"
+metadata_total$experiment <- as.factor(metadata_total$experiment)
+
+#round counts: DESeq can only handle integers
+genes_counts_total <- round(genes_counts_total, digits=0)
+
+dds <- DESeqDataSetFromMatrix(countData = genes_counts_total,
+                              colData = metadata_total,
+                              design= ~ experiment)
+
+vsd <- vst(dds, blind=FALSE)
+
+plotPCA(vsd, intgroup="experiment")
+```
+
+### PCA 
+
+```{r plot_pca_1, echo = TRUE}
+PCA <- plotPCA(vsd, intgroup="experiment")
+plot = as.data.frame(PCA$data)
+library(plyr)
+cell_type <- revalue(plot$group, c("cultured_monocytes"="macrophages/monocytes", "gosselin_exvivo"="microglia_exvivo", "gosselin_invitro"="microglia_invitro", "gosselin_monocytes"="macrophages/monocytes", "macrophages_exvivo"="macrophages/monocytes", "miga_exvivo"="microglia_exvivo", "migasti_exvivo"="microglia_exvivo", "migasti_invitro"="microglia_invitro"))
+ggplot(data = plot, mapping = aes(x = PC1, y = PC2, colour = experiment)) +
+  geom_point(aes(shape=cell_type))
+```
+
+
+
+
+
+
+

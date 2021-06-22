@@ -29,6 +29,8 @@ library(limma)
 library(DESeq2)
 library(Hmisc)
 library(matrixStats)
+library(ggplot2)
+library(ggpubr)
 
 
 knitr::opts_chunk$set( 
@@ -81,7 +83,7 @@ autoplot(pca, data= metadata_filt, colour = 'Stimulation', shape = FALSE, label.
 # PCA excluding uncultured samples  
 #After filtering: 454 samples in total 
 
-```{r remove_uunnstim, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
+```{r remove_ununstim_checks, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
 #remove ununstim samples in metadata
 metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
 #check numbers
@@ -93,10 +95,7 @@ genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
 
 res.pca = prcomp(t(genes_counts_cultured)) 
 
-g1 <- autoplot(res.pca, data = metadata_cultured, colour = 'Stimulation') +
-  scale_color_futurama() +
-  easy_add_legend_title("Stimulation") +
-theme_classic()
+g1 <- autoplot(res.pca, data = metadata_cultured, colour = 'Stimulation') 
 
 allResiduals <- removeBatchEffect(x = genes_counts_cultured, 
                                   design = model.matrix(~ Stimulation, data = metadata_cultured), 
@@ -104,11 +103,8 @@ allResiduals <- removeBatchEffect(x = genes_counts_cultured,
 
 res.pca = prcomp(t(allResiduals)) 
 
-g6 <- autoplot(res.pca, data = metadata_cultured, colour = 'Stimulation') +
-  scale_colour_futurama() +
-  easy_add_legend_title("Stimulation") +
- # scale_colour_viridis_c() +
-  theme_classic()
+g6 <- autoplot(res.pca, data = metadata_cultured, colour = 'Stimulation') 
+
 # dev.off()
 ggarrange(g1,g6, labels = c("a", "b"))
 ```

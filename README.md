@@ -66,9 +66,8 @@
 - [DREAM_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/20210806_DREAM_vulcanos_ms.html). Some vulcano plots for DEGs. 
 
 12. Aging
-- [DREAM_age](https://rajlabmssm.github.io/MiGASti/docs/20210608_DREAM_AGE.html). Age as coefficient in all cultured and stimulated samples. Number of differential expressed genes, Volcano plots, MA plots, FDR distribution plots, FC plots.  
-- [Age_plots](https://rajlabmssm.github.io/MiGASti/docs/20210806_age_plots_LPS_IFNy.html). Metadata, plots of effect of aging on immune response genes (6270 LPS and 79 IFNy genes) and overlapping genes between aging and immune response (151 LPS and 17 IFNy). Counts are voom normalized. 
-- [Age_plots_pairwise](https://rajlabmssm.github.io/MiGASti/docs/20210806_age_plots_LPS_IFNy_pairwise.html). Effects overlapping genes between aging and immune response with direct pairwise comparisons. Not incorporated. File is too big. 
+- [DREAM_age](https://rajlabmssm.github.io/MiGASti/docs/20210806_DREAM_AGE.html). Age as coefficient in all cultured and stimulated samples. Number of differential expressed genes, Volcano plots, MA plots, FDR distribution plots, FC plots.  
+- [Age_plots](https://rajlabmssm.github.io/MiGASti/docs/20210806_age_plots_LPS_IFNy.html). Metadata, plots of effect of aging on immune response genes (6270 LPS and 79 IFNy genes) and overlapping genes between aging and immune response (151 LPS and 17 IFNy). Counts are voom normalized. Pairwise comparisons are not incorporated, since file is too big. 
 - [DREAM_age_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Interaction analysis age * stimulation. 0 differentially expressed genes in LPS and IFNy associated with aging. 
 
 13. Differential transcript usage
