@@ -32,7 +32,7 @@
 - [Expression of myeloid markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_myeloid.html). Expression of monocyte, macrophage and microglia markers in all samples. 
 - [Mitochondrial_genes](https://rajlabmssm.github.io/MiGASti/docs/20210511_Mitochondrial_genes.html). Percentage of mitochondrial genes in total dataset after filtering out lowly expressed genes (< 1 in 50% of the samples).
 - [Signaling_pathways](https://rajlabmssm.github.io/MiGASti/docs/20210604_Signaling_pathways.html). Heatmap of expression of ligands for different stimulations ex vivo vs in vitro. 
-- [Stimulations](https://rajlabmssm.github.io/MiGASti/docs/20210604_Stimulations_heatmap.html). Heatmap of stimulation specific responses. 
+- [Stimulations](https://rajlabmssm.github.io/MiGASti/docs/20212106_Stimulations_heatmap.html). Heatmap of stimulation specific responses. 
 
 6. DEG analysis (with only cultured samples)
 - [DESeq2_GFM_subset](https://rajlabmssm.github.io/MiGASti/docs/20210217_DiffExpression_GFM.html). DESeq2 analysis of GFM samples: unstimulated samples (baseline) compared to LPS and IFNy stimulation seperatly. 
