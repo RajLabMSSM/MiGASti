@@ -1,0 +1,259 @@
+---
+title: "Stimulations"
+author: "Gijsje"
+date: "2/16/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(pheatmap)
+library(readxl) 
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(dplyr)
+library(tidyverse)
+library(ggsci)
+library(factoextra)
+library(ggsci)
+library(amap)
+library(scales)
+library(ggeasy)
+library(ggtext)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+```{r check, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/Stimulations.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+setDT(genes_tpm_filt, keep.rownames = "ensembl")
+genes_tpm_filt$ensembl
+res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+```
+
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+marker_expression = merge(res_name, markers, by ="symbol")
+dim (marker_expression)
+head (marker_expression)
+metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
+metadata_filt_ordered = metadata_filt_ordered[-1,]
+all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
+Stimulation <- metadata_filt_ordered$Stimulation
+```
+
+# Expression of signaling pathway molecules 
+
+```{r data_load_heatmap, echo = TRUE, results='hide'}
+rownames(marker_expression) = marker_expression$symbol
+marker_expression$ensembl <- NULL
+df_num = as.matrix(marker_expression[,2:497])
+rownames(df_num) = marker_expression$symbol
+
+#plot the genes based on samples 
+
+metadata_filt$Stimulation <- as.factor(metadata_filt$Stimulation)
+metadata_filt2 <- metadata_filt[order(metadata_filt$Stimulation, decreasing = T), ]
+df <- t(df_num)
+sorted <- df[rownames(metadata_filt2),]
+sorted2 <- t(sorted)
+sorted2 <- scale(sorted2)
+
+ann <- data.frame(metadata_filt2$Stimulation)
+colnames(ann) <- c('stimulation')
+colours <- list('stimulation' = c('ununstim' = 'red2', 'unstim' = 'royalblue',  'TNFa'  = 'navy', 'R848'='green', 'LPS'='pink', 'IL4'='yellow', 'DEX'='orange', 'ATP'='brown', 'IFNy'='purple'))
+colAnn <- HeatmapAnnotation(df = ann,
+  which = 'col',
+  col = colours,
+  annotation_width = unit(c(1, 4), 'cm'),
+  gap = unit(1, 'mm'))
+
+col_ha = columnAnnotation(stimulation = c("ununstim", "unstim", "TNFa", "R848", "LPS", "IL4", "IFNy", "DEX", "ATP"), stimulation = list(Stimulation = c(ununstim="#FF6F00FF", unstim="#C71000FF", TNFa="#008EA0FF", R848="#8A4198FF", LPS="#FF6F00FF", IL4="#FF6F00FF", IFNy="#C71000FF", DEX="#C71000FF", ATP="#FF6F00FF")),
+                          na_col = "white",
+                          border = F)
+```
+
+```{r _heatmap, echo = TRUE, fig.width=10, fig.height=6, dpi=300}
+# pdf(paste0(work_plots, "HM_markers_255s.pdf"), width = 10, height = 6)
+colPalette <- colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(496)
+Heatmap(sorted2,
+        col = colPalette,
+        name = "log2(TPM+1)", # Legend title
+        cluster_rows = T,
+        cluster_columns = F,
+        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
+        show_column_dend = F, 
+        show_column_names = F,
+        show_row_names = T,
+        column_split = rep(c(metadata_filt2$Stimulation)),
+        top_annotation = colAnn)
+#dev.off()
+```
+```{r data_load_heatmap_means, echo = TRUE, results='hide'}
+rownames(marker_expression) = marker_expression$symbol
+marker_expression$ensembl <- NULL
+df_num = as.matrix(marker_expression[,2:497])
+rownames(df_num) = marker_expression$symbol
+
+#plot the genes based on samples 
+
+metadata_filt$Stimulation <- as.factor(metadata_filt$Stimulation)
+metadata_filt2 <- metadata_filt[order(metadata_filt$Stimulation, decreasing = T), ]
+df <- t(df_num)
+sorted <- df[rownames(metadata_filt2),]
+sorted2 <- t(sorted)
+sorted2 <- scale(sorted2)
+
+Stimulation <- metadata_filt2$Stimulation
+
+df <- rbind(sorted2, Stimulation)
+library(dplyr)
+df2 <- t(df)
+df3 <- as.data.frame(df2)
+setDT(df3)
+df4 <- df3 %>% 
+group_by(Stimulation) %>%
+summarise_all("mean")
+
+sorted_cor = as.matrix(df4[,2:23])
+rownames(sorted_cor) <- c("ATP", "DEX", "IFNy", "IL4", "LPS", "R848", "TNFa", "unstim", "ununstim")
+sorted_final <- t(sorted_cor)
+```
+
+```{r loadings_heatmap_means, echo = TRUE, fig.width=10, fig.height=6, dpi=300}
+# pdf(paste0(work_plots, "HM_markers_255s.pdf"), width = 10, height = 6)
+colPalette <- colorRampPalette(rev(brewer.pal(5, "RdYlBu")))(15)
+Heatmap(sorted_final,
+        col = colPalette,
+        name = "log2(TPM+1)", # Legend title
+        cluster_rows = T,
+        cluster_columns = T,
+        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
+        show_column_dend = T, 
+        show_column_names = T,
+        show_row_names = T)
+#dev.off()
+```
+
+
+# Without ununstim 
+
+```{r check_ununstim, echo = TRUE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/Signaling_pathways.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#remove samples in genes counts datafile 
+genes_tpm_cultured <- genes_tpm_filt[,metadata_cultured$Sample]
+
+setDT(genes_tpm_cultured, keep.rownames = "ensembl")
+res_name = merge(genes_tpm_cultured, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+
+marker_expression = merge(res_name, markers, by ="symbol")
+rownames(marker_expression) = marker_expression$symbol
+marker_expression$ensembl <- NULL
+df_num = as.matrix(marker_expression[,2:455])
+rownames(df_num) = marker_expression$symbol
+
+#plot the genes based on samples 
+
+metadata_cultured$Stimulation <- as.factor(metadata_cultured$Stimulation)
+metadata_filt2 <- metadata_cultured[order(metadata_cultured$Stimulation, decreasing = T), ]
+df <- t(df_num)
+sorted <- df[rownames(metadata_filt2),]
+sorted2 <- t(sorted)
+sorted2 <- scale(sorted2)
+
+ann <- data.frame(metadata_filt2$Stimulation)
+colnames(ann) <- c('stimulation')
+colours <- list('stimulation' = c('unstim' = 'royalblue',  'TNFa'  = 'navy', 'R848'='green', 'LPS'='pink', 'IL4'='yellow', 'DEX'='orange', 'ATP'='brown', 'IFNy'='purple'))
+colAnn <- HeatmapAnnotation(df = ann,
+  which = 'col',
+  col = colours,
+  annotation_width = unit(c(1, 4), 'cm'),
+  gap = unit(1, 'mm'))
+
+col_ha = columnAnnotation(stimulation = c("unstim", "TNFa", "R848", "LPS", "IL4", "IFNy", "DEX", "ATP"), stimulation = list(Stimulation = c(unstim="#C71000FF", TNFa="#008EA0FF", R848="#8A4198FF", LPS="#FF6F00FF", IL4="#FF6F00FF", IFNy="#C71000FF", DEX="#C71000FF", ATP="#FF6F00FF")),
+                          na_col = "white",
+                          border = F)
+
+
+# pdf(paste0(work_plots, "HM_markers_255s.pdf"), width = 10, height = 6)
+colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(10)
+Heatmap(sorted2,
+        col = colPalette,
+        name = "log2(TPM+1)", # Legend title
+        cluster_rows = F,
+        cluster_columns = F,
+        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
+        show_column_dend = F, 
+        show_column_names = F,
+        show_row_names = T,
+        column_split = rep(c(metadata_filt2$Stimulation)),
+        top_annotation = colAnn)
+```
+
+

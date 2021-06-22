@@ -31,7 +31,8 @@
 - [Expression of brain markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_braincells.html). Expression of microglia, astrocyte, oligodendrocyte, neuron markers in all samples
 - [Expression of myeloid markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_myeloid.html). Expression of monocyte, macrophage and microglia markers in all samples. 
 - [Mitochondrial_genes](https://rajlabmssm.github.io/MiGASti/docs/20210511_Mitochondrial_genes.html). Percentage of mitochondrial genes in total dataset after filtering out lowly expressed genes (< 1 in 50% of the samples).
-- [Signaling_pathways](https://rajlabmssm.github.io/MiGASti/docs/20210604_Signaling_pathways.html). Heatmap of expression of ligands for different stimulations. Heatmap showing stimulation specific responses. 
+- [Signaling_pathways](https://rajlabmssm.github.io/MiGASti/docs/20210604_Signaling_pathways.html). Heatmap of expression of ligands for different stimulations ex vivo vs in vitro. 
+- [Stimulations](https://rajlabmssm.github.io/MiGASti/docs/20210604_Stimulations_heatmap.html). Heatmap of stimulation specific responses. 
 
 6. DEG analysis (with only cultured samples)
 - [DESeq2_GFM_subset](https://rajlabmssm.github.io/MiGASti/docs/20210217_DiffExpression_GFM.html). DESeq2 analysis of GFM samples: unstimulated samples (baseline) compared to LPS and IFNy stimulation seperatly. 
@@ -53,7 +54,6 @@
 - [DREAM_downstream_all](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds.html). Heatmaps, PCAs, upsetplot, scatterplots showing results of different stimuli for FDR 5% log FC > 1 or < -1 (1204 genes), FDR 5% in 2 stimulations (3161 genes) and FDR 5% (8521 genes). 
 - [DREAM_downstream_LPS_IFNy](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds_LPS_IFNy.html), Heatmaps, PCAs, upsetplot, scatterplots showing results of LPS and IFNy  for FDR 5% log FC > 1 or < -1 (210 genes), FDR 5% in 2 stimulations (348) and FDR 5% (6571).
 
-
 9. K-means clustering on all cultured + stimulated samples
 - [kmeans_clustering_plots_all](https://rajlabmssm.github.io/MiGASti/docs/20210514_kmeans_dream_stimulations.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for FDR 5% log FC > 1 or < -1 (1204 genes).
 
@@ -74,7 +74,7 @@
 13. Differential transcript usage
 - [DTU_plots_download](https://rajlabmssm.github.io/MiGASti/docs/20210511_DTU_plots_download.html). Summary of results including table for download of significant results. Code for DTU analysis can be found in docs. 
 - [DTU_overlaps_genes](https://rajlabmssm.github.io/MiGASti/docs/20210512_DTU_genes_overlap.html). Overlap between transcripts DTU and genes per stimulation and significance of overlap between background of 20.000 genes. 
-- [DTU_Vulcano](20210806_DTU_volcanos_ms.html). Some vulcano plots for DTU. 
+- [DTU_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/20210806_DTU_volcanos_ms.html). Some vulcano plots for DTU. 
 
 14. Sex
 - [DREAM_sex](https://rajlabmssm.github.io/MiGASti/docs/20211305_DREAM_SEX_CHRXY.html). Differential expression analysis male/female in all cultured samples. 0 differentially expressed genes.
