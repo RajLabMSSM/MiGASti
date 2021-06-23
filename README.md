@@ -52,7 +52,8 @@
 - [DREAM_boxplots](https://rajlabmssm.github.io/MiGASti/docs/20210331_DREAM_Boxplots_tpm.html). Directionality of top 6 genes for each condition. Genes counts + log2((tpm)+1).
 - [DREAM_lists](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM_DEG_download.html).  DEG genelists for download. No logFC treshold. 
 - [DREAM_downstream_all](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds.html). Heatmaps, PCAs, upsetplot, scatterplots showing results of different stimuli for FDR 5% log FC > 1 or < -1 (1204 genes), FDR 5% in 2 stimulations (3161 genes) and FDR 5% (8521 genes). 
-- [DREAM_downstream_LPS_IFNy](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds_LPS_IFNy.html), Heatmaps, PCAs, upsetplot, scatterplots showing results of LPS and IFNy  for FDR 5% log FC > 1 or < -1 (210 genes), FDR 5% in 2 stimulations (348) and FDR 5% (6571).
+- [DREAM_downstream_LPS_IFNy](https://rajlabmssm.github.io/MiGASti/docs/20210514_DEG_FC_heatmap_DREAM_tresholds_LPS_IFNy.html), Heatmaps, PCAs, upsetplot, scatterplots showing results of LPS and IFNy for FDR 5% log FC > 1 or < -1 (210 genes), FDR 5% in 2 stimulations (348) and FDR 5% (6571).
+
 
 9. K-means clustering on all cultured + stimulated samples
 - [kmeans_clustering_plots_all](https://rajlabmssm.github.io/MiGASti/docs/20210514_kmeans_dream_stimulations.html). Elbow, silhouette and gap statistic method for kmeans clustering of genes and some trail and error with clustering settings with use of gprofiler for FDR 5% log FC > 1 or < -1 (1204 genes).
@@ -85,10 +86,14 @@
 - [PCA_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia.html). PCA plot of cultured LPS and IFNy microglia, cultured, LPS and IFNy monocytes and baseline microglia.
 - [Monocyte_comparison](https://rajlabmssm.github.io/MiGASti/docs/20210806_DREAM_monocytes_comparison.html). Comparison of LPS and INFy genes up/down in microglia (6 hours) and monocytes (24 hours). microglia: logFC < -1 or > 1, monocytes: logFC < -5 or > 5. 
 
+16. Enrichment analyse.
+Note. did not include TNFa, since stimulation did not work. 
+- [LPS_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_LPS.html)
+- [IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_IFNy.html)
+- [R848_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_R848.html)
+- [IL4_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_IL4.html)
+- [ATP_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_ATP.html)
 
-
-
- 
  
  
  
