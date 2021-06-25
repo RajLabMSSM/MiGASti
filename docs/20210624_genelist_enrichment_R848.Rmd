@@ -48,28 +48,6 @@ library(ggrastr)
 ```
 
 # Enrichment analyses 
-#Input
-#1. Genelist core microglia signature list n = 249 genes (Patir et al. 2019)
-#2. snRNAseq Multiple sclerosis n = 64 genes (Schiermer et al. 2019), 
-#3. snRNAseq Alzheimers disesease n = 53 genes (Mathys et al. 2019), 
-#4. mouse snRNAseq response to demyelinatin injury after lysolecithin injection into the brain n = 119 genes (Hammond et al. 2019)  
-#5. scRNAseq of activation response microglia in AD mouse n = 108 genes (Sala-Frigerio et al. 2019)
-#6 scRNAseq disease associated microglia up n = 280 /down n = 22 genes (Keren-Shaul et al. 2019), 
-#7. scRNAseq microglia from mouse stimulated with LPS 3 hours n = 367 genes (acute LPS; Gerrits et al. 2020),
-#8. scRNAseq microglia from mouse stimulated with LPS 24 hours n = 152 genes (subacute LPS; Sousa et al. 2020), 
-#9. GO: NFkB pathway n = 147 genes
-#10. GO: IFNy pathway n = 139 genes
-#11. GO: cold stress response pathway n = 42 genes
-#12. Plaque induced genes n = 57 genes (Grubman et al. 2021)
-#13. Sensome genes n = 84 genes (Hickman et al. 2019)
-#14. TWAS AD genes (Raj et al. 2018) 
-#15. TWAS PD genes (Li et al. 2019)
-#16. scRNAseq Human alzheimer genes up n = 22/down n = 53 genes (Srinsivan et al. 2019)
-#17. Homeostatic genes up/down n = 44 genes in the mature homeostatic microglia phenotype based on bulk RNAseq Ormel et al. 2018, Gosselin et al. 2017 and Kracht et al. 2020).
-#18. bulk RNAseq cultured microglia compared to ex vivo up n = 3674 / down n = 4121 genes (Gosselin et al. 2017)
-#19. Immediate early response genes (IEGs), genes whose transcripts are rapidly expressed after cellular stimulation, without the need for new protein synthesis to control this expression n = 128 genes (Wu et al. 2017) 
-#20. Microglia genes up n = 338/down n = 1355 in aging (MIGA)
-
 
 ```{r function_setenrichment, echo = TRUE}
 # Function set enrichment

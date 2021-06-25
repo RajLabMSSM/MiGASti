@@ -76,6 +76,7 @@
 - [DTU_plots_download](https://rajlabmssm.github.io/MiGASti/docs/20210511_DTU_plots_download.html). Summary of results including table for download of significant results. Code for DTU analysis can be found in docs. 
 - [DTU_overlaps_genes](https://rajlabmssm.github.io/MiGASti/docs/20210512_DTU_genes_overlap.html). Overlap between transcripts DTU and genes per stimulation and significance of overlap between background of 20.000 genes. 
 - [DTU_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/20210806_DTU_volcanos_ms.html). Some vulcano plots for DTU. 
+- [Boxplots_DTU]. Some examples for DTU.
 
 14. Sex
 - [DREAM_sex](https://rajlabmssm.github.io/MiGASti/docs/20211305_DREAM_SEX_CHRXY.html). Differential expression analysis male/female in all cultured samples. 0 differentially expressed genes.
@@ -86,8 +87,31 @@
 - [PCA_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia.html). PCA plot of cultured LPS and IFNy microglia, cultured, LPS and IFNy monocytes and baseline microglia.
 - [Monocyte_comparison](https://rajlabmssm.github.io/MiGASti/docs/20210806_DREAM_monocytes_comparison.html). Comparison of LPS and INFy genes up/down in microglia (6 hours) and monocytes (24 hours). microglia: logFC < -1 or > 1, monocytes: logFC < -5 or > 5. 
 
-16. Enrichment analyse.
-Note. did not include TNFa, since stimulation did not work. 
+16. Enrichment analyses
+Note. did not include TNFa, since stimulation did not work. Overlap between stimulations up/down FDR 5% and FDR 5% logFC < -1 or > 1. 
+
+Input genelists:
+1. Genelist core microglia signature list n = 249 genes (Patir et al. 2019)
+2. snRNAseq Multiple sclerosis n = 64 genes (Schiermer et al. 2019), 
+3. snRNAseq Alzheimers disesease n = 53 genes (Mathys et al. 2019), 
+4. mouse snRNAseq response to demyelinatin injury after lysolecithin injection into the brain n = 119 genes (Hammond et al. 2019)  
+5. scRNAseq of activation response microglia in AD mouse n = 108 genes (Sala-Frigerio et al. 2019)
+6 scRNAseq disease associated microglia up n = 280 /down n = 22 genes (Keren-Shaul et al. 2019), 
+7. scRNAseq microglia from mouse stimulated with LPS 3 hours n = 367 genes (acute LPS; Gerrits et al. 2020),
+8. scRNAseq microglia from mouse stimulated with LPS 24 hours n = 152 genes (subacute LPS; Sousa et al. 2020), 
+9. GO: NFkB pathway n = 147 genes
+10. GO: IFNy pathway n = 139 genes
+11. GO: cold stress response pathway n = 42 genes
+12. Plaque induced genes n = 57 genes (Grubman et al. 2021)
+13. Sensome genes n = 84 genes (Hickman et al. 2019)
+14. TWAS AD genes (Raj et al. 2018) 
+15. TWAS PD genes (Li et al. 2019)
+16. scRNAseq Human alzheimer genes up n = 22/down n = 53 genes (Srinsivan et al. 2019)
+17. Homeostatic genes up/down n = 44 genes in the mature homeostatic microglia phenotype based on bulk RNAseq Ormel et al. 2018, Gosselin et al. 2017 and Kracht et al. 2020).
+18. bulk RNAseq cultured microglia compared to ex vivo up n = 3674 / down n = 4121 genes (Gosselin et al. 2017)
+19. Immediate early response genes (IEGs), genes whose transcripts are rapidly expressed after cellular stimulation, without the need for new protein synthesis to control this expression n = 128 genes (Wu et al. 2017) 
+20. Microglia genes up n = 338/down n = 1355 in aging (MIGA)
+
 - [LPS_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_LPS.html)
 - [IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_IFNy.html)
 - [R848_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_R848.html)
