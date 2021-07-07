@@ -322,7 +322,6 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-
 ### Overlap with significant microglia IFNy genes FDR 5% 
 
 ```{r overlap_IFNy_FDR5, echo = TRUE}
@@ -365,13 +364,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia LPS genes FDR 5% log FC > 1
+### Overlap with significant microglia LPS genes FDR 5% log FC > 1 microglia and monocytes > 5
 
 ```{r overlap_LPS_LF_sets2, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC > 1)
 sign_monocytes_LPS <- subset(res_LPS_monocytes, adj.P.Val < 0.05)
-sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC > 1)
+sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC > 5)
 overlap <- merge(sign_monocytes_LPS_LF, sign_monocytes_LPS_LF, by = "symbol")
 ```
 
@@ -408,13 +407,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia LPS genes FDR 5% log FC < -1 
+### Overlap with significant microglia LPS genes FDR 5% log FC < -1 microglia and monocytes -5 
 
 ```{r overlap_LPS_LF_1, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC < -1)
 sign_monocytes_LPS <- subset(res_LPS_monocytes, adj.P.Val < 0.05)
-sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC < -1)
+sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC < -5)
 overlap <- merge(sign_monocytes_LPS_LF, sign_monocytes_LPS_LF, by = "symbol")
 ```
 
@@ -451,13 +450,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia IFNy genes FDR 5% log FC > 1
+### Overlap with significant microglia IFNy genes FDR 5% log FC > 1 and monocytes 5
 
 ```{r overlap_IFNy_LF, echo = TRUE}
 sign_microglia_IFNy <- subset(res_name_IFNy2, adj.P.Val < 0.05)
 sign_microglia_IFNy_LF <- subset(sign_microglia_IFNy, logFC > 1)
 sign_monocytes_IFNy <- subset(res_IFNy_monocytes, adj.P.Val < 0.05)
-sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC > 1)
+sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC > 5)
 overlap <- merge(sign_monocytes_IFNy_LF, sign_monocytes_IFNy_LF, by = "symbol")
 ```
 
@@ -494,13 +493,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia IFNy genes FDR 5% log FC < -1
+### Overlap with significant microglia IFNy genes FDR 5% log FC < -1 microglia and monocytes -5
 
 ```{r overlap_IFNy_LF_sets22340, echo = TRUE}
 sign_microglia_IFNy <- subset(res_name_IFNy2, adj.P.Val < 0.05)
 sign_microglia_IFNy_LF <- subset(sign_microglia_IFNy, logFC < -1)
 sign_monocytes_IFNy <- subset(res_IFNy_monocytes, adj.P.Val < 0.05)
-sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < -1)
+sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < -5)
 overlap <- merge(sign_monocytes_IFNy_LF, sign_monocytes_IFNy_LF, by = "symbol")
 ```
 
@@ -537,13 +536,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia LPS genes FDR 5% log FC > 1 + INFy monocytes > 1
+### Overlap with significant microglia LPS genes FDR 5% log FC > 1 + INFy monocytes > 5
 
 ```{r overlap_IFNy_LF_sets220, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC > 1)
 sign_monocytes_IFNy <- subset(res_IFNy_monocytes, adj.P.Val < 0.05)
-sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC > 1)
+sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC > 5)
 overlap <- merge(sign_microglia_LPS_LF, sign_monocytes_IFNy_LF, by = "symbol")
 ```
 
@@ -581,13 +580,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia LPS genes FDR 5% log FC > 1 + monocytes < -1
+### Overlap with significant microglia LPS genes FDR 5% log FC > 1 + monocytes < -5
 
 ```{r overlap_IFNy_LdddF_sets220, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC > 1)
 sign_monocytes_IFNy <- subset(res_IFNy_monocytes, adj.P.Val < 0.05)
-sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < -1)
+sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < -5)
 overlap <- merge(sign_microglia_LPS_LF, sign_monocytes_IFNy_LF, by = "symbol")
 ```
 
@@ -625,13 +624,13 @@ setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
 
-# Overlap with significant microglia IFNy genes FDR 5% log FC > 1 + LPS monocytes < -1
+# Overlap with significant microglia IFNy genes FDR 5% log FC > 1 + LPS monocytes < -5
 
 ```{r overlap_IFNy_LF_sets2ss20_2, echo = TRUE}
 sign_microglia_IFNy <- subset(res_name_IFNy2, adj.P.Val < 0.05)
 sign_microglia_IFNy_LF <- subset(sign_microglia_IFNy, logFC > 1)
 sign_monocytes_LPS <- subset(res_LPS_monocytes, adj.P.Val < 0.05)
-sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC < -1)
+sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC < -5)
 overlap <- merge(sign_microglia_IFNy_LF, sign_monocytes_LPS_LF, by = "symbol")
 ```
 
@@ -669,13 +668,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia LPS genes FDR 5% log FC > 1 + monocytes < -1
+### Overlap with significant microglia LPS genes FDR 5% log FC > 1 + monocytes < -5
 
 ```{r overlap_IFNy_LF_sets220sxx, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC > 1)
 sign_monocytes_IFNy <- subset(res_IFNy_monocytes, adj.P.Val < 0.05)
-sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < -1)
+sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < -5)
 overlap <- merge(sign_microglia_IFNy_LF, sign_monocytes_IFNy_LF, by = "symbol")
 ```
 
@@ -712,13 +711,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia LPS genes FDR 5% log FC > 1 + LPS monocytes < -1 
+### Overlap with significant microglia LPS genes FDR 5% log FC > 1 + LPS monocytes < -5 
 
 ```{r overlap_IFNy_LF_sets2ss20, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC > 1)
 sign_monocytes_LPS <- subset(res_LPS_monocytes, adj.P.Val < 0.05)
-sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC < -1)
+sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC < -5)
 overlap <- merge(sign_microglia_LPS_LF, sign_monocytes_LPS_LF, by = "symbol")
 ```
 
@@ -757,13 +756,13 @@ setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
 
-### Overlap with significant microglia LPS genes FDR 5% log FC < - 1 + LPS monocytes > 1 
+### Overlap with significant microglia LPS genes FDR 5% log FC < - 1 + LPS monocytes > 5 
 
 ```{r overlap_IFNy_LF_sets2ss20_sec, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC < -1)
 sign_monocytes_LPS <- subset(res_LPS_monocytes, adj.P.Val < 0.05)
-sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC > 1)
+sign_monocytes_LPS_LF <- subset(sign_monocytes_LPS, logFC > 5)
 overlap <- merge(sign_microglia_LPS_LF, sign_monocytes_LPS_LF, by = "symbol")
 ```
 
@@ -802,13 +801,13 @@ setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
 
-### Overlap with significant microglia IFNy genes FDR 5% log FC > 1 + IFNy monocytes < -1 
+### Overlap with significant microglia IFNy genes FDR 5% log FC > 1 + IFNy monocytes < -5 
 
 ```{r overlap_IFNy_LF_sets2ss20_third, echo = TRUE}
 sign_microglia_IFNy <- subset(res_name_IFNy2, adj.P.Val < 0.05)
 sign_microglia_IFNy_LF <- subset(sign_microglia_IFNy, logFC > 1)
 sign_monocytes_IFNy <- subset(res_IFNy_monocytes, adj.P.Val < 0.05)
-sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < -1)
+sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < -5)
 overlap <- merge(sign_microglia_IFNy_LF, sign_monocytes_IFNy_LF, by = "symbol")
 ```
 
@@ -847,13 +846,13 @@ setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
 
-# Overlap with significant microglia LPS genes FDR 5% log FC < - 1 + IFNy monocytes > 1 
+# Overlap with significant microglia LPS genes FDR 5% log FC < - 1 + IFNy monocytes > 5
 
 ```{r overlap_IFNy_LF_sets2ss20_fourth_x_def2, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC < -1)
 sign_monocytes_IFNy <- subset(res_IFNy_monocytes, adj.P.Val < 0.05)
-sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC > 1)
+sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC > 5)
 overlap <- merge(sign_microglia_LPS_LF, sign_monocytes_IFNy_LF, by = "symbol")
 ```
 
@@ -891,13 +890,13 @@ setEnrichment <- function(set1, set2, universe = 20000){
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap with significant microglia LPS genes FDR 5% log FC < - 1 + IFNy monocytes < - 1 
+### Overlap with significant microglia LPS genes FDR 5% log FC < - 1 + IFNy monocytes < - 5 
 
 ```{r overlap_IFNy_LF_sets2ss20_fourth_x_def, echo = TRUE}
 sign_microglia_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
 sign_microglia_LPS_LF <- subset(sign_microglia_LPS, logFC < -1)
 sign_monocytes_IFNy <- subset(res_IFNy_monocytes, adj.P.Val < 0.05)
-sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < - 1)
+sign_monocytes_IFNy_LF <- subset(sign_monocytes_IFNy, logFC < - 5)
 overlap <- merge(sign_microglia_LPS_LF, sign_monocytes_IFNy_LF, by = "symbol")
 ```
 

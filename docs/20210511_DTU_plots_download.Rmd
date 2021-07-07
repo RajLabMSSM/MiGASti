@@ -112,6 +112,52 @@ all_res %>%
   theme_bw()
 ```
 
+# Boxplot 
+
+```{r boxplot_age, echo = TRUE}
+gene_meta <- 
+  read_tsv("~/Documents/MiGASti/Databases/gencode.v30.genes.gtf") %>% 
+  janitor::clean_names() %>%
+  rename(txname = "isoform_id", geneid = "gene_id", genename = "gene")
+
+gene_meta <- 
+  read_tsv("~/GENCODE/gencode.v30.tx2gene.tsv.gz") %>% 
+  janitor::clean_names() %>%
+  dplyr::rename(isoform_id = txname, gene_id = geneid, gene = genename)
+
+gene_meta <- read.delim("~/Documents/MiGASti/Databases/gencode.v30.genes.gtf", header=FALSE) %>% 
+  janitor::clean_names() %>%
+  dplyr::rename(isoform_id = txname, gene_id = geneid, gene = genename)
+
+dtu_plot <- function(gene, plot_type = "LPS"){
+  id <- unique(gene_meta[ gene_meta$gene == gene,]$gene_id)
+  tx <- gene_meta[gene_meta$gene == gene, "isoform_id", drop = TRUE]
+  tx <- tx[ tx %in% rownames(tx_ratio)]
+  df <- tx_ratio[ tx,]
+  #df <- df[complete.cases(df),]
+  ratio_df <- 
+    df %>%
+    rownames_to_column(var = "isoform_id") %>%
+    pivot_longer(names_to = "sample", values_to = "ratio", -isoform_id) %>%
+    left_join(support, by = "sample")
+
+  if( plot_type == "LPS"){
+    res <- res$gene[ res$gene == gene,]
+    
+    ratio_df$FDR <- res$empirical_FDR[match(ratio_df$isoform_id, res$isoform_id)]
+    ratio_df$isoform_id <- paste0(ratio_df$isoform_id, "\nFDR = ", signif(ratio_df$FDR, digits = 2) )
+    
+    p <- ggplot(ratio_df, aes(x = age, y = ratio, colour = condition )) + 
+      geom_point(size = 1) + 
+      facet_wrap(~isoform_id, scales = "free") + theme_classic() +
+      geom_smooth(method = "lm",alpha = 0) + labs(x = "LPS (stimulation)")
+  }
+  return(p)
+}
+  
+dtu_plot("TYROBP", "LPS")
+  
+```
 
 # LPS 
 ### empirical FDR < 0.05 

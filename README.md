@@ -22,7 +22,7 @@
 - [Variance partition_cultured_THA](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_THA.html). Variance partition for only cultured samples.
 - [Variance partition_cultured_CC](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_CC.html). Variance partition for only cultured samples.
 
-5. Expression of stimulation specific markers
+5. Internal QC
 - [Expression of pre-selected markers specific for culturing](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_homeostatic.html). Boxplots with TPM expression of genes that are expected to go down after culturing based on the literature.
 - [Expression of pre-selected markers specific for stimulated conditions](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_allstims.html). Boxplots with TPM expression for genes that respond to specific stimuli and heatmap with all markers combined. 
 - [Expression of pre-selected markers specific for TNFa stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210225_Markers_TNFa.html). Boxplots with genes that respond to TNFa in cultured monocytes (effect most striking after 24h).
@@ -33,6 +33,10 @@
 - [Mitochondrial_genes](https://rajlabmssm.github.io/MiGASti/docs/20210511_Mitochondrial_genes.html). Percentage of mitochondrial genes in total dataset after filtering out lowly expressed genes (< 1 in 50% of the samples).
 - [Signaling_pathways](https://rajlabmssm.github.io/MiGASti/docs/20210604_Signaling_pathways.html). Heatmap of expression of ligands for different stimulations ex vivo vs in vitro. 
 - [Stimulations](https://rajlabmssm.github.io/MiGASti/docs/20212106_Stimulations_heatmap.html). Heatmap of stimulation specific responses. 
+- [Mismatch_RNAseq](https://rajlabmssm.github.io/MiGASti/docs/20210606_sex_mismatch_RNA.html). Sample swaps RNA seq based on reported sex. 
+- [Samples_brain_markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_brain_sample_check.html). Individual check of samples on brain markers. Exclusion of MG-01-RNA, MG-02-RNA and MG-03-RNA.
+- [Samples_myeloid_markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_brain_sample_check_myeloid.html). Individual check of samples on myeloid markers. Exclusion of MG-01-RNA, MG-02-RNA and MG-03-RNA.
+
 
 6. DEG analysis (with only cultured samples)
 - [DESeq2_GFM_subset](https://rajlabmssm.github.io/MiGASti/docs/20210217_DiffExpression_GFM.html). DESeq2 analysis of GFM samples: unstimulated samples (baseline) compared to LPS and IFNy stimulation seperatly. 
@@ -76,7 +80,6 @@
 - [DTU_plots_download](https://rajlabmssm.github.io/MiGASti/docs/20210511_DTU_plots_download.html). Summary of results including table for download of significant results. Code for DTU analysis can be found in docs. 
 - [DTU_overlaps_genes](https://rajlabmssm.github.io/MiGASti/docs/20210512_DTU_genes_overlap.html). Overlap between transcripts DTU and genes per stimulation and significance of overlap between background of 20.000 genes. 
 - [DTU_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/20210806_DTU_volcanos_ms.html). Some vulcano plots for DTU. 
-- [Boxplots_DTU]. Some examples for DTU.
 
 14. Sex
 - [DREAM_sex](https://rajlabmssm.github.io/MiGASti/docs/20211305_DREAM_SEX_CHRXY.html). Differential expression analysis male/female in all cultured samples. 0 differentially expressed genes.
@@ -117,6 +120,8 @@ Input genelists:
 - [R848_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_R848.html)
 - [IL4_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_IL4.html)
 - [ATP_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_ATP.html)
+- [DEX_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_DEX.html)
+- [Cluster_LPS_IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_clusters.html). Geneset enrichment for clusters. 
 
  
  

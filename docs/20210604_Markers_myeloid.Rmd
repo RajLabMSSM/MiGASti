@@ -47,7 +47,7 @@ knitr::opts_chunk$set(
 ```
 
 
-```{r check, echo = TRUE, results = 'hide'}
+```{r data_load_markers, echo = TRUE, results = 'hide'}
 load("~/Documents/MiGASti/Databases/gene_matrix.RData")
 metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
 #set rownames to Sample
@@ -68,39 +68,46 @@ gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
 colnames(gencode_30) = c("ensembl","symbol")
 genes_tpm_filt = log2((genes_tpm_filt) + 1)
 genes_tpm_filt <- as.data.frame(genes_tpm_filt)
-setDT(genes_tpm_filt, keep.rownames = "ensembl")
-genes_tpm_filt$ensembl
-res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+
+#select samples in dataset
+metadata_cultured <- subset(metadata_filt, Stimulation == "unstim" | Stimulation == "ununstim")
+#remove samples in genes counts datafile 
+genes_tpm_cultured <- genes_tpm_filt[,metadata_cultured$Sample]
+
+setDT(genes_tpm_cultured, keep.rownames = "ensembl")
+res_name = merge(genes_tpm_cultured, gencode_30, by="ensembl")
 rownames(res_name) = res_name$ensembl
-```
 
-
-```{r data_load_markers, echo = TRUE, results = 'hide'}
 marker_expression = merge(res_name, markers, by ="symbol")
-dim (marker_expression)
-head (marker_expression)
+rownames(marker_expression) = marker_expression$symbol
+marker_expression$ensembl <- NULL
+df_num = as.matrix(marker_expression[,2:178])
+rownames(df_num) = marker_expression$symbol
 
-marker_expression 
-pheno <- subset(metadata_filt, Stimulation == "unstim" | Stimulation == "ununstim")
-exp <- genes_tpm_filt[, rownames(pheno)]
-exp2 <- as.data.frame(exp)
+#plot the genes based on samples 
 
+metadata_cultured$Stimulation <- as.factor(metadata_cultured$Stimulation)
+metadata_filt2 <- metadata_cultured[order(metadata_cultured$Stimulation, decreasing = T), ]
+df <- t(df_num)
+sorted <- df[rownames(metadata_filt2),]
+sorted2 <- scale(sorted)
+sorted2 <- t(sorted2)
 
-metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
-metadata_filt_ordered = metadata_filt_ordered[-1,]
-all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
-pheno <- subset(metadata_filt_ordered, Stimulation == "unstim" | Stimulation == "ununstim")
-Stimulation <- metadata_filt_ordered$Stimulation
-```
+ann <- data.frame(metadata_filt2$Stimulation)
+colnames(ann) <- c('stimulation')
+colours <- list('stimulation' = c('unstim' = 'royalblue',  'ununstim'  = 'navy'))
+colAnn <- HeatmapAnnotation(df = ann,
+  which = 'col',
+  col = colours,
+  annotation_width = unit(c(1, 4), 'cm'),
+  gap = unit(1, 'mm'))
 
-# Myeloid marker expression in cultured versus uncultured samples 
-
-```{r data_load_heatmap, echo = TRUE, fig.width=10, fig.height=6, dpi=300}
 rownames(marker_expression) = marker_expression$symbol
 cell_type = marker_expression$Cell_type  # keep in same gene order 
 marker_expression$ensembl = NULL
-df_num = as.matrix(marker_expression[,2:497])
+df_num = as.matrix(marker_expression[,2:178])
 rownames(df_num) = marker_expression$symbol
+
 cell_type = as.factor(cell_type)
 # cell_type_colors <- data.frame(cell_type = levels(cell_type), color = I(brewer.pal(nlevels(cell_type), name = 'Dark2')))
 cell_type_colors <- data.frame(cell_type = levels(cell_type), color = pal_lancet('lanonc')(nlevels(cell_type)))
@@ -108,35 +115,22 @@ cell_type_df = left_join(data.frame(cell_type = cell_type), cell_type_colors, by
 res <- unlist(lapply(split(cell_type_colors$color, cell_type_colors$cell_type), unlist))
 row_ha = rowAnnotation(`Cell Type` = as.factor(cell_type_df$cell_type), col = list(`Cell Type` = res), show_annotation_name = F)
 
-col_ha = columnAnnotation(Stimulation = c("ununstim",
-                          col = list(Stimulation = c(unstim="#FF6F00FF", ununstim="#C71000FF")),
-                          na_col = "white",
-                          border = F)
 
 # pdf(paste0(work_plots, "HM_markers_255s.pdf"), width = 10, height = 6)
-colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(496)
-Heatmap(df_num,
+colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(10)
+Heatmap(sorted2,
         col = colPalette,
         name = "log2(TPM+1)", # Legend title
-        cluster_rows = T,
+        cluster_rows = F,
+        cluster_columns = T,
         #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
         show_column_dend = F, 
         show_column_names = F,
         show_row_names = T,
-        top_annotation = col_ha,
+        column_split = rep(c(metadata_filt2$Stimulation)),
+        top_annotation = colAnn,
         right_annotation = row_ha)
-#dev.off()
 ```
 
-### Heatmap with myeloid markers per stimulation of all samples
-
-```{r data_load_heatmap2, echo = TRUE, fig.width=20, fig.height=25, dpi=300}
-rownames(df_num) = sapply(marker_expression$symbol,function(x) 
-strsplit(as.character(x),split = "\\\\")[[1]][1])
-df_num = t(df_num)
-pos_df = data.frame("Stimulation" = metadata_filt_ordered$Stimulation)
-rownames(pos_df) = rownames(df_num)
-pheatmap(df_num, annotation_row = pos_df, main = "Myeloid markers per stimulation", show_rownames = F, fontsize_col = 30, fontsize = 30, fontsize_row = 30, cluster_cols = T)
-```
 
 
