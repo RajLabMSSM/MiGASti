@@ -158,7 +158,7 @@ ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
   xlab("Stimulation") + ylab("log2((TPM)+1)")
 ```
 
-# Expression of stimulation markers
+# Expression of neurodevelopmental markers
 
 ```{r data_load_heatmap, echo = TRUE, results='hide'}
 rownames(marker_expression) = marker_expression$symbol
@@ -205,23 +205,6 @@ Heatmap(sorted2,
 ```
 
 
-```{r ji_heatmap, echo = TRUE, fig.width=10, fig.height=6, dpi=300}
-#pdf(file = "~/Documents/MiGASti/Databases/Stim_markers.pdf", width = 100,
-#height = 6)
-colPalette <- colorRampPalette(rev(brewer.pal(11, "RdYlBu")))(496)
-Heatmap(sorted2,
-        col = colPalette,
-        name = "log2(TPM+1)", # Legend title
-        cluster_rows = T,
-        cluster_columns = F,
-        #row_names_gp = gpar(fontsize = 4), # Text size for row names)
-        show_column_dend = F, 
-        show_column_names = F,
-        show_row_names = T,
-        column_split = rep(c(metadata_filt2$Stimulation)),
-        top_annotation = colAnn)
-#dev.off()
-```
 ```{r data_load_heatmap_means, echo = TRUE, results='hide'}
 rownames(marker_expression) = marker_expression$symbol
 marker_expression$ensembl <- NULL
