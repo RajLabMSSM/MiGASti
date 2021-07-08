@@ -61,7 +61,7 @@ genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude]
 metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
 length(metadata_filt)
 #check for expression of markers in dataset
-markers = "~/Documents/MiGASti/Databases/Stimulations.xlsx"
+markers = "~/Documents/MiGASti/Databases/Lot_genes.xlsx"
 markers = read_excel(markers, col_names = TRUE) 
 markers = as.data.frame(markers)
 gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
@@ -83,6 +83,79 @@ metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
 metadata_filt_ordered = metadata_filt_ordered[-1,]
 all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUEgit 
 Stimulation <- metadata_filt_ordered$Stimulation
+```
+### Boxplot  MECP2
+
+```{r MECP2, echo = TRUE}
+MECP2 <- marker_expression[5, ] 
+MECP2$ensembl = NULL
+MECP2$symbol = NULL
+MECP2_new<-as.data.frame(t(MECP2))
+df = data.frame(Stimulation, MECP2_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("MECP2") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot  KDM6B
+
+```{r KDM6B, echo = TRUE}
+KDM6B <- marker_expression[3, ] 
+KDM6B$ensembl = NULL
+KDM6B$symbol = NULL
+KDM6B_new<-as.data.frame(t(KDM6B))
+df = data.frame(Stimulation, KDM6B_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("KDM6B") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+### Boxplot  EHMT1
+
+```{r EHMT1, echo = TRUE}
+EHMT1 <- marker_expression[2, ] 
+EHMT1$ensembl = NULL
+EHMT1$symbol = NULL
+EHMT1_new<-as.data.frame(t(EHMT1))
+df = data.frame(Stimulation, EHMT1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("EHMT1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+
+### Boxplot  MAOA
+
+```{r MAOA1, echo = TRUE}
+MAOA <- marker_expression[4, ] 
+MAOA$ensembl = NULL
+MAOA$symbol = NULL
+MAOA_new<-as.data.frame(t(MAOA))
+df = data.frame(Stimulation, MAOA_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("MAOA") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+### Boxplot  DDX3X
+
+```{r DDX3X, echo = TRUE}
+DDX3X <- marker_expression[1, ] 
+DDX3X$ensembl = NULL
+DDX3X$symbol = NULL
+DDX3X_new<-as.data.frame(t(DDX3X))
+df = data.frame(Stimulation, DDX3X_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("DDX3X") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
 ```
 
 # Expression of stimulation markers
@@ -124,7 +197,7 @@ Heatmap(sorted2,
         cluster_columns = F,
         #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
         show_column_dend = F, 
-        show_column_names = T,
+        show_column_names = F,
         show_row_names = T,
         column_split = rep(c(metadata_filt2$Stimulation)),
         top_annotation = colAnn)
@@ -143,7 +216,7 @@ Heatmap(sorted2,
         cluster_columns = F,
         #row_names_gp = gpar(fontsize = 4), # Text size for row names)
         show_column_dend = F, 
-        show_column_names = T,
+        show_column_names = F,
         show_row_names = T,
         column_split = rep(c(metadata_filt2$Stimulation)),
         top_annotation = colAnn)
@@ -175,7 +248,7 @@ df4 <- df3 %>%
 group_by(Stimulation) %>%
 summarise_all("mean")
 
-sorted_cor = as.matrix(df4[,2:27])
+sorted_cor = as.matrix(df4[,2:6])
 rownames(sorted_cor) <- c("ATP", "DEX", "IFNy", "IL4", "LPS", "R848", "TNFa", "unstim", "ununstim")
 sorted_final <- t(sorted_cor)
 ```
@@ -230,77 +303,5 @@ Heatmap(sorted_final,
 #dev.off()
 ```
 
-# Without ununstim 
-
-```{r check_ununstim, echo = TRUE}
-load("~/Documents/MiGASti/Databases/gene_matrix.RData")
-metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
-#set rownames to Sample
-row.names(metadata) <- metadata$Sample 
-setwd("~/Documents/MiGASti/Databases")
-exclude <- read.table("samples2remove.txt")
-exclude <- exclude$x
-genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
-#Excludes the samples from filters. 
-#dim(genes_tpm_filt)
-metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
-length(metadata_filt)
-#check for expression of markers in dataset
-markers = "~/Documents/MiGASti/Databases/Signaling_pathways_2.xlsx"
-markers = read_excel(markers, col_names = TRUE) 
-markers = as.data.frame(markers)
-gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
-colnames(gencode_30) = c("ensembl","symbol")
-genes_tpm_filt = log2((genes_tpm_filt) + 1)
-genes_tpm_filt <- as.data.frame(genes_tpm_filt)
-
-#remove ununstim samples in metadata
-metadata_cultured <- subset(metadata_filt, Stimulation == "unstim" | Stimulation == "ununstim")
-#remove samples in genes counts datafile 
-genes_tpm_cultured <- genes_tpm_filt[,metadata_cultured$Sample]
-
-setDT(genes_tpm_cultured, keep.rownames = "ensembl")
-res_name = merge(genes_tpm_cultured, gencode_30, by="ensembl")
-rownames(res_name) = res_name$ensembl
-
-marker_expression = merge(res_name, markers, by ="symbol")
-rownames(marker_expression) = marker_expression$symbol
-marker_expression$ensembl <- NULL
-df_num = as.matrix(marker_expression[,2:178])
-rownames(df_num) = marker_expression$symbol
-
-#plot the genes based on samples 
-
-metadata_cultured$Stimulation <- as.factor(metadata_cultured$Stimulation)
-metadata_filt2 <- metadata_cultured[order(metadata_cultured$Stimulation, decreasing = T), ]
-df <- t(df_num)
-sorted <- df[rownames(metadata_filt2),]
-sorted2 <- scale(sorted)
-sorted2 <- t(sorted2)
-
-ann <- data.frame(metadata_filt2$Stimulation)
-colnames(ann) <- c('stimulation')
-colours <- list('stimulation' = c('unstim' = 'royalblue',  'ununstim'  = 'navy'))
-colAnn <- HeatmapAnnotation(df = ann,
-  which = 'col',
-  col = colours,
-  annotation_width = unit(c(1, 4), 'cm'),
-  gap = unit(1, 'mm'))
-
-
-# pdf(paste0(work_plots, "HM_markers_255s.pdf"), width = 10, height = 6)
-colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(10)
-Heatmap(sorted2,
-        col = colPalette,
-        name = "log2(TPM+1)", # Legend title
-        cluster_rows = F,
-        cluster_columns = F,
-        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
-        show_column_dend = F, 
-        show_column_names = F,
-        show_row_names = T,
-        column_split = rep(c(metadata_filt2$Stimulation)),
-        top_annotation = colAnn)
-```
 
 
