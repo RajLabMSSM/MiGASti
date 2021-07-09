@@ -1,0 +1,438 @@
+---
+title: "Differential expression analysis of all stimuli compared to unstimulated in 1 region only"
+author: "Gijsje"
+date: "2/16/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(shiny)
+library(DT)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+```{r Helper Functions, echo=FALSE}
+createDT <- function(DF, caption="", scrollY=500){
+data <- DT::datatable(DF, caption=caption,
+extensions = 'Buttons',
+options = list( dom = 'Bfrtip',
+buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+scrollY = scrollY, scrollX=T, scrollCollapse = T, paging = F,
+columnDefs = list(list(className = 'dt-center', targets = "_all"))
+)
+)
+return(data)
+}
+```
+
+```{r data_load, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+#exclude samples that did not pass QC filtering
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_counts_filt = genes_counts[, !colnames(genes_counts) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_counts_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+#order metadata and genes counts
+genes_counts_ordered <- genes_counts_filt[,rownames(metadata_filt)]
+#head(genes_counts_ordered)
+all(rownames(metadata_filt) == colnames (genes_counts_ordered)) #TRUE
+```
+
+
+```{r data_load_outline, echo = TRUE}
+# Counts, TPM, voom and metadata filtered 
+# 496 samples!  
+# Filter for genes not expressed: 50 % of the samples! 
+# dim(genes_counts_ordered) #18997   496
+# dim(metadata_filt) #496  38
+```
+
+# Preparing the samples for DEG
+
+```{r preparing, echo = TRUE}
+#remove uncultured samples
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+#dim(metadata_cultured)
+#check numbers per stimulation
+#table(metadata_filt$Stimulation)
+#select only GFM samples in metadata
+metadata_GFM = metadata_cultured[metadata_cultured$Region=="GFM",]
+#select only GFM samples in genes counts
+genes_counts_GFM <- genes_counts_ordered[,metadata_GFM$Sample]
+#order metadata and genes_counts
+genes_counts_GFM_ordered <- genes_counts_GFM[,rownames(metadata_GFM)]
+#check ordering
+all(rownames(metadata_GFM) == colnames (genes_counts_GFM_ordered)) #TRUE
+
+#round counts; deseq2 can only handle integers
+genes_counts_GFM_ordered <- round(genes_counts_GFM_ordered, digits=0)
+
+#make sure covariate variables are the right format 
+#cannot create dds object with numeric values
+metadata_GFM$Donor_id <- as.factor(metadata_GFM$Donor_id)
+metadata_GFM$age <- as.integer(metadata_GFM$age)
+metadata_GFM$sex <- as.factor(metadata_GFM$sex)
+metadata_GFM$Stimulation <- as.factor(metadata_GFM$Stimulation)
+metadata_GFM$picard_pct_ribosomal_bases = scale(metadata_GFM$picard_pct_ribosomal_bases)
+metadata_GFM$picard_pct_mrna_bases = scale(metadata_GFM$picard_pct_mrna_bases)
+metadata_GFM$picard_pct_pf_reads_aligned = scale(metadata_GFM$picard_pct_pf_reads_aligned)
+metadata_GFM$picard_pct_percent_duplication = scale(metadata_GFM$picard_pct_percent_duplication)
+
+#adjust for: ~ age + (1|donor_id) + picard_pct_ribosomal_bases + picard_pct_mrna_bases +   picard_pct_percent_duplication + picard_pct_pf_reads_aligned 
+```
+
+# DESeq2 of GFM samples 
+
+```{r data_loadings, echo = TRUE}
+#createDeSEQ2 object for LPS
+dds <- DESeqDataSetFromMatrix(countData = genes_counts_GFM_ordered,
+                              colData = metadata_GFM,
+                              design = ~ age + sex + picard_pct_ribosomal_bases + picard_pct_mrna_bases + picard_pct_percent_duplication + picard_pct_pf_reads_aligned + Stimulation) Ye
+#variable of interest at end of the formula
+
+#Make sure that control group is set as the reference group
+dds$Stimulation <- relevel(dds$Stimulation, ref="unstim")
+table(dds$Stimulation) 
+#head(dds)
+
+#filter: CPM > 1 in 50% of the samples 
+keep.exp = rowSums(cpm(genes_counts_GFM_ordered) > 1) >= 0.5*ncol(genes_counts_GFM_ordered)
+dds = dds[keep.exp,]
+
+#Run differential expression 
+dds <- DESeq(dds, betaPrior = FALSE)
+resultsNames(dds)
+```
+
+# DESeq2: LPS vs unstim
+### Number of differentially expressed genes 
+
+```{r data_LPS, echo = TRUE}
+# generate results table for LPS vs unstim
+res_LPS <- results(dds, name="Stimulation_LPS_vs_unstim")
+sum(res_LPS$padj < 0.05, na.rm=TRUE)
+resOrdered_LPS <- res_LPS[order(res_LPS$pvalue),] 
+resOrdered_LPS <- as.data.frame(resOrdered_LPS)
+```
+
+### Volcano plot LPS vs unstim
+
+```{r vulcano_LPS, echo = TRUE}
+head(res_LPS)
+with(res_LPS, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-2.5,2)))
+with(subset(res_LPS, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+### MA plot LPS vs unstim
+#The function plotMA shows the log2 fold changes attributable to a given variable over the mean of normalized counts for all the samples in the DESeqDataSet. Points will be colored if the adjusted p value is less than 0.1. Points which fall out of the window are plotted as open triangles pointing either up or down.
+
+```{r MA_LPS, echo = TRUE}
+plotMA(res_LPS, ylim=c(-2,2))
+```
+### TOP differentially expressed genes LPS vs unstim
+
+```{r diff_LPS, echo = TRUE}
+setDT(resOrdered_LPS, keep.rownames = "ensembl")
+resOrdered_LPS <- left_join(resOrdered_LPS, gencode_30, by = "ensembl")
+resOrdered_LPS_top = resOrdered_LPS[order(resOrdered_LPS$padj) ,]
+setDT(resOrdered_LPS_top, keep.rownames = "ensembl")
+resOrdered_LPS_top = resOrdered_LPS_top[, c("ensembl", "symbol", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")]
+createDT(resOrdered_LPS_top)
+#write.table(resOrdered_LPS_top, "DEG_LPS_GFM.txt")
+```
+
+# DESeq2: IFNy vs unstim
+### Number of differentially expressed genes 
+
+```{r IFNy, echo = TRUE}
+# generate results table for IFNy vs unstim
+res_IFNy <- results(dds, name="Stimulation_IFNy_vs_unstim")
+sum(res_IFNy$padj < 0.05, na.rm=TRUE)
+resOrdered_IFNy <- res_IFNy[order(res_IFNy$pvalue),] 
+resOrdered_IFNy <- as.data.frame(resOrdered_IFNy)
+```
+
+### Volcano plot IFNy vs unstim
+
+```{r vulcano_IFNy, echo = TRUE}
+head(res_IFNy)
+with(res_IFNy, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-10,10)))
+with(subset(res_IFNy, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+### MA plot IFNy vs unstim
+
+```{r MA_IFNy, echo = TRUE}
+plotMA(res_IFNy, ylim=c(-2,2))
+```
+
+### TOP differentially expressed genes IFNy vs unstim
+
+```{r diff_IFNy, echo = TRUE}
+setDT(resOrdered_IFNy, keep.rownames = "ensembl")
+resOrdered_IFNy <- merge(resOrdered_IFNy, gencode_30, by = "ensembl")
+resOrdered_IFNy_top2 = resOrdered_IFNy2[order(resOrdered_IFNy2$padj) ,]
+setDT(resOrdered_IFNy_top, keep.rownames = "ensembl")
+resOrdered_IFNy_top = resOrdered_IFNy_top[, c("ensembl", "symbol", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")]
+createDT(resOrdered_IFNy_top)
+#write.table(resOrdered_IFNy_top2, "DEG_IFNy_GFM.txt")
+```
+
+# DESeq2: TNFa vs unstim
+
+```{r TNFa_IFNy, echo = TRUE}
+# generate results table for TNFa vs unstim
+res_TNFa <- results(dds, name="Stimulation_TNFa_vs_unstim")
+sum(res_TNFa$padj < 0.05, na.rm=TRUE)
+resOrdered_TNFa <- res_TNFa[order(res_TNFa$pvalue),] 
+resOrdered_TNFa <- as.data.frame(resOrdered_TNFa)
+```
+
+### Volcano plot TNFa vs unstim
+
+```{r vulcano_TNFa, echo = TRUE}
+head(res_TNFa)
+with(res_TNFa, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-10,10)))
+with(subset(res_TNFa, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+### MA plot TNFa vs unstim
+
+```{r MA_TNFa, echo = TRUE}
+plotMA(res_TNFa, ylim=c(-2,2))
+```
+### Top differentially expressed genes TNFa vs unstim
+
+```{r diff_TNFa, echo = TRUE}
+setDT(resOrdered_TNFa, keep.rownames = "ensembl")
+resOrdered_TNFa <- left_join(resOrdered_TNFa, gencode_30, by = "ensembl")
+resOrdered_TNFa_top = resOrdered_TNFa[order(resOrdered_TNFa$padj) ,]
+resOrdered_TNFa_top = head(resOrdered_TNFa)
+setDT(resOrdered_TNFa_top, keep.rownames = "ensembl")
+resOrdered_TNFa_top = resOrdered_LPS_top[, c("ensembl", "symbol", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")]
+createDT(resOrdered_TNFa_top)
+write.table(resOrdered_TNFa_top, "DEG_TNFa_GFM.txt")
+```
+
+# DESeq2: R848 vs unstim
+### Number of differentially expressed genes
+
+```{r R848, echo = TRUE}
+# generate results table for R848 vs unstim
+res_R848 <- results(dds, name="Stimulation_R848_vs_unstim")
+sum(res_R848$padj < 0.05, na.rm=TRUE)
+resOrdered_R848 <- res_R848[order(res_R848$pvalue),] 
+resOrdered_R848 <- as.data.frame(resOrdered_R848)
+```
+
+### Volcano plot R848 vs unstim
+
+```{r vulcano_R848, echo = TRUE}
+head(res_R848)
+with(res_R848, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-10,10)))
+with(subset(res_R848, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+### MA plot R848 vs unstim
+
+```{r MA_R848, echo = TRUE}
+plotMA(res_R848, ylim=c(-2,2))
+```
+
+### TOP differentially expressed genes R848 vs unstim
+
+```{r diff_R848, echo = TRUE}
+setDT(resOrdered_R848, keep.rownames = "ensembl")
+resOrdered_R848 <- left_join(resOrdered_R848, gencode_30, by = "ensembl")
+resOrdered_R848_top = resOrdered_R848[order(resOrdered_R848$padj) ,]
+setDT(resOrdered_R848_top, keep.rownames = "ensembl")
+resOrdered_R848_top = resOrdered_R848_top[, c("ensembl", "symbol", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")]
+create(resOrdered_R848_top)
+```
+
+# DESeq2: DEX vs unstim
+### Number of differentially expressed genes
+
+```{r DEX, echo = TRUE}
+# generate results table for DEX vs unstim
+res_DEX <- results(dds, name="Stimulation_DEX_vs_unstim")
+sum(res_DEX$padj < 0.05, na.rm=TRUE)
+resOrdered_DEX <- res_DEX[order(res_DEX$pvalue),] 
+resOrdered_DEX <- as.data.frame(resOrdered_DEX)
+```
+
+### Volcano plot DEX vs unstim
+
+```{r vulcano_DEX, echo = TRUE}
+head(res_DEX)
+with(res_DEX, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-10,10)))
+with(subset(res_DEX, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+### MA plot DEX vs unstim
+
+```{r MA_DEX, echo = TRUE}
+plotMA(res_DEX, ylim=c(-2,2))
+```
+
+### TOP differentially expressed genes DEX vs unstim
+
+```{r diff_DEX, echo = TRUE}
+setDT(resOrdered_DEX, keep.rownames = "ensembl")
+resOrdered_DEX <- left_join(resOrdered_DEX, gencode_30, by = "ensembl")
+resOrdered_DEX_top = resOrdered_DEX[order(resOrdered_DEX$padj) ,]
+setDT(resOrdered_DEX_top, keep.rownames = "ensembl")
+resOrdered_DEX_top = resOrdered_DEX_top[, c("ensembl", "symbol", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")]
+createDT(resOrdered_DEX_top)
+#write.table(resOrdered_DEX_top, "DEG_DEX_GFM.txt")
+```
+
+# DESeq2: Il4 vs unstim
+### Number of differentially expressed genes
+
+```{r IL4, echo = TRUE}
+res_IL4 <- results(dds, name="Stimulation_IL4_vs_unstim")
+sum(res_IL4$padj < 0.05, na.rm=TRUE)
+resOrdered_IL4 <- res_IL4[order(res_IL4$pvalue),] 
+resOrdered_IL4 <- as.data.frame(resOrdered_IL4)
+```
+
+
+### Volcano plot IL4 vs unstim
+
+```{r vulcano_IL4, echo = TRUE}
+head(res_IL4)
+with(res_IL4, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-10,10)))
+with(subset(res_IL4, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+
+### MA plot IL4 vs unstim
+
+```{r MA_IL4, echo = TRUE}
+plotMA(res_IL4, ylim=c(-2,2))
+```
+
+### TOP differentially expressed genes IL4 vs unstim
+
+```{r diff_IL4, echo = TRUE}
+setDT(resOrdered_IL4, keep.rownames = "ensembl")
+resOrdered_IL4 <- left_join(resOrdered_IL4, gencode_30, by = "ensembl")
+resOrdered_IL4_top = resOrdered_IL4[order(resOrdered_IL4$padj) ,]
+setDT(resOrdered_IL4_top, keep.rownames = "ensembl")
+resOrdered_IL4_top = resOrdered_IL4_top[, c("ensembl", "symbol", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")]
+createDT(resOrdered_IL4_top)
+#write.table(resOrdered_IL4_top, "DEG_IL4_GFM.txt")
+```
+
+# DESeq2: ATP vs unstim
+### Number of differentially expressed genes
+
+```{r ATP, echo = TRUE}
+# generate results table for ATP vs unstim
+res_ATP <- results(dds, name="Stimulation_ATP_vs_unstim")
+sum(res_ATP$padj < 0.05, na.rm=TRUE)
+resOrdered_ATP <- res_ATP[order(res_ATP$pvalue),] 
+resOrdered_ATP <- as.data.frame(resOrdered_ATP)
+```
+
+### Volcano plot ATP vs unstim
+
+```{r vulcano_ATP, echo = TRUE}
+head(res_ATP)
+with(res_ATP, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-10,10)))
+with(subset(res_ATP, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
+```
+
+
+### MA plot ATP vs unstim
+
+```{r MA_ATP, echo = TRUE}
+plotMA(res_ATP, ylim=c(-2,2))
+```
+
+### TOP differentially expressed genes ATP vs unstim
+
+```{r diff_ATP, echo = TRUE}
+setDT(resOrdered_ATP, keep.rownames = "ensembl")
+resOrdered_ATP <- left_join(resOrdered_ATP, gencode_30, by = "ensembl")
+resOrdered_ATP_top = resOrdered_ATP[order(resOrdered_ATP$padj) ,]
+setDT(resOrdered_ATP_top, keep.rownames = "ensembl")
+resOrdered_ATP_top = resOrdered_ATP_top[, c("ensembl", "symbol", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")]
+create(resOrdered_ATP_top)
+#write.table(resOrdered_ATP_top, "DEG_ATP_GFM.txt")
+```
+
+#Create genelists with Log2FC < 1 and < -1 for different stimuli
+
+
+```{r lists, echo = TRUE}
+resOrdered_LPS_p <- subset(resOrdered_LPS_top, padj < 0.05)
+resOrdered_LPS_LFC <- subset(resOrdered_LPS_p, log2FoldChange > 1 | log2FoldChange < -1)
+#write.table(resOrdered_LPS_LFC, "LPS_GFM_FC1.txt")
+
+resOrdered_IFNy_p <- subset(resOrdered_IFNy_top, padj < 0.05)
+resOrdered_IFNy_LFC <- subset(resOrdered_IFNy_p, log2FoldChange > 1 | log2FoldChange < -1)
+#write.table(resOrdered_IFNy_LFC, "IFNy_GFM_FC1.txt")
+
+resOrdered_R848_p <- subset(resOrdered_R848_top, padj < 0.05)
+resOrdered_R848_LFC <- subset(resOrdered_R848_p, log2FoldChange > 1 | log2FoldChange < -1)
+#write.table(resOrdered_R848_LFC, "R848_GFM_FC1.txt")
+
+resOrdered_DEX_p <- subset(resOrdered_DEX_top, padj < 0.05)
+resOrdered_DEX_LFC <- subset(resOrdered_DEX_p, log2FoldChange > 1 | log2FoldChange < -1)
+#write.table(resOrdered_DEX_LFC, "DEX_GFM_FC1.txt")
+
+resOrdered_IL4_p <- subset(resOrdered_IL4_top, padj < 0.05)
+resOrdered_IL4_LFC <- subset(resOrdered_IL4_p, log2FoldChange > 1 | log2FoldChange < -1)
+#write.table(resOrdered_IL4_LFC, "IL4_GFM_FC1.txt")
+
+resOrdered_ATP_p <- subset(resOrdered_ATP_top, padj < 0.05)
+resOrdered_ATP_LFC <- subset(resOrdered_ATP_p, log2FoldChange > 1 | log2FoldChange < -1)
+#write.table(resOrdered_ATP_LFC, "ATP_GFM_FC1.txt")
+```
+ 
+
+
+
+
+
+
+
+
+
+

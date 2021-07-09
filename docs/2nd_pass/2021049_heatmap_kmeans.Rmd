@@ -1,0 +1,123 @@
+---
+title: "heatmap_kmeans"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+   
+---
+
+```{r setup, echo=FALSE, results = 'hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(pheatmap)
+library(readxl) 
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(dplyr)
+library(tidyverse)
+library(ggsci)
+library(factoextra)
+library(ggsci)
+library(amap)
+library(scales)
+library(ggeasy)
+library(ggtext)
+```
+
+# Treshold FDR 5% log FC > 1 or < -1 (210 genes)
+
+```{r data_load, echo=TRUE}
+load("~/df_num_LPS_IFNy_LOGFC1.Rdata")
+load("~/Documents/MiGASti/docs/Kmeans210gsupport_LPS_IFNy.Rdata")
+df <- df_num
+df3 <- scale(df)
+```
+
+###  4 clusters
+
+```{r gap100, echo=TRUE}
+set.seed(123)
+k <- kmeans(df3, centers = 4, nstart = 25)
+kmeans <- k$cluster
+kmean_download <- as.data.frame(kmeans)
+kmeanscor <- cbind(kmean_download, DF_log2FC)
+gencode_30 <- read.delim("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+kmeanscor1 = merge(kmeanscor, gencode_30, by="ensembl")
+
+cluster1 <- kmeanscor1[kmeanscor1$kmeans == 1,]
+cluster2 <- kmeanscor1[kmeanscor1$kmeans == 2,]
+cluster3 <- kmeanscor1[kmeanscor1$kmeans == 3,]
+cluster4 <- kmeanscor1[kmeanscor1$kmeans == 4,]
+
+list(cluster4$symbol)
+list(cluster3$symbol)
+list(cluster1$symbol)
+list(cluster2$symbol)
+```
+
+# Heatmap 
+
+```{r _heatmap, echo = TRUE, fig.width=10, fig.height=6, dpi=300}
+library(dplyr)
+#plot the genes based on samples 
+rownames(df3) = kmeanscor1$symbol
+kmeanscor2 <- kmeanscor1[order(kmeanscor1$kmeans),]
+dataframe <- kmeanscor2[,3:4]
+df2 <- as.matrix(dataframe)
+rownames(df2) = kmeanscor2$symbol
+
+ann <- data.frame(kmeanscor2$kmeans)
+colnames(ann) <- c('cluster')
+colours <- list('cluster' = c('1' = 'red', '2' = 'royalblue',  '3'  = 'navy', '4'='green'))
+row_ha <- rowAnnotation(df = ann)
+as.factor(row_ha)
+
+colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(400)
+Heatmap(df2,
+        col = colPalette,
+        name = "logFC", # Legend title
+        cluster_rows = F,
+        cluster_columns = T,
+        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
+        show_column_dend = F, 
+        show_column_names = T,
+        show_row_names = F,
+        right_annotation = row_ha)
+```
+
+
+```{r _gprofiler, echo = TRUE}
+library(gProfileR)
+go_res <- gprofiler(cluster1, organism = "hsapiens", hier_filtering= "strong", min_set_size=5,  src_filter="GO" )
+go_res %>% select( p.value, term.size, overlap.size, domain, term.name) %>% as_tibble()  %>% arrange(p.value)
+go_res
+
+go_res <- gprofiler(cluster2, organism = "hsapiens", hier_filtering= "strong", min_set_size=5,  src_filter="GO" )
+go_res %>% select( p.value, term.size, overlap.size, domain, term.name) %>% as_tibble()  %>% arrange(p.value)
+
+go_res <- gprofiler(cluster3, organism = "hsapiens", hier_filtering= "strong", min_set_size=5,  src_filter="GO" )
+go_res %>% select( p.value, term.size, overlap.size, domain, term.name) %>% as_tibble()  %>% arrange(p.value)
+
+go_res <- gprofiler(cluster4, organism = "hsapiens", hier_filtering= "strong", min_set_size=5,  src_filter="GO" )
+go_res %>% select( p.value, term.size, overlap.size, domain, term.name) %>% as_tibble()  %>% arrange(p.value)
+
+ 
+
+
+
+
+
+

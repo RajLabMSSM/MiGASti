@@ -1,0 +1,301 @@
+---
+title: "DTU_genes_overlap_stimulation"
+author: "Gijsje"
+date: "5/11/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r setup, include=FALSE}
+library('variancePartition')
+library('edgeR')
+library(dplyr)
+library(tidyr)
+library(readxl)
+```
+
+### Data load
+
+```{r load data, echo = TRUE}
+load("~/Documents/MiGASti/Databases/res_name_R8482.Rdata")
+load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
+load("~/Documents/MiGASti/Databases/res_name_IL42.Rdata")
+load("~/Documents/MiGASti/docs/res_name_IFNy2.Rdata")
+load("~/Documents/MiGASti/Databases/res_name_R8482.Rdata")
+load("~/Documents/MiGASti/Databases/res_name_ATP2.Rdata")
+load("~/Documents/MiGASti/Databases/res_name_TNFa2.Rdata")
+
+LPS_S = "~/Documents/MiGASti/Databases/LPS_DTU.xlsx"
+LPS_S = read_excel(LPS_S, col_names = TRUE) 
+LPS_S = as.data.frame(LPS_S)
+
+TNFa_S = "~/Documents/MiGASti/Databases/TNFa_DTU.xlsx"
+TNFa_S = read_excel(TNFa_S, col_names = TRUE) 
+TNFa_S = as.data.frame(TNFa_S)
+
+ATP_S = "~/Documents/MiGASti/Databases/ATP_DTU.xlsx"
+ATP_S = read_excel(ATP_S, col_names = TRUE) 
+ATP_S = as.data.frame(ATP_S)
+
+IFNy_S = "~/Documents/MiGASti/Databases/DTU_IFNy.xlsx"
+IFNy_S = read_excel(IFNy_S, col_names = TRUE) 
+IFNy_S = as.data.frame(IFNy_S)
+
+R848_S = "~/Documents/MiGASti/Databases/R848_DTU.xlsx"
+R848_S = read_excel(R848_S, col_names = TRUE) 
+R848_S = as.data.frame(R848_S)
+
+IL4_S = "~/Documents/MiGASti/Databases/IL4_DTU.xlsx"
+IL4_S = read_excel(IL4_S, col_names = TRUE) 
+IL4_S = as.data.frame(IL4_S)
+
+#subset genes FDR < 0.05
+res_name_LPS2 <- subset(res_name_LPS2, adj.P.Val < 0.05)
+res_name_IFNy2 <- subset(res_name_IFNy2, adj.P.Val < 0.05)
+res_name_R8482 <- subset(res_name_R8482, adj.P.Val < 0.05)
+res_name_IL42 <- subset(res_name_IL42, adj.P.Val < 0.05)
+res_name_TNFa2 <- subset(res_name_TNFa2, adj.P.Val < 0.05)
+res_name_ATP2 <- subset(res_name_ATP2, adj.P.Val < 0.05)
+```
+
+### LPS Overlap DTU transcripts and genes 
+#How many unique genes and significance?
+
+```{r LPS overlap, echo = TRUE}
+overlap_LPS <- merge(LPS_S, res_name_LPS2, by = "symbol")
+unique(overlap_LPS$symbol)
+set1 <- LPS_S
+set2 <- res_name_LPS2
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+### IFNy Overlap DTU transcripts and genes 
+#How many unique genes and significance?
+
+```{r IFNy overlap, echo = TRUE}
+overlap_IFNy <- merge(IFNy_S, res_name_IFNy2, by = "symbol")
+unique(overlap_IFNy$symbol)
+set1 <- IFNy_S
+set2 <- res_name_IFNy2
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+### TNFa Overlap DTU transcripts and genes 
+#How many unique genes and significance?
+
+```{r TNFa overlap, echo = TRUE}
+overlap_TNFa <- merge(TNFa_S, res_name_TNFa2, by = "symbol")
+unique(overlap_TNFa$symbol)
+set1 <- TNFa_S
+set2 <- res_name_TNFa2
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+
+### R848 Overlap DTU transcripts and genes 
+#How many unique genes and significance?
+
+```{r R848 overlap, echo = TRUE}
+overlap_R848 <- merge(R848_S, res_name_R8482, by = "symbol")
+unique(overlap_R848$symbol)
+set1 <- R848_S
+set2 <- res_name_R8482
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+### IL4 Overlap DTU transcripts and genes 
+#How many unique genes and significance?
+
+```{r IL4 overlap, echo = TRUE}
+overlap_IL4 <- merge(IL4_S, res_name_IL42, by = "symbol")
+unique(overlap_IL4$symbol)
+set1 <- IL4_S
+set2 <- res_name_IL42
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+
+### ATP Overlap DTU transcripts and genes 
+#How many unique genes and significance?
+
+```{r ATP overlap, echo = TRUE}
+overlap_ATP <- merge(ATP_S, res_name_ATP2, by = "symbol")
+unique(overlap_ATP$symbol)
+set1 <- ATP_S
+set2 <- res_name_ATP2
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+
+

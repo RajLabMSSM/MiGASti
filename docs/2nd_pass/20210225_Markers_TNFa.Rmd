@@ -1,0 +1,249 @@
+---
+title: "Markers TNF"
+author: "Gijsje"
+date: "2/25/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(pheatmap)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+```{r check, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/Markers_TNFa.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+setDT(genes_tpm_filt, keep.rownames = "ensembl")
+genes_tpm_filt$ensembl
+res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+```
+
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+marker_expression = merge(res_name, markers, by ="symbol")
+dim (marker_expression)
+head (marker_expression)
+metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
+metadata_filt_ordered = metadata_filt_ordered[-1,]
+all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
+Stimulation <- metadata_filt_ordered$Stimulation
+```
+
+# TNF a markers
+### CD300E
+#expected to be increased in TNFa: based on Park et al. 2017 (monocytes)
+
+```{r data_load_IL1B, echo = TRUE}
+CD300E <- marker_expression[1, ] 
+CD300E$ensembl = NULL
+CD300E$symbol = NULL
+CD300E_new<-as.data.frame(t(CD300E))
+df = data.frame(Stimulation, CD300E_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CD300E") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### FTH1
+#expected to be increased in TNFa
+
+```{r data_load_IL6, echo = TRUE}
+FTH1 <- marker_expression[2, ] 
+FTH1$ensembl = NULL
+FTH1$symbol = NULL
+FTH1_new<-as.data.frame(t(FTH1))
+df = data.frame(Stimulation, FTH1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("FTH1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### MADD
+#expected to be increased in TNFa
+
+```{r data_load_TNF, echo = TRUE}
+MADD <- marker_expression[3, ] 
+MADD$ensembl = NULL
+MADD$symbol = NULL
+MADD_new<-as.data.frame(t(MADD))
+df = data.frame(Stimulation, MADD_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("MADD") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### MT2A 
+#expected to be increased in TNFa
+
+```{r data_load_CXCL9, echo = TRUE}
+MT2A <- marker_expression[4, ] 
+MT2A$ensembl = NULL
+MT2A$symbol = NULL
+MT2A_new<-as.data.frame(t(MT2A))
+df = data.frame(Stimulation, MT2A_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("MT2A") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### S100A8
+#expected to be increased in TNFa
+
+```{r data_load_CXCL10, echo = TRUE}
+S100A8 <- marker_expression[5, ] 
+S100A8$ensembl = NULL
+S100A8$symbol = NULL
+S100A8_new<-as.data.frame(t(S100A8))
+df = data.frame(Stimulation, S100A8_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() +
+ggtitle("S100A8") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### S100A9
+#expected to be increased in TNFa
+
+```{r data_load_CXCL11, echo = TRUE}
+S100A9 <- marker_expression[6, ] 
+S100A9$ensembl = NULL
+S100A9$symbol = NULL
+S100A9_new<-as.data.frame(t(S100A9))
+df = data.frame(Stimulation, S100A9_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("S100A9") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### SOD2
+#expected to be increased in TNFa
+
+```{r data_load_CCL2, echo = TRUE}
+SOD2 <- marker_expression[7, ] 
+SOD2$ensembl = NULL
+SOD2$symbol = NULL
+SOD2_new<-as.data.frame(t(SOD2))
+df = data.frame(Stimulation, SOD2_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("SOD2") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### SRGN
+#expected to be increased in TNFa
+
+```{r data_load_VCAM1, echo = TRUE}
+SRGN <- marker_expression[9, ] 
+SRGN$ensembl = NULL
+SRGN$symbol = NULL
+SRGN_new<-as.data.frame(t(SRGN))
+df = data.frame(Stimulation, SRGN_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot() + 
+  ggtitle("SRGN") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+### TIMP1
+##expected to be increased in TNFa
+
+```{r data_load_SAA3P, echo = TRUE}
+TIMP1 <- marker_expression[10, ] 
+TIMP1$ensembl = NULL
+TIMP1$symbol = NULL
+TIMP1_new<-as.data.frame(t(TIMP1))
+df = data.frame(Stimulation, TIMP1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("TIMP1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### TRAF1
+#expected to be increased in TNFa
+
+```{r data_load_SLC13A3, echo = TRUE}
+TRAF1 <- marker_expression[11, ] 
+TRAF1$ensembl = NULL
+TRAF1$symbol = NULL
+TRAF1_new<-as.data.frame(t(TRAF1))
+df = data.frame(Stimulation, TRAF1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("TRAF1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### TRAF2
+#expected to be increased in TNFa
+
+```{r data_load_CXCL1, echo = TRUE}
+TRAF2 <- marker_expression[12, ] 
+TRAF2$ensembl = NULL
+TRAF2$symbol = NULL
+TRAF2_new<-as.data.frame(t(TRAF2))
+df = data.frame(Stimulation, TRAF2_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("TRAF2") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+
+
+
+
+
+
+
+

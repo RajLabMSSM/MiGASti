@@ -1,0 +1,240 @@
+---
+title: "Microglia_monocyte_comparisons_ranking"
+author: "Gijsje"
+date: "2/24/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(devtools)
+library(factoextra)
+library(ggfortify)
+library(ggplot2)
+library(dplyr)
+library(broom)
+library(variancePartition)
+library(pheatmap)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(Hmisc)
+library(matrixStats)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+# Load microglia specific genes and monocytes/macrophages dataset based on Patir et al and Haage et al. 2019
+
+```{r data_load1, echo = TRUE}
+Patir = "~/Documents/MiGASti/Databases/Patir_2sets.xlsx"
+Patir = read_excel(Patir, col_names = TRUE) 
+Patir = as.data.frame(Patir)
+```
+
+# Load macrophage data
+
+```{r data_load, echo = TRUE, results = 'hide'}
+GSM4291096_1_S1_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291096_1_S1_R1_001.count.txt.gz", header=FALSE)
+GSM4291096_1_S1_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291096_1_S1_R1_001.count.txt.gz", header=FALSE)
+GSM4291110_23_S11_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291110_23_S11_R1_001.count.txt.gz", header=FALSE)
+GSM4291099_4_S21_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291099_4_S21_R1_001.count.txt.gz", header=FALSE)
+GSM4291101_6_S26_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291101_6_S26_R1_001.count.txt.gz", header=FALSE)
+GSM4291102_11_S2_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291102_11_S2_R1_001.count.txt.gz", header=FALSE)
+GSM4291104_11_S2_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291104_11_S2_R1_001.count.txt.gz", header=FALSE)
+GSM4291104_17_S4_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291104_17_S4_R1_001.count.txt.gz", header=FALSE)
+GSM4291107_20_S8_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291107_20_S8_R1_001.count.txt.gz", header=FALSE)
+GSM4291108_21_S9_R1_001.count.txt <- read.delim("~/Downloads/GSE144576_RAW (1)/GSM4291108_21_S9_R1_001.count.txt.gz", header=FALSE)
+macrophage <- cbind(GSM4291108_21_S9_R1_001.count.txt, GSM4291107_20_S8_R1_001.count.txt, GSM4291104_17_S4_R1_001.count.txt, GSM4291102_11_S2_R1_001.count.txt, GSM4291099_4_S21_R1_001.count.txt, GSM4291096_1_S1_R1_001.count.txt, GSM4291101_6_S26_R1_001.count.txt, GSM4291110_23_S11_R1_001.count.txt)
+
+#drop variables
+df <- macrophage[ -c(3,5,7,9,11,13,15)]
+library(dplyr)
+library(AnnotationDbi)
+library(biomartr)
+library(org.Hs.eg.db)
+
+#add symbolto dataframe
+genes <- df$V1
+symbols <- as.data.frame(mapIds(org.Hs.eg.db, genes, "SYMBOL", "ENSEMBL"))
+
+#rearrange dataset
+macrophage_data <- cbind(symbols, df)
+colnames(macrophage_data)[1] <- "symbol"
+colnames(macrophage_data)[2] <- "ensembl"
+
+save(macrophage_data, file = "macrophage_data.Rdata")
+```
+
+```{r data_load_migasti, echo = TRUE}
+marker_expression_MiGAsti = merge(res_name, Patir, by ="symbol")
+
+marker_expression_migasti <- marker_expression_MiGAsti[!duplicated(marker_expression_MiGAsti$symbol), ]
+genes_v <- marker_expression_migasti$symbol
+marker_expression_migasti$symbol <-NULL
+marker_expression_migasti$ensembl <- NULL
+marker_expression_cor <- rowMeans(marker_expression_migasti)
+expr <- as.data.frame(marker_expression_cor) 
+expr2 <- cbind(expr, genes_v)
+
+expr3 <- expr2[order(expr2$marker_expression_cor),]
+expr3$rank <- 1:nrow(expr3) 
+data.table(expr3)
+```
+
+# Load MiGASTi ununstim
+
+```{r no_migasti_cultured, echo = TRUE, results = 'hide'}
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+#exclude samples that did not pass QC filtering
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+#Excludes the samples from filters. 
+#dim(genes_counts_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+
+#load gene matrix
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+genes_counts_filt = genes_counts[, !colnames(genes_counts) %in% exclude] 
+#Excludes the samples from filters. 
+
+metadata <- subset(metadata_filt, Stimulation == "ununstim")
+genes_counts_filt2 <- genes_counts_filt[, colnames(genes_counts_filt) %in% metadata$Sample]
+head(rownames(genes_counts_filt2))
+genes_counts_migasti <- genes_counts_filt2
+metadata_migasti <- metadata
+#check ordering
+genes_counts_migasti <- genes_counts_migasti[,rownames(metadata_migasti)]
+all(rownames(metadata_migasti) == colnames (genes_counts_migasti)) #TRUE
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+setDT(genes_counts_migasti, keep.rownames = "ensembl")
+genes_counts_migasti$ensembl
+res_name = merge(genes_counts_migasti, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+expr_migasti_unstim <- expr3
+```
+
+```{r no_migasti_cultured2, echo = TRUE}
+marker_expression_MiGAsti = merge(res_name, Patir, by ="symbol")
+
+marker_expression_migasti <- marker_expression_MiGAsti[!duplicated(marker_expression_MiGAsti$symbol), ]
+genes_v <- marker_expression_migasti$symbol
+marker_expression_migasti$symbol <-NULL
+marker_expression_migasti$ensembl <- NULL
+marker_expression_cor <- rowMeans(marker_expression_migasti)
+expr <- as.data.frame(marker_expression_cor) 
+expr2 <- cbind(expr, genes_v)
+
+expr3 <- expr2[order(expr2$marker_expression_cor),]
+expr3$rank <- 1:nrow(expr3) 
+data.table(expr3)
+expr_migasti_ununstim <- expr3
+```
+
+# Load MiGA dataset 
+#genes_counts + metadata
+
+```{r data_loadmiga2, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGA/gene_matrix.RData")
+load("~/Documents/MiGA/metadata_255filt_eng_29jun2020.Rdata")
+genes_counts_miga <- genes_counts
+metadata_miga <- metadata3rd_pass
+genes_counts_miga <- genes_counts_miga[, colnames(genes_counts_miga) %in% metadata_miga$donor_tissue]
+rownames(metadata_miga) <- metadata_miga$donor_tissue
+genes_counts_miga <- genes_counts_miga[,rownames(metadata_miga)]
+all(rownames(metadata_miga) == colnames (genes_counts_miga)) #TRUE
+
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+setDT(genes_counts_miga, keep.rownames = "ensembl")
+genes_counts_miga$ensembl
+res_name = merge(genes_counts_miga, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+```
+
+```{r data_loadmiga1, echo = TRUE}
+marker_expression_MiGA = merge(res_name, Patir, by ="symbol")
+
+marker_expression_miga <- marker_expression_MiGA[!duplicated(marker_expression_MiGA$symbol), ]
+genes_v <-select(marker_expression_miga, "symbol")
+marker_expression_miga$ensembl <- NULL
+marker_expression_miga$symbol <- NULL
+marker_expression_cor <- rowMeans(marker_expression_miga)
+expr <- as.data.frame(marker_expression_cor) 
+expr2 <- cbind(expr, genes_v)
+expr3 <- expr2[order(expr2$marker_expression_cor),]
+expr3$rank <- 1:nrow(expr3) 
+data.table(expr3)
+expr_miga <- expr3
+```
+
+# Load monocyte dataset 
+#genes_counts + metadata
+#only monocytes baseline cultured
+
+```{r data_loadmonocyte1, echo = TRUE, results = 'hide'}
+load("~/Documents/Monocytes/gene_matrix.RData")
+genes_counts_monocytes <- genes_counts
+metadata_monocytes <- read.csv("~/Documents/Monocytes/merged_meta_lrrk2_105.csv", header=TRUE)
+
+metadata_monocytes <- subset(metadata_monocytes, treatment == "Basal")
+genes_counts_monocytes <- genes_counts_monocytes[, colnames(genes_counts_monocytes) %in% metadata_monocytes$sample_id]
+rownames(metadata_monocytes) = metadata_monocytes$sample_id
+# check ordering of data 
+genes_counts_monocytes <- genes_counts_monocytes[,rownames(metadata_monocytes)]
+all(rownames(metadata_monocytes) == colnames (genes_counts_monocytes)) #TRUE
+
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+setDT(genes_counts_monocytes, keep.rownames = "ensembl")
+genes_counts_monocytes$ensembl
+res_name = merge(genes_counts_monocytes, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+marker_expression_monocytes = merge(res_name, Patir, by ="symbol")
+```
+
+```{r data_loadmonocyte2, echo = TRUE}
+marker_expression_monocytes <- marker_expression_monocytes[!duplicated(marker_expression_monocytes$symbol), ]
+genes_v <-select(marker_expression_monocytes, "symbol")
+marker_expression_monocytes$ensembl <- NULL
+marker_expression_monocytes$symbol <- NULL
+marker_expression_cor <- rowMeans(marker_expression_monocytes)
+expr <- as.data.frame(marker_expression_cor) 
+expr2 <- cbind(expr, genes_v)
+
+expr3 <- expr2[order(expr2$marker_expression_cor),]
+expr3$rank <- 1:nrow(expr3) 
+data.table(expr3)
+expr_monocytes <- expr3
+p<-ggplot(data=expr_monocytes, aes(x=rank, y=symbol)) +
+geom_bar(stat="identity")
+p
+```
+

@@ -1,0 +1,108 @@
+---
+title: "Markers SPI1"
+author: "Gijsje"
+date: "2/16/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+```{r data_load, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/SPI1.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+setDT(genes_tpm_filt, keep.rownames = "ensembl")
+genes_tpm_filt$ensembl
+res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+load("~/Documents/MiGA/gene_matrix.RData")
+load("~/Documents/MiGA/metadata_255filt_eng_29jun2020.Rdata")
+```
+
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+marker_expression = merge(res_name, markers, by ="symbol")
+dim (marker_expression)
+head (marker_expression)
+metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
+metadata_filt_ordered = metadata_filt_ordered[-1,]
+all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
+Stimulation <- metadata_filt_ordered$Stimulation
+```
+
+### Boxplot SPI1
+
+```{r data_load_SPI1, echo = TRUE}
+SPI1 <- marker_expression[1, ] 
+SPI1$ensembl = NULL
+SPI1$symbol = NULL
+SPI1_new<-as.data.frame(t(SPI1))
+df = data.frame(Stimulation, SPI1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("SPI1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+```{r data_load_SPI1, echo = TRUE}
+load("~/Documents/MiGA/gene_matrix.RData")
+load("~/Documents/MiGA/metadata_255filt_eng_29jun2020.Rdata")
+
+genes_tpm_filt = log2((genes_tpm) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+setDT(genes_tpm_filt, keep.rownames = "ensembl")
+genes_tpm_filt$ensembl
+res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+
+marker_expression = merge(res_name, markers, by ="symbol")
+dim (marker_expression)
+head (marker_expression)
+metadata3rd_pass <- metadata3rd_pass[colnames(genes_tpm_filt),]
+metadata3rd_pass = metadata3rd_pass[-1,]
+all(rownames(metadata3rd_pass) == colnames (metadata3rd_pass)) #TRUE
+region <- metadata_3rd_pass$tissue 
+```

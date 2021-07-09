@@ -1,0 +1,56 @@
+---
+title: "Mitochondrial_genes"
+author: "Gijsje"
+date: "5/11/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(tidyverse)
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+
+load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
+#genes_counts_cultured after removal of lowly expressed genes/duplicated genes in a total of 18981 genes; used LPS data since genes are named as symbol
+Mitochondrial_genes <-grep("MT-", res_name_LPS2$symbol)
+Mitochondrial_genes
+load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
+#genes_counts_cultured after removal of lowly expressed genes/duplicated genes in a total of 18981 genes; used LPS data since genes are named as symbol
+Mitochondrial_genes <-grep("MT-", res_name_LPS2$symbol)
+Mitochondrial_genes
+```
+
+### How many mitochondrial genes in dataset?
+
+```{r mitochondrial_genes, echo = TRUE}
+length(Mitochondrial_genes)
+```
+
+### How many genes in dataset?
+
+```{r total, echo = TRUE}
+length(res_name_LPS2$symbol)
+```
+
+### Percentage mitochondrial genes? 
+
+```{r percentage, echo = TRUE}
+percentage = length(Mitochondrial_genes)/length(res_name_LPS2$symbol) * 100
+percentage
+```

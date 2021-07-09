@@ -1,0 +1,307 @@
+---
+title: "Sex mismatch"
+author: "Gijsje"
+date: "2/16/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(pheatmap)
+library(readxl) 
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(dplyr)
+library(tidyverse)
+library(ggsci)
+library(factoextra)
+library(ggsci)
+library(amap)
+library(scales)
+library(ggeasy)
+library(ggtext)
+library(DT)
+library(UpSetR)
+library(gridExtra)
+library(ggrepel)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+# Sex mismatch
+#stringent
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+
+list <- c("18-118-GFM-IL4", "18-018-SVZ-TNFa", "18-021-GFM-DEX", "18-021-GFM-LPS", "18-021-GTS-unstim", "18-021-THA-LPS", "18-064-GFM-ATP", "17-029-GTS-unstim", "17-029-GFM-LPS", "18-105-GTS-unstim")
+samplenames <- as.data.frame(list)
+metadata_filt$outlier <- NA
+metadata_filt[metadata_filt$Sample %in% samplenames$list,]$outlier <- "TRUE"
+metadata_filt[!metadata_filt$Sample %in% samplenames$list,]$outlier <- "FALSE"
+#write.table(metadata, "metadata.txt")
+
+genes_tpm_filt <- genes_tpm_filt[,rownames(metadata_filt)]
+all(rownames(metadata_filt) == colnames (genes_tpm_filt)) #TRUE
+
+# TPM
+#dim(genes_tpm_exp) # 19376 genes and 285 samples
+xist = genes_tpm_filt[which(grepl("ENSG00000229807",rownames(genes_tpm_filt))),]
+uty = genes_tpm_filt[which(grepl("ENSG00000183878",rownames(genes_tpm_filt))),]
+rna_sex_genes_tpm = data.frame(XIST = t(xist), UTY = t(uty))
+colnames(rna_sex_genes_tpm) = c("XIST","UTY")
+
+# Merge with metadata 
+
+all(rownames(rna_sex_genes_tpm) == rownames (metadata_filt)) #TRUE
+rna_sex_genes_tpm$`Reported Sex` = metadata_filt$sex
+rna_sex_genes_tpm$'Reported Sex' <- as.factor(rna_sex_genes_tpm$'Reported Sex')
+
+ggplot(rna_sex_genes_tpm, aes(x=XIST, y=UTY, fill=`Reported Sex`)) +
+geom_point(shape=21)
+
+# log2 tpm 
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+genes_counts_voom = as.data.frame(genes_tpm_filt, stringsAsFactors = F)
+xist = genes_counts_voom[which(grepl("ENSG00000229807",rownames(genes_counts_voom))),]
+uty = genes_counts_voom[which(grepl("ENSG00000183878",rownames(genes_counts_voom))),]
+rna_sex_genes_voom = data.frame(XIST = t(xist), UTY = t(uty))
+colnames(rna_sex_genes_voom) = c("XIST","UTY")
+
+# Merge with metadata 
+rna_sex_genes_voom$`Reported Sex` = factor(toupper(metadata_filt$sex), levels = c("M","F"))
+rna_sex_genes_voom$donor_id = metadata_filt$Donor_id
+rna_sex_genes_voom$sample = metadata_filt$Sample
+rna_sex_genes_voom$outlier = metadata_filt$outlier
+avg_xist = mean(rna_sex_genes_voom$XIST[rna_sex_genes_voom$`Reported Sex`=="F"])
+avg_uty = mean(rna_sex_genes_voom$UTY[rna_sex_genes_voom$`Reported Sex`=="M"])
+rna_sex_genes_voom$toCheck = F
+
+rna_sex_genes_voom$toCheck =
+  (rna_sex_genes_voom$XIST<1.5 & rna_sex_genes_voom$`Reported Sex`=="F") |
+  (rna_sex_genes_voom$UTY<0.5 & rna_sex_genes_voom$`Reported Sex`=="M")
+
+ggplot(rna_sex_genes_voom, aes(x=XIST, y=UTY, fill=`Reported Sex`)) +
+  geom_point(shape=21, size=2, alpha=.8) +
+  geom_label_repel(data = subset(rna_sex_genes_voom, toCheck == T),
+                   aes(label = sample),
+                   fill = "grey90",
+                   size=3,
+                   segment.alpha = 0.5,
+                   label.size = NA, 
+                   alpha = 0.8, 
+                   label.padding=.1, 
+                   box.padding = .1,
+                   na.rm=TRUE,
+                   seed = 1234) +
+  scale_fill_aaas() +
+  labs(x = "XIST (log2+1)", y = "UTY (log2+1)", fill = "Reported Sex") +
+  theme_classic()
+```
+# Overlap with samples that failed MBV
+# in between samples 
+
+```{r data_load_mismatch2, echo = TRUE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+
+list <- c("18-118-GFM-IL4", "18-018-SVZ-TNFa", "18-021-GFM-DEX", "18-021-GFM-LPS", "18-021-GTS-unstim", "18-021-THA-LPS", "18-064-GFM-ATP", "17-029-GTS-unstim", "17-029-GFM-LPS", "18-105-GTS-unstim")
+samplenames <- as.data.frame(list)
+metadata_filt$outlier <- NA
+metadata_filt[metadata_filt$Sample %in% samplenames$list,]$outlier <- "TRUE"
+metadata_filt[!metadata_filt$Sample %in% samplenames$list,]$outlier <- "FALSE"
+#write.table(metadata, "metadata.txt")
+
+genes_tpm_filt <- genes_tpm_filt[,rownames(metadata_filt)]
+all(rownames(metadata_filt) == colnames (genes_tpm_filt)) #TRUE
+
+# TPM
+#dim(genes_tpm_exp) # 19376 genes and 285 samples
+xist = genes_tpm_filt[which(grepl("ENSG00000229807",rownames(genes_tpm_filt))),]
+uty = genes_tpm_filt[which(grepl("ENSG00000183878",rownames(genes_tpm_filt))),]
+rna_sex_genes_tpm = data.frame(XIST = t(xist), UTY = t(uty))
+colnames(rna_sex_genes_tpm) = c("XIST","UTY")
+
+# Merge with metadata 
+
+all(rownames(rna_sex_genes_tpm) == rownames (metadata_filt)) #TRUE
+rna_sex_genes_tpm$`Reported Sex` = metadata_filt$sex
+rna_sex_genes_tpm$'Reported Sex' <- as.factor(rna_sex_genes_tpm$'Reported Sex')
+
+
+# log2 tpm 
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+genes_counts_voom = as.data.frame(genes_tpm_filt, stringsAsFactors = F)
+xist = genes_counts_voom[which(grepl("ENSG00000229807",rownames(genes_counts_voom))),]
+uty = genes_counts_voom[which(grepl("ENSG00000183878",rownames(genes_counts_voom))),]
+rna_sex_genes_voom = data.frame(XIST = t(xist), UTY = t(uty))
+colnames(rna_sex_genes_voom) = c("XIST","UTY")
+
+# Merge with metadata 
+rna_sex_genes_voom$`Reported Sex` = factor(toupper(metadata_filt$sex), levels = c("M","F"))
+rna_sex_genes_voom$donor_id = metadata_filt$Donor_id
+rna_sex_genes_voom$sample = metadata_filt$Sample
+rna_sex_genes_voom$outlier = metadata_filt$outlier
+avg_xist = mean(rna_sex_genes_voom$XIST[rna_sex_genes_voom$`Reported Sex`=="F"])
+avg_uty = mean(rna_sex_genes_voom$UTY[rna_sex_genes_voom$`Reported Sex`=="M"])
+rna_sex_genes_voom$toCheck = F
+
+rna_sex_genes_voom$toCheck = (rna_sex_genes_voom$UTY>1 & rna_sex_genes_voom$`Reported Sex`=="F") | (rna_sex_genes_voom$UTY<1.5 & rna_sex_genes_voom$`Reported Sex`=="M") |
+  (rna_sex_genes_voom$XIST<1.5 & rna_sex_genes_voom$`Reported Sex`=="F") |
+  (rna_sex_genes_voom$UTY<0.5 & rna_sex_genes_voom$`Reported Sex`=="M")
+
+ggplot(rna_sex_genes_voom, aes(x=XIST, y=UTY, fill=`Reported Sex`)) +
+  geom_point(shape=21, size=2, alpha=.8) +
+  geom_label_repel(data = subset(rna_sex_genes_voom, toCheck == T),
+                   aes(label = sample),
+                   fill = "grey90",
+                   size=3,
+                   segment.alpha = 0.5,
+                   label.size = NA, 
+                   alpha = 0.8, 
+                   label.padding=.1, 
+                   box.padding = .1,
+                   na.rm=TRUE,
+                   seed = 1234) +
+  scale_fill_aaas() +
+  labs(x = "XIST (log2+1)", y = "UTY (log2+1)", fill = "Reported Sex") +
+  theme_classic()
+```
+
+# Overlap with MBV; without ununstim samples 
+
+#("18-118-GFM-IL4", "18-018-SVZ-TNFa", "18-021-GFM-DEX", "18-021-GFM-LPS", "18-021-GTS-unstim", "18-021-THA-LPS", "18-064-GFM-ATP", "17-029-GTS-unstim", "17-029-GFM-LPS", "18-105-GTS-unstim")
+
+```{r data_load_mismatch3, echo = TRUE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+#remove uncultured samples
+metadata_filt <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+genes_tpm_filt <- genes_tpm_filt[,metadata_filt$Sample]
+
+list <- c("18-118-GFM-IL4", "18-018-SVZ-TNFa", "18-021-GFM-DEX", "18-021-GFM-LPS", "18-021-GTS-unstim", "18-021-THA-LPS", "18-064-GFM-ATP", "17-029-GTS-unstim", "17-029-GFM-LPS", "18-105-GTS-unstim")
+samplenames <- as.data.frame(list)
+metadata_filt$outlier <- NA
+metadata_filt[metadata_filt$Sample %in% samplenames$list,]$outlier <- "TRUE"
+metadata_filt[!metadata_filt$Sample %in% samplenames$list,]$outlier <- "FALSE"
+#write.table(metadata, "metadata.txt")
+
+genes_tpm_filt <- genes_tpm_filt[,rownames(metadata_filt)]
+all(rownames(metadata_filt) == colnames (genes_tpm_filt)) #TRUE
+
+# TPM
+#dim(genes_tpm_exp) # 19376 genes and 285 samples
+xist = genes_tpm_filt[which(grepl("ENSG00000229807",rownames(genes_tpm_filt))),]
+uty = genes_tpm_filt[which(grepl("ENSG00000183878",rownames(genes_tpm_filt))),]
+rna_sex_genes_tpm = data.frame(XIST = t(xist), UTY = t(uty))
+colnames(rna_sex_genes_tpm) = c("XIST","UTY")
+
+# Merge with metadata 
+
+all(rownames(rna_sex_genes_tpm) == rownames (metadata_filt)) #TRUE
+rna_sex_genes_tpm$`Reported Sex` = metadata_filt$sex
+rna_sex_genes_tpm$'Reported Sex' <- as.factor(rna_sex_genes_tpm$'Reported Sex')
+
+
+# log2 tpm 
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+genes_counts_voom = as.data.frame(genes_tpm_filt, stringsAsFactors = F)
+xist = genes_counts_voom[which(grepl("ENSG00000229807",rownames(genes_counts_voom))),]
+uty = genes_counts_voom[which(grepl("ENSG00000183878",rownames(genes_counts_voom))),]
+rna_sex_genes_voom = data.frame(XIST = t(xist), UTY = t(uty))
+colnames(rna_sex_genes_voom) = c("XIST","UTY")
+
+# Merge with metadata 
+rna_sex_genes_voom$`Reported Sex` = factor(toupper(metadata_filt$sex), levels = c("M","F"))
+rna_sex_genes_voom$donor_id = metadata_filt$Donor_id
+rna_sex_genes_voom$sample = metadata_filt$Sample
+rna_sex_genes_voom$outlier = metadata_filt$outlier
+avg_xist = mean(rna_sex_genes_voom$XIST[rna_sex_genes_voom$`Reported Sex`=="F"])
+avg_uty = mean(rna_sex_genes_voom$UTY[rna_sex_genes_voom$`Reported Sex`=="M"])
+rna_sex_genes_voom$outlier = metadata_filt$outlier
+
+
+ggplot(rna_sex_genes_voom, aes(x=XIST, y=UTY, fill=`Reported Sex`)) +
+  geom_point(shape=21, size=2, alpha=.8) +
+  geom_label_repel(data = subset(rna_sex_genes_voom, outlier == T),
+                   aes(label = sample),
+                   fill = "grey90",
+                   size=3,
+                   segment.alpha = 0.5,
+                   label.size = NA, 
+                   alpha = 0.8, 
+                   label.padding=.1, 
+                   box.padding = .1,
+                   na.rm=TRUE,
+                   seed = 1234) +
+  scale_fill_aaas() +
+  labs(x = "XIST (log2+1)", y = "UTY (log2+1)", fill = "Reported Sex") +
+  theme_classic()
+```
+
+

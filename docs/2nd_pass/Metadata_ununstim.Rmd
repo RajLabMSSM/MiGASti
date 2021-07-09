@@ -1,0 +1,313 @@
+---
+title: "Metadata"
+author: "Gijsje"
+date: "2/10/2021"
+output: 
+rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(RColorBrewer)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+# Preparing metadata
+### Create metadata file 
+
+```{r load_file, echo=FALSE}
+metadata = "~/Documents/MiGASti/Old versions databases/Metadata.xlsx"
+metadata = read_excel(metadata, col_names = TRUE) 
+metadata = as.data.frame(metadata)
+setwd("~/Documents/MiGASti/Databases")
+general_stats <- read.table("multiqc_general_stats_533s.txt", header=T, stringsAsFactors = FALSE)
+
+metadata <- merge(metadata, general_stats, by = "Sample")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+```
+
+### Change names
+
+```{r metadata1, echo=FALSE, results = 'hide'}
+# change names in metadata and set to correct data types 
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_MRNA_BASES"] <- "picard_pct_mrna_bases"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PERCENT_DUPLICATION"] <- "picard_pct_percent_duplication"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.summed_mean"] <- "picard_summed_mean"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.summed_median"] <- "picard_summed_median"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_RIBOSOMAL_BASES"] <- "picard_pct_ribosomal_bases"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_PF_READS_ALIGNED"] <- "picard_pct_pf_reads_aligned"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_PF_READS_ALIGNED"] <- "picard_pct_pf_reads_aligned"
+names(metadata)[names(metadata) == "featureCounts_mqc.generalstats.featurecounts.Assigned"] <- "featurecounts_assigned"
+names(metadata)[names(metadata) == "STAR_mqc.generalstats.star.uniquely_mapped"] <- "star_uniquely_mapped"
+names(metadata)[names(metadata) == "STAR_mqc.generalstats.star.uniquely_mapped_percent"] <- "star_uniquely_mapped_percent"
+names(metadata)[names(metadata) == "STAR_mqc.generalstats.star.total_reads"] <- "star_total_reads"
+names(metadata)[names(metadata) == "Trimmomatic_mqc.generalstats.trimmomatic.dropped_pct"] <- "trimmomatic_dropped_pct"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_INTERGENIC_BASES"] <- "picard_pct_intergenic_bases"
+names(metadata)[names(metadata) == "Picard_mqc.generalstats.picard.PCT_INTRONIC_BASES"] <- "picard_pct_intronic_bases"
+```
+
+### Change to correct data format
+
+```{r metadata2, echo=FALSE, results = 'hide'}
+metadata$picard_pct_mrna_bases <- as.numeric(metadata$picard_pct_mrna_bases)
+length(metadata$picard_pct_mrna_bases)
+
+metadata$picard_pct_percent_duplication <- as.numeric(metadata$picard_pct_percent_duplication)
+length(metadata$picard_pct_percent_duplication)
+
+metadata$picard_summed_mean <- as.numeric(metadata$picard_summed_mean)
+length(metadata$picard_summed_mean)
+
+metadata$picard_summed_median <- as.numeric(metadata$picard_summed_median)
+length(metadata$picard_summed_median)
+
+metadata$picard_pct_ribosomal_bases <- as.numeric(metadata$picard_pct_ribosomal_bases)
+length(metadata$picard_pct_ribosomal_bases)
+
+metadata$picard_pct_pf_reads_aligned <- as.numeric(metadata$picard_pct_pf_reads_aligned)
+length(metadata$picard_pct_pf_reads_algined)
+
+metadata$featurecounts_assigned <- as.numeric(metadata$featurecounts_assigned)
+length(metadata$featurecounts_assigned)
+
+metadata$star_uniquely_mapped <- as.numeric(metadata$star_uniquely_mapped)
+length(metadata$star_uniquely_mapped)
+
+metadata$star_uniquely_mapped_percent <- as.numeric(metadata$star_uniquely_mapped_percent)
+length (metadata$star_uniquely_mapped_percent)
+
+metadata$star_total_reads <- as.numeric(metadata$star_total_reads)
+length(metadata$star_total_reads)
+
+metadata$trimmomatic_dropped_pct <- as.numeric(metadata$trimmomatic_dropped_pct)
+length(metadata$trimmomatic_dropped_pct)
+
+metadata$picard_pct_ribosomal_bases <- as.numeric(metadata$picard_pct_ribosomal_bases)
+length(metadata$picard_pct_ribosomal_bases)
+
+metadata$picard_pct_intronic_bases <- as.numeric(metadata$picard_pct_intronic_bases)
+length(metadata$picard_pct_intronic_bases)
+
+metadata$picard_pct_intergenic_bases <- as.numeric(metadata$picard_pct_intergenic_bases)
+length(metadata$picard_pct_intergenic_bases)
+
+metadata$featurecounts_assigned <- as.numeric(metadata$featurecounts_assigned)
+
+metadata$Region <- as.factor(metadata$Region)
+metadata$Stimulation <- as.factor(metadata$Stimulation)
+metadata$Average_library_size <- as.numeric(metadata$Average_library_size)
+metadata$Qubit_conc <- as.numeric(metadata$Qubit_conc)
+metadata$Diagnosis <- as.factor (metadata$Diagnosis)
+metadata$Main_diagnosis <- as.factor (metadata$Main_diagnosis)
+```
+
+### QC: name samples TRUE or FALSE (outlier = TRUE) based on QC filtering 
+
+```{r metadata_QC, echo=FALSE, results = 'hide'}
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove.txt")
+samplenames <- exclude
+metadata$outlier <- NA
+metadata[metadata$Sample %in% samplenames$x,]$outlier <- "TRUE"
+metadata[!metadata$Sample %in% samplenames$x,]$outlier <- "FALSE"
+#write.table(metadata, "metadata.txt")
+```
+
+# Number of unique donors for all ununstim samples (not cultured/stimulated)
+
+```{r metadata_QC2, echo=TRUE}
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+exclude <- exclude$x
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+#only continue with ununstim samples
+metadata_uncultured <- subset(metadata_filt, Stimulation == "ununstim")
+#check numbers
+length(unique(metadata_uncultured$Donor_id))
+save(metadata_uncultured, file = "metadata_uncultured.Rdata")
+```
+
+# Number of stimulations 
+
+```{r metadata_stims1, echo=TRUE}
+metadata_filt <- metadata_uncultured
+length(unique(metadata_filt$Stimulation))
+```
+
+### Number of samples per stimulation
+
+```{r metadata_sample_stim, echo=TRUE}
+as.data.frame(t(as.matrix(unclass(table(metadata_filt$Stimulation, useNA = "ifany")  )))) %>%
+kable(row.names = F) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Number of donors per stimulation
+
+```{r metadata_sample_stims2, echo=TRUE}
+donor_stimuli = unique(metadata_filt[,c("Donor_id", "Stimulation")])
+
+as.data.frame(t(as.matrix(unclass(  table(donor_stimuli$Stimulation, useNA = "ifany")  )))) %>%
+kable(row.names = F) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Number of samples by region
+
+```{r metadata_sample_stim20, echo=TRUE}
+as.data.frame(t(as.matrix(unclass(table(metadata_filt$Region, useNA = "ifany")  )))) %>%
+kable(row.names = F) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Number of donors by region 
+
+```{r metadata_sample_stim3, echo=TRUE}
+donor_region = unique(metadata_filt[,c("Donor_id", "Region")])
+as.data.frame(t(as.matrix(unclass(table(donor_region$Region, useNA = "ifany")  )))) %>%
+kable(row.names = F) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+
+# Number of donors per sex
+
+```{r metadata_sample_stim7, echo=TRUE}
+sexByDonor = unique(metadata_filt[,c("Donor_id", "sex")])
+#createDT(sexByDonor)
+as.data.frame(t(as.matrix(unclass(table(sexByDonor$sex, useNA = "ifany"))))) %>%
+ kable(row.names = F) %>%
+ kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+
+# Age
+### Maximum age 
+
+```{r metadata_sample_stim8, echo=TRUE}
+ageByDonor = unique(metadata_filt[,c("Donor_id", "age", "sex")])
+#createDT(ageByDonor)
+max(ageByDonor$age, na.rm = T)
+```
+
+### Minimum age
+
+```{r metadata_sample_stim21, echo=TRUE}
+min(ageByDonor$age, na.rm = T)
+```
+
+### Distribution plot age/sex by donor 
+
+```{r metadata_sample_stim10, echo=TRUE}
+mean_f = mean(ageByDonor[ageByDonor$sex == "f", "age"], na.rm = T)
+mean_m = mean(ageByDonor[ageByDonor$sex == "m", "age"], na.rm = T)
+
+ggplot(ageByDonor, aes(x=age, fill=sex)) +
+  geom_histogram(bins = 25, colour='black', position = "stack") +
+  labs(x="Age", y="Donors") +
+  scale_y_continuous(breaks = (1:20)) +
+  scale_x_continuous(breaks=seq(20,120,10)) + 
+  geom_vline(xintercept=mean_f, color = "red", linetype="dashed") +
+  geom_vline(xintercept=mean_m, color = "blue", linetype="dashed") +
+  theme_classic()
+```
+
+# Main diagnosis by donor 
+
+```{r metadata_sample_stim24, echo=TRUE, results = 'hide'}
+Main_diagnosisByDonnor = unique(metadata_filt[,c("Donor_id", "Main_diagnosis")])
+table(Main_diagnosisByDonnor)
+```
+
+### Number of different main diagnosis 
+
+```{r metadata_sample_stim9, echo=TRUE}
+length(unique(metadata$Main_diagnosis))
+```
+
+### Number of different main diagnosis 
+
+```{r metadata_sample_stim11, echo=TRUE}
+Main_diagnosisByDonor = unique(metadata_filt[,c("Donor_id", "Main_diagnosis")])
+as.data.frame(t(as.matrix(unclass(table(Main_diagnosisByDonor$Main_diagnosis, useNA = "ifany")  )))) %>%
+ kable(row.names = F) %>%
+ kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Pie chart main_diagnosis 
+
+```{r metadata_sample_stim12, echo=TRUE}
+pie_table = table(Main_diagnosisByDonor$Main_diagnosis)
+
+myPalette <- brewer.pal(10, "Set3") 
+pie(pie_table, border = "white", col = myPalette) +
+  coord_polar("y", start = 0) 
+```
+
+### Main diagnosis by sample
+
+```{r metadata_sample_stim13, echo=TRUE}
+as.data.frame(table(metadata_filt$Main_diagnosis), useNA = "ifany"  ) %>%
+ kable(row.names = F) %>%
+ kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Samples by main diagnosis and region 
+
+```{r metadata_sample_stim14, echo=TRUE}
+as.data.frame(table(metadata_filt[,c("Main_diagnosis", "Region")]), useNA = "ifany"  ) %>% tidyr::spread(Region, Freq) %>%
+ kable(row.names = F) %>%
+ kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+# Cause of death 
+
+### Categories
+
+```{r metadata_sample_stim15, echo=TRUE}
+DonorByDeath = unique(metadata_filt[,c("Donor_id", "Cause_of_death_categories")])
+#createDT(DonorByDeath)
+as.data.frame(t(as.matrix(unclass(  table(DonorByDeath$Cause_of_death_categories, useNA = "ifany")  )))) %>%
+ kable(row.names = F) %>%
+ kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Chart
+
+```{r metadata_sample_stim16, echo=TRUE}
+df = as.data.frame(table(DonorByDeath$Cause_of_death_categories, useNA = "ifany"))
+colnames(df) <- c("Cause_of_death", "Frequency")
+
+ggplot(data=df, aes(x=Cause_of_death, y=Frequency)) +
+  geom_bar(stat="identity", fill="#FA8072")+
+  geom_text(aes(label=Frequency), vjust=0.5, hjust=1.6, color="white", size=3.5)+
+  coord_flip() + 
+  theme_classic()
+```
+
+
+
+
+
+

@@ -1,0 +1,476 @@
+---
+title: "20210224_DEG_heatmap"
+author: "Gijsje"
+date: "2/24/2021"
+output: 
+  rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+
+```{r packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(shiny)
+library(DT)
+library(pheatmap)
+library(ggfortify)
+library(ggplot2)
+library(UpSetR)
+library(VennDiagram)
+library(knitr) 
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(purrr)
+library(corrplot)
+library(ggplot2)
+library(ggpubr)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+# DEG across stimulations FDR % log FC > 1 or -1   
+#210 genes 
+
+```{r load tables, echo = TRUE, results = 'hide'}
+LPS <- read.csv("~/Documents/MiGASti/Databases/res_name_LPS_LFC1.txt", sep="")
+IFNy <- read.csv("~/Documents/MiGASti/Databases/res_name_IFNy_LFC1.txt", sep="")
+
+genes_LPS <- LPS$ensembl
+genes_IFNy <- IFNy$ensembl
+    
+# create a vector with all genes listed
+x <- c(genes_LPS, genes_IFNy)
+# make a dataframe
+as.data.frame(x) 
+# check if there are genes duplicate 
+duplicated(x) 
+unique(x)
+#remove duplicated
+ensembl <- x[!duplicated(x)] #1204 genes 
+
+genelist <- as.data.frame(ensembl)
+ensembl <- genelist$ensembl[!duplicated(genelist$ensembl)]
+genelist <- as.data.frame(ensembl) 
+genelist %>% distinct(ensembl, .keep_all = TRUE)
+
+load("~/Documents/MiGASti/res_name_LPS2.Rdata")
+load("~/Documents/MiGASti/docs/res_name_IFNy2.Rdata")
+
+DEG_genes_LPS = merge(res_name_LPS2, genelist, by ="ensembl")
+DEG_genes_IFNy = merge(res_name_IFNy2, genelist, by = "ensembl")
+
+Expression_stimulations <- cbind(DEG_genes_LPS, DEG_genes_IFNy)
+
+as.data.frame(Expression_stimulations) 
+# changes names in data frame
+names(Expression_stimulations)[2] <- "LPS"
+names(Expression_stimulations)[10] <- "IFNy"
+
+DF_log2FC <- Expression_stimulations %>% select(1, 2, 10)
+DF <- as.data.frame(DF_log2FC)
+DF <- t(DF)
+head( DF )[,1:10]
+
+# fill NA with 0
+DF_log2FC[is.na(DF_log2FC)] = 0
+save(DF_log2FC, file = "Kmeans210gsupport_LPS_IFNy.Rdata")
+
+gencode <- read.delim("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+gencode$ensembl = gencode$gene_id
+DF_log2FC <- merge(gencode, DF_log2FC, by = "ensembl")
+DF_log2FC$symbol = DF_log2FC$GeneSymbol
+
+# remove the first column
+df_num = as.matrix(DF_log2FC[,4:5])
+# scale the data 
+df_num_scale = scale(df_num)
+save(df_num, file = "df_num_LPS_IFNy_LOGFC1.Rdata")
+#save(DF_log2FC, file = "LOGFC1_stimulations_LPS_IFNy.Rdata")
+save(df_num_scale, file = "df_num_scale_LOGFC1stim_LPS_IFNy.Rdata")
+```
+
+### Overlap 210 genes with Patir
+
+```{r overlap, echo = TRUE}
+gencode <- read.delim("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+gencode$ensembl = gencode$gene_id
+genelist <- merge(gencode, genelist, by = "ensembl")
+genelist$symbol = genelist$GeneSymbol
+Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
+names(Patir)[1] <- "symbol"
+overlap1 <- merge(Patir, genelist, by = "symbol")
+list(overlap1$symbol)
+```
+
+### Heatmap DEG
+#210 genes (scaling data)
+
+```{r heatmap_GFM_cor, echo = TRUE}
+rownames(DF_log2FC) = DF_log2FC$symbol
+genelist <- c("C1QB",    "C2",      "CD300A",  "CIITA",   "EBI3",    "FCGR1A", "FCGR1B",  "FGL2",    "GIMAP2",  "GPR183", "HAMP",    "IFI30", "IRF5",    "LILRB2",  "MPEG1",   "SLC37A2", "TRIM22" )
+
+labels <- rownames(DF_log2FC)
+labels[!labels %in% genelist] <- "" 
+pheatmap(df_num_scale, labels_row = labels, fontsize_row = 6)
+```
+
+### Correlation between log FC LPS and IFNy (Spearman)
+#1204 genes
+
+```{r corrplot_GFM_cor, echo=TRUE, message=FALSE}
+df <- as.data.frame(df_num_scale)
+res <- cor.test(df$LPS, df$IFNy, method = "spearman")
+res
+```
+
+### PCA across stimulations
+
+```{r PCA, echo=TRUE, message=FALSE}
+dat <- data.frame(df_num_scale)
+stimulation <- colnames(dat)
+as.data.frame(stimulation)
+dat <- data.frame(dat)
+pca <- prcomp(t(dat), scale=TRUE)
+PoV <- round((pca$sdev^2/sum(pca$sdev^2))*100)
+#Grab covariates to plot:
+library(ggplot2)
+library(ggfortify)
+
+
+#Plot:
+ggplot(pca, aes(PC1, PC2, color=stimulation)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",PoV[1],"% variance")) +
+  ylab(paste0("PC2: ",PoV[2],"% variance")) +
+  theme_classic()
+
+```
+
+
+```{r upset_LPS1, echo=TRUE}
+list_filters = list(LPS = genes_LPS, IFNy = genes_IFNy)
+#list_filters
+overlap = unlist(list_filters)
+```
+
+### Upset plot
+ 
+```{r upset_LPS2, echo=TRUE}
+upset(fromList(list_filters), order.by = "freq")
+```
+
+# DEG across stimulations FDR 5% in 2 stimulations 
+#348 genes 
+
+```{r load tables1, echo = TRUE, results = 'hide'}
+DEG_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
+DEG_IFNy <- subset(res_name_IFNy2, adj.P.Val < 0.05)
+
+genes_LPS <- DEG_LPS$ensembl
+genes_IFNy <- DEG_IFNy$ensembl
+
+# create a vector with all genes listed
+x <- c(genes_LPS, genes_IFNy)
+# make a dataframe
+as.data.frame(x) #12590 genes 
+# check if there are genes duplicate 
+duplicated(x) 
+x[duplicated(x)]
+unique(x)
+#continue only with duplicated
+ensembl <- x[duplicated(x)] 
+
+genelist <- as.data.frame(ensembl)
+#remove duplicated
+ensembl <- genelist$ensembl[!duplicated(genelist$ensembl)]
+genelist <- as.data.frame(ensembl) #3159 genes
+
+DEG_genes_LPS = merge(res_name_LPS2, genelist, by ="ensembl")
+DEG_genes_IFNy = merge(res_name_IFNy2, genelist, by = "ensembl")
+
+Expression_stimulations <- cbind(DEG_genes_LPS, DEG_genes_IFNy)
+
+as.data.frame(Expression_stimulations) 
+# changes names in data frame
+names(Expression_stimulations)[2] <- "LPS"
+names(Expression_stimulations)[10] <- "IFNy"
+
+DF_log2FC <- Expression_stimulations %>% select(1, 2, 10)
+DF <- as.data.frame(DF_log2FC)
+DF <- t(DF)
+head( DF )[,1:10]
+
+DF_log2FC <- merge(gencode, DF_log2FC, by = "ensembl")
+DF_log2FC$symbol = DF_log2FC$GeneSymbol
+
+# fill NA with 0
+DF_log2FC[is.na(DF_log2FC)] = 0
+save(DF_log2FC, file = "kmeans348gsupport_IFNy_LPS.Rdata")
+
+# remove the first column
+df_num = as.matrix(DF_log2FC[,4:5])
+# scale the data 
+df_num_scale = scale(df_num)
+# make rownames as function
+rownames(df_num) = sapply(DF_log2FC$symbol,function(x) 
+strsplit(as.character(x),split = "\\\\")[[1]][1])
+save(df_num, file = "df_num_FDR0.53stim_ensembl_LPS_IFNy.Rdata")
+save(df_num_scale, file = "df_num_scale_FDR0.52stim_ensembl_LPS_IFNy.Rdata")
+```
+
+### Overlap 348 genes with Patir
+
+```{r overlap2, echo=TRUE}
+gencode <- read.delim("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+gencode$ensembl = gencode$gene_id
+genelist <- merge(gencode, genelist, by = "ensembl")
+genelist$symbol = genelist$GeneSymbol
+Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
+names(Patir)[1] <- "symbol"
+overlap2 <- merge(Patir, genelist, by = "symbol")
+list(overlap2$symbol)
+```
+
+### Heatmap DEG
+#348 genes
+
+```{r heatmap_cor_3161, echo=TRUE}
+rownames(DF_log2FC) = DF_log2FC$symbol
+genelist <- c("ADAM28",   "ATP8B4",   "C1QB",    "CASP1",   "CD53",     "CD69", "CD86",   "CLEC17A",  "CSF1R",    "CTSC",  "FCGR1A",   "FGL2", "GPR183",   "HAMP",  "HLA-DPA1", "HLA-DQB1", "HLA-DRA",  "HLA-DRB1", "OLR1", "PTPN6",    "PTPRC", "SIGLEC9",  "SP140", "SP140L", "TFEC", "TNFRSF1B", "TRIM22")
+
+labels <- rownames(DF_log2FC)
+labels[!labels %in% genelist] <- "" 
+pheatmap(df_num_scale, labels_row = labels, main = "Differentially expressed genes in the two stimulations", fontsize_row = 6)
+
+```
+
+### Correlation between logFC LPS and IFNy (Spearman)
+#348 genes
+
+```{r corrplot_3161, echo=TRUE, message=FALSE}
+df <- as.data.frame(df_num_scale)
+res <- cor.test(df$LPS, df$IFNy, method = "spearman")
+res
+```
+
+### PCA across stimulations
+
+```{r PCA_stim, echo=TRUE, message=FALSE}
+dat <- data.frame(df_num_scale)
+stimulation <- colnames(dat)
+as.data.frame(stimulation)
+dat <- data.frame(dat)
+pca <- prcomp(t(dat), scale=TRUE)
+PoV <- round((pca$sdev^2/sum(pca$sdev^2))*100)
+#Grab covariates to plot:
+library(ggplot2)
+library(ggfortify)
+
+
+#Plot:
+ggplot(pca, aes(PC1, PC2, color=stimulation)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",PoV[1],"% variance")) +
+  ylab(paste0("PC2: ",PoV[2],"% variance")) +
+  theme_classic()
+```
+
+
+```{r upset_LP4, echo=TRUE}
+list_filters = list(LPS = DEG_genes_LPS$symbol, IFNy = DEG_genes_IFNy$symbol)
+#list_filters
+overlap = unlist(list_filters)
+```
+
+### Upset plot
+ 
+```{r upset_LPS3, echo=TRUE}
+upset(fromList(list_filters), order.by = "freq")
+```
+
+# DEG across stimulations FDR 5%
+#6571 genes 
+
+```{r load tables20, echo = TRUE, results = 'hide'}
+#check duplicated genes in list 
+#[1] "ATF7"    "TMSB15B" "POLR2J4" "MATR3"   "HSPA14"  "SCO2" "TBCE"    "ATXN7"   "ABCF2"   "POLR2J3" "GGT1"  
+
+DEG_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
+DEG_IFNy <- subset(res_name_IFNy2, adj.P.Val < 0.05)
+
+genes_LPS <- DEG_LPS$ensembl
+genes_IFNy <- DEG_IFNy$ensembl
+
+# create a vector with all genes listed
+x <- c(genes_LPS, genes_IFNy)
+# make a dataframe
+as.data.frame(x) #12590 genes 
+# check if there are genes duplicate 
+duplicated(x) 
+unique(x)
+#remove duplicated
+ensembl <- x[!duplicated(x)] 
+
+genelist <- as.data.frame(ensembl)
+ensembl <- genelist$ensembl[!duplicated(genelist$ensembl)]
+genelist <- as.data.frame(ensembl)
+genelist %>% distinct(ensembl, .keep_all = TRUE)
+
+DEG_genes_LPS = merge(res_name_LPS2, genelist, by ="ensembl")
+DEG_genes_IFNy = merge(res_name_IFNy2, genelist, by = "ensembl")
+
+Expression_stimulations <- cbind(DEG_genes_LPS, DEG_genes_IFNy)
+
+as.data.frame(Expression_stimulations) 
+# changes names in data frame
+names(Expression_stimulations)[2] <- "LPS"
+names(Expression_stimulations)[10] <- "IFNy"
+
+DF_log2FC <- Expression_stimulations %>% select(1, 2, 10)
+DF <- as.data.frame(DF_log2FC)
+DF <- t(DF)
+head( DF )[,1:10]
+
+
+# fill NA with 0
+DF_log2FC[is.na(DF_log2FC)] = 0
+save(DF_log2FC, file = "kmeans8523ensembl_LPS_IFNy.Rdata")
+
+DF_log2FC <- merge(gencode, DF_log2FC, by = "ensembl")
+DF_log2FC$symbol = DF_log2FC$GeneSymbol
+
+#remove rownames that are duplicates (HSPA14)
+DF_log2FC = DF_log2FC[-c(5404),]
+
+
+# remove the first column
+df_num = as.matrix(DF_log2FC[,4:5])
+# scale the data 
+df_num_scale = scale(df_num)
+# make rownames as function
+rownames(df_num) = sapply(DF_log2FC$symbol,function(x) 
+strsplit(as.character(x),split = "\\\\")[[1]][1])
+save(df_num, file = "df_num_FDR0.5stim_allgenes_ensembl_LPS_IFNy.Rdata")
+save(df_num_scale, file = "df_num_scale_FDR0.5stim_allgenes_ensembl_LPS_IFNy.Rdata")
+```
+
+### Overlap 6571 genes with Patir
+
+```{r overlap_patir, echo=TRUE}
+gencode <- read.delim("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+gencode$ensembl = gencode$gene_id
+genelist <- merge(gencode, genelist, by = "ensembl")
+genelist$symbol = genelist$GeneSymbol
+Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
+names(Patir)[1] <- "symbol"
+overlap2 <- merge(Patir, genelist, by = "symbol")
+list(overlap2$symbol)
+```
+
+### Heatmap DEG
+#6571 genes
+
+```{r heatmap_DEG_all, echo=TRUE}
+rownames(DF_log2FC) = DF_log2FC$symbol
+genelist <- c("RGS1", "TLR6", "TYROBP", "TRIM22", "CD86", "TLR3"   )
+
+labels <- rownames(DF_log2FC)
+labels[!labels %in% genelist] <- "" 
+pheatmap(df_num_scale, labels_row = labels, main = "Differentially expressed genes", fontsize_row =6)
+```
+
+
+### Correlation logFC between LPS and IFNy (spearman)
+#6571 genes
+
+```{r corr_all, echo=TRUE, message=FALSE}
+df <- as.data.frame(df_num_scale)
+res <- cor.test(df$LPS, df$IFNy, method = "spearman")
+res
+```
+
+
+### PCA across stimulations
+
+```{r PCA_all, echo=TRUE, message=FALSE}
+dat <- data.frame(df_num_scale)
+stimulation <- colnames(dat)
+as.data.frame(stimulation)
+dat <- data.frame(dat)
+pca <- prcomp(t(dat), scale=TRUE)
+PoV <- round((pca$sdev^2/sum(pca$sdev^2))*100)
+#Grab covariates to plot:
+library(ggplot2)
+library(ggfortify)
+
+
+#Plot:
+ggplot(pca, aes(PC1, PC2, color=stimulation)) +
+  geom_point(size=2) +
+  xlab(paste0("PC1: ",PoV[1],"% variance")) +
+  ylab(paste0("PC2: ",PoV[2],"% variance")) +
+  theme_classic()
+
+```
+
+
+```{r upset_LPS_all, echo=TRUE}
+list_filters = list(LPS = genes_LPS, IFNy = genes_IFNy)
+#list_filters
+overlap = unlist(list_filters)
+```
+
+### Upset plot
+ 
+```{r upset_LPS2_all, echo=TRUE}
+upset(fromList(list_filters), order.by = "freq")
+```
+
+
+# Scatterplots 
+### LogFC LPS vs IFNy 
+#18981 genes 
+
+```{r scat_LPS_ifny, echo=TRUE}
+names(res_name_LPS2)[2] <- "LPS"
+names(res_name_IFNy2)[2] <- "IFNy"
+DEG_genes_LPS_IFNy = merge(res_name_LPS2, res_name_IFNy2, by ="symbol")
+
+LPS <- DEG_genes_LPS_IFNy[,3]
+IFNy <- DEG_genes_LPS_IFNy[,12]
+df = data.frame(LPS, IFNy)
+p <- ggplot(df, aes(x=LPS, y=IFNy) ) +
+  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
+  geom_bin2d(bins = 100) +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
+  scale_fill_continuous(type = "viridis") +
+  theme_bw()
+p + stat_cor(method = "spearman")
+```
+
+
+
+

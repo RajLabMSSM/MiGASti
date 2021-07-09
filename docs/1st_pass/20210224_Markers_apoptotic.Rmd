@@ -1,0 +1,232 @@
+---
+title: "Markers apoptotic"
+author: "Gijsje"
+date: "2/24/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+```{r data_load, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/Apoptotic_genes.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+setDT(genes_tpm_filt, keep.rownames = "ensembl")
+genes_tpm_filt$ensembl
+res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+```
+
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+marker_expression = merge(res_name, markers, by ="symbol")
+dim (marker_expression)
+head (marker_expression)
+metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
+metadata_filt_ordered = metadata_filt_ordered[-1,]
+all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
+Stimulation <- metadata_filt_ordered$Stimulation
+```
+
+### Boxplot  BTG1
+
+```{r data_load_BTG1, echo = TRUE}
+BTG1 <- marker_expression[1, ] 
+BTG1$ensembl = NULL
+BTG1$symbol = NULL
+BTG1_new<-as.data.frame(t(BTG1))
+df = data.frame(Stimulation, BTG1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("BTG1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot BTG2 
+
+```{r data_load_BTG2, echo = TRUE}
+BTG2 <- marker_expression[2, ] 
+BTG2$ensembl = NULL
+BTG2$symbol = NULL
+BTG2_new<-as.data.frame(t(BTG2))
+df = data.frame(Stimulation, BTG2_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("BTG2") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot CASP1
+
+```{r data_load_CASP1, echo = TRUE}
+CASP1 <- marker_expression[3, ] 
+CASP1$ensembl = NULL
+CASP1$symbol = NULL
+CASP1_new<-as.data.frame(t(CASP1))
+df = data.frame(Stimulation, CASP1_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CASP1") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot CASP10
+
+```{r data_load_CASP10, echo = TRUE}
+CASP10 <- marker_expression[4, ] 
+CASP10$ensembl = NULL
+CASP10$symbol = NULL
+CASP10_new<-as.data.frame(t(CASP10))
+df = data.frame(Stimulation, CASP10_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CASP10") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+### Boxplot CASP14
+
+```{r data_load_CASP14, echo = TRUE}
+CASP14 <- marker_expression[5, ] 
+CASP14$ensembl = NULL
+CASP14$symbol = NULL
+CASP14_new<-as.data.frame(t(CASP14))
+df = data.frame(Stimulation, CASP14_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CASP14") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+### Boxplot CASP2
+
+```{r data_load_CASP2, echo = TRUE}
+CASP2 <- marker_expression[6, ] 
+CASP2$ensembl = NULL
+CASP2$symbol = NULL
+CASP2_new<-as.data.frame(t(CASP2))
+df = data.frame(Stimulation, CASP2_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CASP2") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+
+### Boxplot CASP3
+
+```{r data_load_CASP3, echo = TRUE}
+CASP3 <- marker_expression[7, ] 
+CASP3$ensembl = NULL
+CASP3$symbol = NULL
+CASP3_new<-as.data.frame(t(CASP3))
+df = data.frame(Stimulation, CASP3_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CASP3") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+### Boxplot CASP7
+
+```{r data_load_CASP7, echo = TRUE}
+CASP7 <- marker_expression[8, ] 
+CASP7$ensembl = NULL
+CASP7$symbol = NULL
+CASP7_new<-as.data.frame(t(CASP7))
+df = data.frame(Stimulation, CASP7_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CASP7") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+### Boxplot CASP8
+
+```{r data_load_CASP8, echo = TRUE}
+CASP8 <- marker_expression[9, ] 
+CASP8$ensembl = NULL
+CASP8$symbol = NULL
+CASP8_new<-as.data.frame(t(CASP8))
+df = data.frame(Stimulation, CASP8_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CASP8") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+### Boxplot CASP9
+
+```{r data_load_CASP9, echo = TRUE}
+CASP9 <- marker_expression[10, ] 
+CASP9$ensembl = NULL
+CASP9$symbol = NULL
+CASP9_new<-as.data.frame(t(CASP9))
+df = data.frame(Stimulation, CASP9_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("CASP9") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```
+
+
+### Boxplot TP53
+
+```{r data_load_TP53, echo = TRUE}
+TP53 <- marker_expression[11, ] 
+TP53$ensembl = NULL
+TP53$symbol = NULL
+TP53_new<-as.data.frame(t(TP53))
+df = data.frame(Stimulation, TP53_new)
+ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
+  geom_boxplot()+ 
+  ggtitle("TP53") +
+  xlab("Stimulation") + ylab("log2((TPM)+1)")
+```

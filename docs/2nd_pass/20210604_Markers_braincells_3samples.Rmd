@@ -1,0 +1,120 @@
+---
+title: "Neuronal, astrocytic, oligodendrocyte markers"
+author: "Gijsje"
+date: "2/16/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(pheatmap)
+library(readxl) 
+library(ComplexHeatmap)
+library(RColorBrewer)
+library(dplyr)
+library(tidyverse)
+library(ggsci)
+library(factoextra)
+library(ggsci)
+library(amap)
+library(scales)
+library(ggeasy)
+library(ggtext)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+```{r check, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/Markers.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+metadata <- subset(metadata_filt, Stimulation == "ununstim")
+genes_tpm_filt2 <- genes_tpm_filt[, colnames(genes_tpm_filt) %in% metadata$Sample]
+genes_tpm_filt = log2((genes_tpm_filt2) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+setDT(genes_tpm_filt, keep.rownames = "ensembl")
+genes_tpm_filt$ensembl
+res_name = merge(genes_tpm_filt, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+
+```
+
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+marker_expression = merge(res_name, markers, by ="symbol")
+dim (marker_expression)
+head (marker_expression)
+metadata_filt_ordered <- metadata_filt[colnames(genes_tpm_filt),]
+metadata_filt_ordered = metadata_filt_ordered[-1,]
+all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUE
+Stimulation <- metadata_filt_ordered$Stimulation
+```
+
+# Expression of microglia, neuronal, astrocyte and oligodendrocyte markers in all 496 samples
+
+```{r data_load_heatmap, echo = TRUE, results='hide'}
+rownames(marker_expression) = marker_expression$symbol
+cell_type = marker_expression$Cell_type  # keep in same gene order 
+marker_expression$ensembl = NULL
+df_num = as.matrix(marker_expression[,2:44])
+rownames(df_num) = marker_expression$symbol
+cell_type = as.factor(cell_type)
+# cell_type_colors <- data.frame(cell_type = levels(cell_type), color = I(brewer.pal(nlevels(cell_type), name = 'Dark2')))
+cell_type_colors <- data.frame(cell_type = levels(cell_type), color = pal_lancet('lanonc')(nlevels(cell_type)))
+cell_type_df = left_join(data.frame(cell_type = cell_type), cell_type_colors, by="cell_type")
+res <- unlist(lapply(split(cell_type_colors$color, cell_type_colors$cell_type), unlist))
+row_ha = rowAnnotation(`Cell Type` = as.factor(cell_type_df$cell_type), col = list(`Cell Type` = res), show_annotation_name = F)
+```
+
+```{r _heatmap, echo = TRUE, fig.width=10, fig.height=6, dpi=300}
+# pdf(paste0(work_plots, "HM_markers_255s.pdf"), width = 10, height = 6)
+colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(496)
+Heatmap(df_num,
+        col = colPalette,
+        name = "log2(TPM+1)", # Legend title
+        cluster_rows = T,
+        cluster_columns = F,
+        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
+        show_column_dend = F, 
+        show_column_names = T,
+        show_row_names = T,
+        right_annotation = row_ha)
+#dev.off()
