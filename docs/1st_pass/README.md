@@ -3,18 +3,18 @@
 > This repository includes code and plots. Exploratory analysis and intermediate processing files are too large for this repository.
 
 1. Metadata
-- [Metadata](https://rajlabmssm.github.io/MiGASti/docs/Metadata.html). Organizing of the metadata and general demographics for the included samples after QC filtering of all samples. 
-- [Metadata_cultured_stimulated](https://rajlabmssm.github.io/MiGASti/docs/Metadata_cultured.html). Metadata and general demographics for the included samples after QC filtering of all cultured + stimulated samples.
-- [Metadata_ununstim](https://rajlabmssm.github.io/MiGASti/docs/Metadata_ununstim.html).
+- [Metadata](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/Metadata.html). Organizing of the metadata and general demographics for the included samples after QC filtering of all samples. 
+- [Metadata_cultured_stimulated](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/Metadata_cultured.html). Metadata and general demographics for the included samples after QC filtering of all cultured + stimulated samples.
+- [Metadata_ununstim](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/Metadata_ununstim.html).
 
-2. [QC](https://rajlabmssm.github.io/MiGASti/docs/QC_cor.html). Quality control of all samples.
+2. [QC](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/QC_cor.html). Quality control of all samples.
  
 3.Exploratory Analysis: 
- - [Exploratory plots before filters](https://rajlabmssm.github.io/MiGASti/docs/20210209_PCA_heatmap_before_filtering.html). PCA's between the first 10 PCs and covariates with (533 samples) and without (483 samples) uncultured samples.
- - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with (496 samples) and without uncultured (454 samples) samples.  
+ - [Exploratory plots before filters](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/20210209_PCA_heatmap_before_filtering.html). PCA's between the first 10 PCs and covariates with (533 samples) and without (483 samples) uncultured samples.
+ - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with (496 samples) and without uncultured (454 samples) samples.  
  
 4. Variance partition 
-- [Variance partition_all](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition.html). Variance partition for all samples.
+- [Variance partition_all](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/Variance_partition.html). Variance partition for all samples.
 - [Variance partition_cultured](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_cultured.html). Variance partition for only cultured samples.
 - [Variance partition_cultured_GFM](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_GFM.html). Variance partition for only cultured samples.
 - [Variance partition_cultured_GTS](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_GTS.html). Variance partition for only cultured samples.
