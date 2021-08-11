@@ -1,0 +1,97 @@
+---
+title: "Metadata"
+author: "Gijsje"
+date: "2/10/2021"
+output: 
+rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(knitr)
+library(kableExtra)
+library(ggplot2)
+library(RColorBrewer)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+# Preparing metadata
+### Create metadata file 
+
+```{r load_file, echo=FALSE}
+metadata = "~/Documents/MiGASti/Databases/72h_stim_metadata.xlsx"
+metadata = read_excel(metadata, col_names = TRUE) 
+metadata = as.data.frame(metadata)
+
+sample <- paste(metadata$donor_id, metadata$region)
+metadata2 <- cbind(metadata, sample)
+```
+
+
+# Number of unique donors of all cultured + stimulated samples 
+
+```{r metadata_QC2, echo=TRUE}
+#check numbers
+length(unique(metadata2$donor_id)) 
+```
+
+# Number of stimulations 
+
+```{r metadata_stims1, echo=TRUE}
+length(unique(metadata2$stimulation))
+unique(metadata2$stimulation)
+```
+
+### Number of samples per stimulation
+
+```{r metadata_sample_stim, echo=TRUE}
+as.data.frame(t(as.matrix(unclass(table(metadata2$stimulation, useNA = "ifany")  )))) %>%
+kable(row.names = F) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Number of donors per stimulation
+
+```{r metadata_sample_stims2, echo=TRUE}
+donor_stimuli = unique(metadata2[,c("donor_id", "stimulation")])
+
+as.data.frame(t(as.matrix(unclass(  table(donor_stimuli$stimulation, useNA = "ifany")  )))) %>%
+kable(row.names = F) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Number of samples by region
+
+```{r metadata_sample_stim20, echo=TRUE}
+as.data.frame(t(as.matrix(unclass(table(metadata2$region, useNA = "ifany")  )))) %>%
+kable(row.names = F) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+### Number of donors by region 
+
+```{r metadata_sample_stim3, echo=TRUE}
+donor_region = unique(metadata2[,c("donor_id", "region")])
+as.data.frame(t(as.matrix(unclass(table(donor_region$region, useNA = "ifany")  )))) %>%
+kable(row.names = F) %>%
+kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+

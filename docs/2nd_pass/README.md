@@ -10,21 +10,24 @@
 - [Metadata](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/Metadata_all.html). Organizing of the metadata and general demographics for the included samples after QC filtering of all samples. 
 - [Metadata_cultured_stimulated](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/Metadata_cultured.html). Metadata and general demographics for the included samples after QC filtering of all cultured + stimulated samples.
 - [Metadata_ununstim](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/Metadata_ununstim.html).
+
+3. Metadata 72 hour. 
+- [Metadata](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/Metadata_cultured_72h.html). Overview of data for follow-up experiment 72 hours IL-4 and DEX.
  
-3.Exploratory plots: 
+4.Exploratory plots: 
  - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with  and without uncultured samples.  
  
-4. Variance partition 
+5. Variance partition 
 - [Variance partition_cultured](https://rajlabmssm.github.io/MiGASti/docs/2nd_passVariance_partition_cultured.html). Variance partition for only cultured samples with and without TNFa. Technical + biological factors combined and biological factors only. Technical factors was the collinearity to high, so could not be modeled.  
 
-5. Internal QC; TNFa is already excluded. 
+6. Internal QC; TNFa is already excluded. 
 - [Expression of brain markers](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210604_Markers_braincells.html). Expression of microglia, astrocyte, oligodendrocyte, neuron markers in all samples.
 - [Expression of myeloid markers](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210604_Markers_myeloid.html). Expression of monocyte, macrophage and microglia markers in all samples. 
 - [Mitochondrial_genes](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210511_Mitochondrial_genes.html). Percentage of mitochondrial genes in total dataset after filtering out lowly expressed genes (< 1 in 50% of the samples).
 - [Stimulations](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20211206_Stimulations_heatmap2.html). Heatmap of stimulation specific responses. Expression of ligands in vitro vs ex vivo.
 - [Expression of AD genes](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210224_Markers_AD_genes.html). Boxplots showing expression of AD genes (based on TWAS AD and snRNAseq) in IL4 and DEX. 
 
-6. DEG analysis (with only cultured samples)
+7. DEG analysis (with only cultured samples)
 - [DESeq2_GFM_all](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210223DiffExpression_GFM_all.html). DESeq2 analysis with contrasts of GFM samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
 - [DESeq2_SVZ_all](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210223DiffExpression_SVZ_all.html). DESeq2 analysis with contrasts of SVZ samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
 - [DESeq2_GTS_all](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210223DiffExpression_GTS_all.html). DESeq2 analysis with contrasts of GTS samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
@@ -42,28 +45,28 @@ Note. SVZ showed most significant genes up/down after stimulation.
 | IL4  	| 49     	| 47          	|     	|        	|             	|    	|        	|             	|     	|        	|             	|     	|        	|             	|
 | ATP  	| 134    	| 134         	|     	|        	|             	|    	|        	|             	|     	|        	|             	|     	| 0      	| 0           	|
 
-7. Differential expression across regions
+8. Differential expression across regions
 - [DGE_SVZ_compared](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210303_DEG_FC_scatterplot.html). Scatterplots of logFC of genelist with all differential expressed genes compared between SVZ and the other region for LPS and IFNy only. 
 - [DEG_SVZ](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210608_SVZXGFM_Limma_Deseq2.html). Comparison SVZxGFM in baseline samples (unstim) compared with DEG LPS SVZ + DEG IFNy SVZ + ex vivo SVZxGFM MiGA. DESeq2 used. 
 
-8. DREAM only cultured + stimulated samples 
-- [DREAM_analysis_cultured](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html).
-- [DREAM_analysis_uncultured](https://rajlabmssm.github.io/MiGASti/docs/20210609_DREAM_cultured_uncultured.html). 
+9. DREAM only cultured + stimulated samples 
+- Analysis in docs 2nd pass .Rmd
 - [DREAM_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210806_DREAM_volcanos_ms.html). Some vulcano plots for DEGs. 
+- [DREAM_heatmap](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210308_DEG_FC_heatmap_gene_names.html.html). Heatmap FDR 5% logFC |1| across stimulations.
 
-12. Aging
+10. Aging
 - [Age_plots](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210806_age_plots_LPS_IFNy.html). Metadata, plots of effect of aging on immune response genes (6270 LPS and 79 IFNy genes) and overlapping genes between aging and immune response (151 LPS and 17 IFNy). Counts are voom normalized. Pairwise comparisons are not incorporated, since file is too big. 
 - [Age_quantiles](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20211206_AGE_quantiles.html). MiGA aging genes as input to check expression of these genes after stimulation with LPS and IFNy or baseline. 
 
-13. Differential transcript usage
+11. Differential transcript usage
 - [DTU_heatmap](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210224_DTU_FC_heatmap_gene_names.html). Heatmap of significant DTU genes that overlap with DEG. 
-- [DTU_plots_download](https://rajlabmssm.github.io/MiGASti/docs/20210511_DTU_plots_download.html). Summary of results including table for download of significant results. Code for DTU analysis can be found in docs 1st pass. Including boxplots showing direction of effects. 
+- [DTU_plots_download](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210511_DTU_plots_download.html). Summary of results including table for download of significant results. Code for DTU analysis can be found in docs 1st pass. Including boxplots showing direction of effects. 
 - [DTU_overlaps_genes](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210512_DTU_genes_overlap.html). Overlap between transcripts DTU and genes per stimulation and significance of overlap between background of 20.000 genes. 
 
-15. Comparison with monocyte data (Elisa) and microglia
+12. Comparison with monocyte data (Elisa) and microglia
 - [Monocyte_comparison](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210806_DREAM_monocytes_comparison.html). Comparison of LPS and INFy genes up/down in microglia (6 hours) and monocytes (24 hours). microglia: logFC < -1 or > 1, monocytes: logFC < -5 or > 5. 
 
-16. Enrichment analyses
+13. Enrichment analyses
 Note. did not include TNFa, since stimulation did not work. Overlap between stimulations up/down FDR 5% and FDR 5% logFC < 0.5 or > 0.5. 
 
 Input genelists:
@@ -90,9 +93,9 @@ Diseases:
 15. scRNAseq Human alzheimer genes up n = 22/down n = 53 genes + combined (Srinsivan et al. 2019) (HAM signature) 
 16. scRNAseq of activation response microglia in AD mouse n = 108 genes (Sala-Frigerio et al. 2019) 6 scRNAseq disease associated microglia up n = 280 /down n = 22 genes (Keren-Shaul et al. 2019)
 
-- [LPS_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_LPS_function_disease_FC0.5.Rmd)
-- [IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_IFNy_function_disease_FC0.5.Rmd)
-- [R848_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_R848_function_disease_FC0.5.Rmd)
-- [IL4_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_IL4_function_disease_FC0.5.Rmd)
-- [ATP_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_ATP_function_disease_FC0.5.Rmd)
-- [DEX_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_DEX_function_disease_FC0.5.Rmd)
+- [LPS_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_LPS_function_disease_FC0.5.html)
+- [IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_IFNy_function_disease_FC0.5.html)
+- [R848_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_R848_function_disease_FC0.5.html)
+- [IL4_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_IL4_function_disease_FC0.5.html)
+- [ATP_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_ATP_function_disease_FC0.5.html)
+- [DEX_enrichment](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210624_genelist_enrichment_DEX_function_disease_FC0.5.html)
