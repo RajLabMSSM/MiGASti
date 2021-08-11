@@ -2,7 +2,7 @@
 
 > This repository includes code and plots. Exploratory analysis and intermediate processing files are too large for this repository.
 
-> This repository includes codes and plots after removal of some additional samples (RNA/DNA mismatch; sample swaps and donor 14-055 GFM has been changed to donor 14-051).
+> This repository includes codes and plots after removal of some additional samples (RNA/DNA mismatch; sample swaps and donor 14-055 GFM has been changed to donor 14-051). See docs 1st_pass for additional analyses. 
 
 1. [QC](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/QC_cor.html). Quality control of all samples including removal of additional samples.
 
@@ -12,24 +12,23 @@
 - [Metadata_ununstim](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/Metadata_ununstim.html).
  
 3.Exploratory plots: 
- - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with  and without uncultured samples.  
+ - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with  and without uncultured samples.  
  
 4. Variance partition 
 - [Variance partition_cultured](https://rajlabmssm.github.io/MiGASti/docs/2nd_passVariance_partition_cultured.html). Variance partition for only cultured samples with and without TNFa. Technical + biological factors combined and biological factors only. Technical factors was the collinearity to high, so could not be modeled.  
 
 5. Internal QC; TNFa is already excluded. 
-- [Expression of pre-selected markers for apoptosis/cell death](https://rajlabmssm.github.io/MiGASti/docs/20210224_Markers_apoptotic.html). Boxplots with TPM expression of genes that are involved in apoptotic processes (CASP3; specific) 
 - [Expression of brain markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_braincells.html). Expression of microglia, astrocyte, oligodendrocyte, neuron markers in all samples.
 - [Expression of myeloid markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_myeloid.html). Expression of monocyte, macrophage and microglia markers in all samples. 
 - [Mitochondrial_genes](https://rajlabmssm.github.io/MiGASti/docs/20210511_Mitochondrial_genes.html). Percentage of mitochondrial genes in total dataset after filtering out lowly expressed genes (< 1 in 50% of the samples).
-- [Stimulations](https://rajlabmssm.github.io/MiGASti/docs/20211206_Stimulations_heatmap2.html). Heatmap of stimulation specific responses. Expression of ligands in vitro vs ex vivo.
+- [Stimulations](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20211206_Stimulations_heatmap2.html). Heatmap of stimulation specific responses. Expression of ligands in vitro vs ex vivo.
 
 6. DEG analysis (with only cultured samples)
-- [DESeq2_GFM_all](https://rajlabmssm.github.io/MiGASti/docs/20210223DiffExpression_GFM_all.html). DESeq2 analysis with contrasts of GFM samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_SVZ_all](https://rajlabmssm.github.io/MiGASti/docs/20210223DiffExpression_SVZ_all.html). DESeq2 analysis with contrasts of SVZ samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_GTS_all](https://rajlabmssm.github.io/MiGASti/docs/20210223DiffExpression_GTS_all.html). DESeq2 analysis with contrasts of GTS samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_CC_all](https://rajlabmssm.github.io/MiGASti/docs/20210223DiffExpression_CC_all.html). DESeq2 analysis with contrasts of CC samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
-- [DESeq2_THA_all](https://rajlabmssm.github.io/MiGASti/docs/20210225DiffExpression_THA_all.html). DESeq2 analysis with contrasts of THA samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_GFM_all](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210223DiffExpression_GFM_all.html). DESeq2 analysis with contrasts of GFM samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_SVZ_all](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210223DiffExpression_SVZ_all.html). DESeq2 analysis with contrasts of SVZ samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_GTS_all](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210223DiffExpression_GTS_all.html). DESeq2 analysis with contrasts of GTS samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_CC_all](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210223DiffExpression_CC_all.html). DESeq2 analysis with contrasts of CC samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
+- [DESeq2_THA_all](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210225DiffExpression_THA_all.html). DESeq2 analysis with contrasts of THA samples only: stimuli vs unstim for all conditions. Number of differential expressed genes, Vulcano plots, MA plots, list of top genes. 
 
 Note. SVZ showed most significant genes up/down after stimulation.
 
@@ -44,7 +43,7 @@ Note. SVZ showed most significant genes up/down after stimulation.
 
 7. Differential expression across regions
 - [DGE_all_stimuli_across_regions](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210224_DEG_FC_heatmap_gene_names.html). Heatmaps, PCAs, upset plots with differentially expressed genes per stimulation seperate across brain regions with filter Log FC > 1 or Log FC < -1. 
-- [DGE_SVZ_compared](https://rajlabmssm.github.io/MiGASti/docs/20210303_DEG_FC_scatterplot.html). Scatterplots of logFC of genelist with all differential expressed genes compared between SVZ and the other regionsn for LPS and IFNy only. 
+- [DGE_SVZ_compared](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210303_DEG_FC_scatterplot.html). Scatterplots of logFC of genelist with all differential expressed genes compared between SVZ and the other regionsn for LPS and IFNy only. 
 
 8. DREAM only cultured + stimulated samples 
 - [DREAM_analysis](https://rajlabmssm.github.io/MiGASti/docs/20212203_DREAM.html). Contrast plot. 
@@ -80,14 +79,11 @@ Note. SVZ showed most significant genes up/down after stimulation.
 14. Sex
 - [DREAM_sex](https://rajlabmssm.github.io/MiGASti/docs/20211305_DREAM_SEX_CHRXY.html). Differential expression analysis male/female in all cultured samples. 0 differentially expressed genes.
 
-15. Comparison with monocyte data (Elisa) and microglia (MiGA), macrophages (Yang) and monocytes/microglia (Gosselin) 
-- [Ranking_myeloid_genes](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia_ranking_top400.html). Ranking of microglia/monocyte/macrophage genes across the myeloid datasets top 400. 
-- [PCA_myeloid](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia_macrophage.html). PCA plot of different myeloid datasets (MiGA, Gosselin, monocytes, macrophages).
-- [PCA_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia.html). PCA plot of cultured LPS and IFNy microglia, cultured, LPS and IFNy monocytes and baseline microglia.
-- [Monocyte_comparison](https://rajlabmssm.github.io/MiGASti/docs/20210806_DREAM_monocytes_comparison.html). Comparison of LPS and INFy genes up/down in microglia (6 hours) and monocytes (24 hours). microglia: logFC < -1 or > 1, monocytes: logFC < -5 or > 5. 
+15. Comparison with monocyte data (Elisa) and microglia
+- [Monocyte_comparison](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210806_DREAM_monocytes_comparison.html). Comparison of LPS and INFy genes up/down in microglia (6 hours) and monocytes (24 hours). microglia: logFC < -1 or > 1, monocytes: logFC < -5 or > 5. 
 
 16. Enrichment analyses
-Note. did not include TNFa, since stimulation did not work. Overlap between stimulations up/down FDR 5% and FDR 5% logFC < -1 or > 1. 
+Note. did not include TNFa, since stimulation did not work. Overlap between stimulations up/down FDR 5% and FDR 5% logFC < 0.5 or > 0.5. 
 
 Input genelists:
 1. Genelist core microglia signature list n = 249 genes (Patir et al. 2019)
