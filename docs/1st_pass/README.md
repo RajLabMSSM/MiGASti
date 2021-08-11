@@ -3,7 +3,7 @@
 > This repository includes code and plots. Exploratory analysis and intermediate processing files are too large for this repository.
 
 1. Metadata
-- [Metadata](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/Metadata.html). Organizing of the metadata and general demographics for the included samples after QC filtering of all samples. 
+- [Metadata](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Metadata.html). Organizing of the metadata and general demographics for the included samples after QC filtering of all samples. 
 - [Metadata_cultured_stimulated](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Metadata_cultured.html). Metadata and general demographics for the included samples after QC filtering of all cultured + stimulated samples.
 - [Metadata_ununstim](https://rajlabmssm.github.io/MiGASti/docs/tree/master/1st_pass/Metadata_ununstim.html).
 
@@ -11,22 +11,22 @@
  
 3.Exploratory Analysis: 
  - [Exploratory plots before filters](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/20210209_PCA_heatmap_before_filtering.html). PCA's between the first 10 PCs and covariates with (533 samples) and without (483 samples) uncultured samples.
- - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with (496 samples) and without uncultured (454 samples) samples.  
+ - [Exploratory plots after filters](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210210_PCA_filtering.html). PCA's, heatmaps with linear regression between the first 20 PCs with (496 samples) and without uncultured (454 samples) samples.  
  
 4. Variance partition 
-- [Variance partition_all](https://rajlabmssm.github.io/MiGASti/docs/1st_pass/Variance_partition.html). Variance partition for all samples.
-- [Variance partition_cultured](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_cultured.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_GFM](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_GFM.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_GTS](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_GTS.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_SVZ](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_SVZ.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_THA](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_THA.html). Variance partition for only cultured samples.
-- [Variance partition_cultured_CC](https://rajlabmssm.github.io/MiGASti/docs/Variance_partition_CC.html). Variance partition for only cultured samples.
+- [Variance partition_all](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Variance_partition.html). Variance partition for all samples.
+- [Variance partition_cultured](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Variance_partition_cultured.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_GFM](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Variance_partition_GFM.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_GTS](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Variance_partition_GTS.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_SVZ](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Variance_partition_SVZ.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_THA](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Variance_partition_THA.html). Variance partition for only cultured samples.
+- [Variance partition_cultured_CC](https://rajlabmssm.github.io/MiGASti/tree/master/docs/1st_pass/Variance_partition_CC.html). Variance partition for only cultured samples.
 
 5. Internal QC
-- [Expression of pre-selected markers specific for culturing](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_homeostatic.html). Boxplots with TPM expression of genes that are expected to go down after culturing based on the literature.
-- [Expression of pre-selected markers specific for stimulated conditions](https://rajlabmssm.github.io/MiGASti/docs/20210217_Markers_allstims.html). Boxplots with TPM expression for genes that respond to specific stimuli and heatmap with all markers combined. 
-- [Expression of pre-selected markers specific for TNFa stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210225_Markers_TNFa.html). Boxplots with genes that respond to TNFa in cultured monocytes (effect most striking after 24h).
-- [Expression of pre-selected markers for apoptosis/cell death](https://rajlabmssm.github.io/MiGASti/docs/20210224_Markers_apoptotic.html). Boxplots with TPM expression of genes that are involved in apoptotic processes (CASP3; specific) 
+- [Expression of pre-selected markers specific for culturing](https://rajlabmssm.github.io/MiGASti/tree/master/docs/20210217_Markers_homeostatic.html). Boxplots with TPM expression of genes that are expected to go down after culturing based on the literature.
+- [Expression of pre-selected markers specific for stimulated conditions](https://rajlabmssm.github.io/MiGASti/tree/masterdocs/20210217_Markers_allstims.html). Boxplots with TPM expression for genes that respond to specific stimuli and heatmap with all markers combined. 
+- [Expression of pre-selected markers specific for TNFa stimulation](https://rajlabmssm.github.io/MiGASti/tree/master/docs/20210225_Markers_TNFa.html). Boxplots with genes that respond to TNFa in cultured monocytes (effect most striking after 24h).
+- [Expression of pre-selected markers for apoptosis/cell death](https://rajlabmssm.github.io/MiGASti/tree/master/docs/120210224_Markers_apoptotic.html). Boxplots with TPM expression of genes that are involved in apoptotic processes (CASP3; specific) 
 - [Expression of pre-selected neurotransmitter markers](https://rajlabmssm.github.io/MiGASti/docs/20210304_Markers_neurotransmitters.html). Boxplots with TPM expression of genes that are involved neurotransmitter activity. 
 - [Expression of neurodevelopmental markers](https://rajlabmssm.github.io/MiGASti/docs/20211206_Lot_genes.html). 
 - [Expression of brain markers](https://rajlabmssm.github.io/MiGASti/docs/20210604_Markers_braincells.html). Expression of microglia, astrocyte, oligodendrocyte, neuron markers in all samples
@@ -82,13 +82,13 @@
 - [DTU_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/20210806_DTU_volcanos_ms.html). Some vulcano plots for DTU. 
 
 14. Sex
-- [DREAM_sex](https://rajlabmssm.github.io/MiGASti/docs/20211305_DREAM_SEX_CHRXY.html). Differential expression analysis male/female in all cultured samples. 0 differentially expressed genes.
+- [DREAM_sex](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20211305_DREAM_SEX_CHRXY.html). Differential expression analysis male/female in all cultured samples. 0 differentially expressed genes.
 
 15. Comparison with monocyte data (Elisa) and microglia (MiGA), macrophages (Yang) and monocytes/microglia (Gosselin) 
-- [Ranking_myeloid_genes](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia_ranking_top400.html). Ranking of microglia/monocyte/macrophage genes across the myeloid datasets top 400. 
-- [PCA_myeloid](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia_macrophage.html). PCA plot of different myeloid datasets (MiGA, Gosselin, monocytes, macrophages).
-- [PCA_stimulation](https://rajlabmssm.github.io/MiGASti/docs/20210514_monocyte_microglia.html). PCA plot of cultured LPS and IFNy microglia, cultured, LPS and IFNy monocytes and baseline microglia.
-- [Monocyte_comparison](https://rajlabmssm.github.io/MiGASti/docs/20210806_DREAM_monocytes_comparison.html). Comparison of LPS and INFy genes up/down in microglia (6 hours) and monocytes (24 hours). microglia: logFC < -1 or > 1, monocytes: logFC < -5 or > 5. 
+- [Ranking_myeloid_genes](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210514_monocyte_microglia_ranking_top400.html). Ranking of microglia/monocyte/macrophage genes across the myeloid datasets top 400. 
+- [PCA_myeloid](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210514_monocyte_microglia_macrophage.html). PCA plot of different myeloid datasets (MiGA, Gosselin, monocytes, macrophages).
+- [PCA_stimulation](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210514_monocyte_microglia.html). PCA plot of cultured LPS and IFNy microglia, cultured, LPS and IFNy monocytes and baseline microglia.
+- [Monocyte_comparison](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210806_DREAM_monocytes_comparison.html). Comparison of LPS and INFy genes up/down in microglia (6 hours) and monocytes (24 hours). microglia: logFC < -1 or > 1, monocytes: logFC < -5 or > 5. 
 
 16. Enrichment analyses
 Note. did not include TNFa, since stimulation did not work. Overlap between stimulations up/down FDR 5% and FDR 5% logFC < -1 or > 1. 
@@ -115,10 +115,10 @@ Input genelists:
 19. Immediate early response genes (IEGs), genes whose transcripts are rapidly expressed after cellular stimulation, without the need for new protein synthesis to control this expression n = 128 genes (Wu et al. 2017) 
 20. Microglia genes up n = 338/down n = 1355 in aging (MIGA)
 
-- [LPS_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_LPS.html)
-- [IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_IFNy.html)
-- [R848_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_R848.html)
-- [IL4_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_IL4.html)
-- [ATP_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_ATP.html)
-- [DEX_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_DEX.html)
-- [Cluster_LPS_IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/docs/20210624_genelist_enrichment_clusters.html). Geneset enrichment for clusters. 
+- [LPS_enrichment](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210624_genelist_enrichment_LPS.html)
+- [IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210624_genelist_enrichment_IFNy.html)
+- [R848_enrichment](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210624_genelist_enrichment_R848.html)
+- [IL4_enrichment](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210624_genelist_enrichment_IL4.html)
+- [ATP_enrichment](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210624_genelist_enrichment_ATP.html)
+- [DEX_enrichment](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210624_genelist_enrichment_DEX.html)
+- [Cluster_LPS_IFNy_enrichment](https://rajlabmssm.github.io/MiGASti/blob/master/docs/1st_pass/20210624_genelist_enrichment_clusters.html). Geneset enrichment for clusters. 
