@@ -1,0 +1,669 @@
+---
+title: "Genelists_overlap_LPS"
+author: "Gijsje"
+date: "5/13/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r setup, include=FALSE}
+library('variancePartition')
+library('edgeR')
+library(dplyr)
+library(tidyr)
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(shiny)
+library(pheatmap)
+library(ggfortify)
+library(ggplot2)
+library(UpSetR)
+library(VennDiagram)
+library(knitr) 
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(purrr)
+library(corrplot)
+library(ggplot2)
+library(ggpubr)
+library(EnhancedVolcano)
+library(raster)
+library(dplyr)
+library(ggrastr)
+```
+
+# Enrichment analyses 
+
+```{r function_setenrichment, echo = TRUE}
+# Function set enrichment
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+```
+
+# Data load
+
+```{r Patir, echo = TRUE}
+Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
+names(Patir)[1] <- "symbol"
+
+AD = "~/Documents/MiGASti/Databases/Alzheimers_disease.xlsx"
+AD = read_excel(AD, col_names = TRUE) 
+AD = as.data.frame(AD)
+
+MS = "~/Documents/MiGASti/Databases/Multiple_sclerosis.xlsx"
+MS = read_excel(MS, col_names = TRUE) 
+MS = as.data.frame(MS)
+
+DAM_down = "~/Documents/MiGASti/Databases/DAM_DOWN.xlsx"
+DAM_down = read_excel(DAM_down, col_names = TRUE) 
+DAM_down = as.data.frame(DAM_down)
+
+DAM_up = "~/Documents/MiGASti/Databases/DAM_up.xlsx"
+DAM_up = read_excel(DAM_up, col_names = TRUE) 
+DAM_up = as.data.frame(DAM_up)
+
+HAM_up = "~/Documents/MiGASti/Databases/HAM_up.xlsx"
+HAM_up = read_excel(HAM_up, col_names = TRUE) 
+HAM_up = as.data.frame(HAM_up)
+
+HAM_down = "~/Documents/MiGASti/Databases/HAM_DOWN.xlsx"
+HAM_down = read_excel(HAM_down, col_names = TRUE) 
+HAM_down = as.data.frame(HAM_down)
+
+TWAS_PD = "~/Documents/MiGASti/Databases/TWAS_PD.xlsx"
+TWAS_PD = read_excel(TWAS_PD, col_names = TRUE) 
+TWAS_PD = as.data.frame(TWAS_PD)
+
+TWAS_AD = "~/Documents/MiGASti/Databases/TWAS_AD.xlsx"
+TWAS_AD = read_excel(TWAS_AD, col_names = TRUE) 
+TWAS_AD = as.data.frame(TWAS_AD)
+
+#Functions:
+
+NFkB = "~/Documents/MiGASti/Databases/NfkB_activation.xlsx"
+NFkB = read_excel(NFkB, col_names = TRUE) 
+NFkB = as.data.frame(NFkB)
+
+INFy_GO = "~/Documents/MiGASti/Databases/IFNy_GO.xlsx"
+INFy_GO = read_excel(INFy_GO, col_names = TRUE) 
+INFy_GO = as.data.frame(INFy_GO)
+
+PIG = "~/Documents/MiGASti/Databases/PIG.xlsx"
+PIG = read_excel(PIG, col_names = TRUE) 
+PIG = as.data.frame(PIG)
+
+Sensome = "~/Documents/MiGASti/Databases/Sensome_human.xlsx"
+Sensome = read_excel(Sensome, col_names = TRUE) 
+Sensome = as.data.frame(Sensome)
+
+HOM = "~/Documents/MiGASti/Databases/Homeostatic_genes.xlsx"
+HOM = read_excel(HOM, col_names = TRUE) 
+HOM = as.data.frame(HOM)
+
+Phago = "~/Documents/MiGASti/Databases/Phagocytosis.xlsx"
+Phago = read_excel(Phago, col_names = TRUE) 
+Phago = as.data.frame(Phago)
+
+load("~/Documents/MiGASti/docs/2nd_pass/AD_bulk_3datasets.Rdata")
+AD_bulk <- genes3
+
+AD_eQTL = "~/Documents/MiGASti/Databases/AD_eQTL.xlsx"
+AD_eQTL = read_excel(AD_eQTL, col_names = TRUE) 
+AD_eQTL = as.data.frame(AD_eQTL)
+
+PD_eQTL = "~/Documents/MiGASti/Databases/PD_eQTL.xlsx"
+PD_eQTL = read_excel(PD_eQTL, col_names = TRUE) 
+PD_eQTL = as.data.frame(PD_eQTL)
+
+AD_GWAS_21 = "~/Documents/MiGASti/Databases/GWAS_AD_2021.xlsx"
+AD_GWAS_21 = read_excel(AD_GWAS_21, col_names = TRUE) 
+AD_GWAS_21 = as.data.frame(AD_GWAS_21)
+
+AD_genes = rbind(AD_GWAS_21, AD_eQTL, TWAS_AD)
+AD_genes2 = unique(AD_genes)
+
+PD_genes = rbind(PD_eQTL, TWAS_PD)
+PD_genes2= unique(PD_genes)
+
+MS_genes = "~/Documents/MiGASti/Databases/TWAS_MS.xlsx"
+MS_genes = read_excel(MS_genes, col_names = TRUE) 
+MS_genes = as.data.frame(MS_genes)
+
+HAM = rbind(HAM_up, HAM_down)
+HAM2 = unique(HAM)
+
+DAM = rbind(DAM_up, DAM_down)
+DAM2 = unique(DAM)
+```
+
+# LPS UP FDR 5% logFC > 0.5 
+
+```{r vul_LPS, echo = TRUE}
+load("~/Documents/MiGASti/docs/2nd_pass/res_LPS_name.Rdata")
+res_LPS <- res_LPS_name
+
+sign <- subset(res_LPS, adj.P.Val < 0.05)
+LPS_UP <- subset(sign, logFC > 0.5)
+
+set1 <- LPS_UP
+set1_v <- set1$symbol
+```
+
+### + Patir
+
+```{r LPS_Patir, echo = TRUE}
+set2 <- Patir
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + NFkB GO 
+
+```{r LPS_NFkB, echo = TRUE}
+set2 <- NFkB
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + INFy GO
+
+```{r LPS_INFy_GO, echo = TRUE}
+set2 <- INFy_GO
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + Plaque induced genes 
+
+```{r LPS_PIG, echo = TRUE}
+set2 <- PIG
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + Sensome genes 
+
+```{r LPS_Sensome_check, echo = TRUE}
+set2 <- Sensome
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + phagocytosis 
+
+```{r LPS_Sensome1, echo = TRUE}
+set2 <- Phago
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + homeostatic genes
+
+```{r LPS_HOM2, echo = TRUE}
+set2 <- HOM
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes snRNAseq 
+
+```{r LPS_AD, echo = TRUE}
+set2 <- AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + TWAS AD genes
+
+```{r LPS_AD_TWAS, echo = TRUE}
+set2 <- TWAS_AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes bulk brain 
+
+```{r LPS_AD_bulk5, echo = TRUE}
+set2 <- AD_bulk
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD eQTL
+
+```{r LPS_AD_eQTL, echo = TRUE}
+set2 <- AD_eQTL
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD GWAS Bellenguez
+
+```{r LPS_AD_GWAS_21, echo = TRUE}
+set2 <- AD_GWAS_21
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + Combined AD 
+
+```{r LPS_AD_combined1, echo = TRUE}
+set2 <- AD_genes2
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + MS human snRNAseq 
+
+```{r LPS_MS, echo = TRUE}
+set2 <- MS
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+
+### + TWAS MS genes
+
+```{r LPS_MS_TWAS, echo = TRUE}
+set2 <- MS_genes
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + TWAS PD
+
+```{r LPS_TWAS_PD, echo = TRUE}
+set2 <- TWAS_PD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + eQTL PD 
+
+```{r LPS_eQTL_PD, echo = TRUE}
+set2 <- PD_eQTL
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + Combined PD 
+
+```{r LPS_PD_combined1, echo = TRUE}
+set2 <- PD_genes2
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + HAM_up
+
+```{r LPS_HAM_up, echo = TRUE}
+set2 <- HAM_up
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + HAM_down
+
+```{r LPS_HAM_down, echo = TRUE}
+set2 <- HAM_down
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + combined HAM
+
+```{r LPS_HAM1, echo = TRUE}
+set2 <- HAM2
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + DAM_up
+
+```{r LPS_DAM_up, echo = TRUE}
+set2 <- DAM_up
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + DAM_down
+
+```{r LPS_DAM_down, echo = TRUE}
+set2 <- DAM_down
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### Combined DAM 
+
+```{r LPS_DAM1, echo = TRUE}
+set2 <- DAM2
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+# LPS DOWN FDR 5% logFC < -0.5 
+
+```{r vul_LPS2, echo = TRUE}
+load("~/Documents/MiGASti/docs/2nd_pass/res_LPS_name.Rdata")
+res_LPS <- res_LPS_name
+
+sign <- subset(res_LPS, adj.P.Val < 0.05)
+LPS_DOWN <- subset(sign, logFC < -0.5)
+
+set1 <- LPS_DOWN
+set1_v <- set1$symbol
+```
+
+### + Patir
+
+```{r LPS_Patir2, echo = TRUE}
+set2 <- Patir
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + NFkB GO 
+
+```{r LPS_NFkB2, echo = TRUE}
+set2 <- NFkB
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + INFy GO
+
+```{r LPS_INFy2, echo = TRUE}
+set2 <- INFy_GO
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + Plaque induced genes 
+
+```{r LPS_PIG2, echo = TRUE}
+set2 <- PIG
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + Sensome genes 
+
+```{r LPS_Sensome2, echo = TRUE}
+set2 <- Sensome
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + phagocytosis
+
+```{r LPS_phago3, echo = TRUE}
+set2 <- Phago
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + homeostatic genes
+
+```{r LPS_HOM3, echo = TRUE}
+set2 <- HOM
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes human snRNAseq 
+
+```{r LPS_AD2, echo = TRUE}
+set2 <- AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes bulk brain 
+
+```{r LPS_AD_bulk2, echo = TRUE}
+set2 <- AD_bulk
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + TWAS AD genes
+
+```{r LPS_AD_TWAS2, echo = TRUE}
+set2 <- TWAS_AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD eQTL
+
+```{r LPS_AD_eQTL2, echo = TRUE}
+set2 <- AD_eQTL
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD GWAS Bellenguez
+
+```{r LPS_AD_GWAS_22, echo = TRUE}
+set2 <- AD_GWAS_21
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + Combined AD 
+
+```{r LPS_AD_combined2, echo = TRUE}
+set2 <- AD_genes2
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + MS human snRNAseq
+
+```{r LPS_MS2, echo = TRUE}
+set2 <- MS
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + TWAS MS genes
+
+```{r LPS_MS_TWAS2, echo = TRUE}
+set2 <- MS_genes
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + TWAS PD
+
+```{r LPS_TWAS_PD2, echo = TRUE}
+set2 <- TWAS_PD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + Combined PD 
+
+```{r LPS_PD_combined2, echo = TRUE}
+set2 <- PD_genes2
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + HAM_up
+
+```{r LPS_HAM_up2, echo = TRUE}
+set2 <- HAM_up
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + HAM_down
+
+```{r LPS_HAM_down2, echo = TRUE}
+set2 <- HAM_down
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### Combined HAM 
+
+```{r LPS_HAM2, echo = TRUE}
+set2 <- HAM2
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + DAM_up
+
+```{r LPS_DAM_up2, echo = TRUE}
+set2 <- DAM_up
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + DAM_down
+
+```{r LPS_DAM_down2, echo = TRUE}
+set2 <- DAM_down
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### Combined DAM 
+
+```{r LPS_DAM2, echo = TRUE}
+set2 <- DAM2
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
