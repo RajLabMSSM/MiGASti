@@ -26,13 +26,12 @@ library(readxl)
 ### Data load
 
 ```{r load data, echo = TRUE}
-load("~/Documents/MiGASti/Databases/res_name_R8482.Rdata")
-load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
-load("~/Documents/MiGASti/Databases/res_name_IL42.Rdata")
-load("~/Documents/MiGASti/docs/res_name_IFNy2.Rdata")
-load("~/Documents/MiGASti/Databases/res_name_R8482.Rdata")
-load("~/Documents/MiGASti/Databases/res_name_ATP2.Rdata")
-load("~/Documents/MiGASti/Databases/res_name_TNFa2.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_R848_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_LPS_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_IFNy_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_IL4_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_DEX_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_ATP_name.Rdata")
 
 LPS_S = "~/Documents/MiGASti/Databases/LPS_DTU.xlsx"
 LPS_S = read_excel(LPS_S, col_names = TRUE) 
@@ -59,12 +58,12 @@ IL4_S = read_excel(IL4_S, col_names = TRUE)
 IL4_S = as.data.frame(IL4_S)
 
 #subset genes FDR < 0.05
-res_name_LPS2 <- subset(res_name_LPS2, adj.P.Val < 0.05)
-res_name_IFNy2 <- subset(res_name_IFNy2, adj.P.Val < 0.05)
-res_name_R8482 <- subset(res_name_R8482, adj.P.Val < 0.05)
-res_name_IL42 <- subset(res_name_IL42, adj.P.Val < 0.05)
-res_name_TNFa2 <- subset(res_name_TNFa2, adj.P.Val < 0.05)
-res_name_ATP2 <- subset(res_name_ATP2, adj.P.Val < 0.05)
+res_name_LPS2 <- subset(res_LPS_name, adj.P.Val < 0.05)
+res_name_IFNy2 <- subset(res_IFNy_name, adj.P.Val < 0.05)
+res_name_R8482 <- subset(res_R848_name, adj.P.Val < 0.05)
+res_name_ATP2 <- subset(res_ATP_name, adj.P.Val < 0.05)
+res_name_DEX2 <- subset(res_DEX_name, adj.P.Val < 0.05)
+res_name_IL42 <- subset(res_IL4_name, adj.P.Val < 0.05)
 ```
 
 ### LPS Overlap DTU transcripts and genes 
@@ -113,44 +112,6 @@ overlap_IFNy <- merge(IFNy_S, res_name_IFNy2, by = "symbol")
 unique(overlap_IFNy$symbol)
 set1 <- IFNy_S
 set2 <- res_name_IFNy2
-
-set1_v <- set1$symbol
-set2_v <- set2$symbol
-
-setEnrichment <- function(set1, set2, universe = 20000){
-
-  a = sum(set1 %in% set2)
-
-  c = length(set1) - a
-
-  b = length(set2) - a
-
-  d = universe - length(set2) - c
-
-  contingency_table = matrix(c(a, c, b, d), nrow = 2)
-
-  # one-tailed test for enrichment only
-
-  fisher_results = fisher.test(contingency_table, alternative = "greater")
-
-  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
-
-  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
-
-  return(df)
-}
-
-setEnrichment( set1 = set1_v, set2 = set2_v)
-```
-
-### TNFa Overlap DTU transcripts and genes 
-#How many unique genes and significance?
-
-```{r TNFa overlap, echo = TRUE}
-overlap_TNFa <- merge(TNFa_S, res_name_TNFa2, by = "symbol")
-unique(overlap_TNFa$symbol)
-set1 <- TNFa_S
-set2 <- res_name_TNFa2
 
 set1_v <- set1$symbol
 set2_v <- set2$symbol

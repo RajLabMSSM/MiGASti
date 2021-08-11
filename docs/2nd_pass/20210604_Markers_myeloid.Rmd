@@ -49,11 +49,11 @@ knitr::opts_chunk$set(
 
 ```{r data_load_markers, echo = TRUE, results = 'hide'}
 load("~/Documents/MiGASti/Databases/gene_matrix.RData")
-metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata2.txt")
 #set rownames to Sample
 row.names(metadata) <- metadata$Sample 
 setwd("~/Documents/MiGASti/Databases")
-exclude <- read.table("samples2remove.txt")
+exclude <- read.table("samples2remove2.txt")
 exclude <- exclude$x
 genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
 #Excludes the samples from filters. 
@@ -81,7 +81,7 @@ rownames(res_name) = res_name$ensembl
 marker_expression = merge(res_name, markers, by ="symbol")
 rownames(marker_expression) = marker_expression$symbol
 marker_expression$ensembl <- NULL
-df_num = as.matrix(marker_expression[,2:178])
+df_num = as.matrix(marker_expression[,2:173])
 rownames(df_num) = marker_expression$symbol
 
 #plot the genes based on samples 

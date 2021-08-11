@@ -26,9 +26,9 @@ knitr::opts_chunk$set(
   tidy = FALSE,
   fig.show = "hold")
 
-load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_LPS_name.Rdata")
 #genes_counts_cultured after removal of lowly expressed genes/duplicated genes in a total of 18981 genes; used LPS data since genes are named as symbol
-Mitochondrial_genes <-grep("MT-", res_name_LPS2$symbol)
+Mitochondrial_genes <-grep("MT-", res_LPS_name$symbol)
 Mitochondrial_genes
 load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
 #genes_counts_cultured after removal of lowly expressed genes/duplicated genes in a total of 18981 genes; used LPS data since genes are named as symbol
@@ -45,12 +45,12 @@ length(Mitochondrial_genes)
 ### How many genes in dataset?
 
 ```{r total, echo = TRUE}
-length(res_name_LPS2$symbol)
+length(res_LPS_name$symbol)
 ```
 
 ### Percentage mitochondrial genes? 
 
 ```{r percentage, echo = TRUE}
-percentage = length(Mitochondrial_genes)/length(res_name_LPS2$symbol) * 100
+percentage = length(Mitochondrial_genes)/length(res_LPS_name$symbol) * 100
 percentage
 ```

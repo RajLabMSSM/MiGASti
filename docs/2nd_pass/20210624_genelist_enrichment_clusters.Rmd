@@ -170,6 +170,13 @@ aging_down = as.data.frame(aging_down)
 aging_up = "~/Documents/MiGASti/Databases/aging_up_MIGA.xlsx"
 aging_up = read_excel(aging_up, col_names = TRUE) 
 aging_up = as.data.frame(aging_up)
+
+HOM = "~/Documents/MiGASti/Databases/Homeostatic_genes.xlsx"
+HOM = read_excel(HOM, col_names = TRUE) 
+HOM = as.data.frame(HOM)
+
+load("~/Documents/MiGASti/docs/2nd_pass/AD_bulk_3datasets.Rdata")
+AD_bulk <- genes3
 ```
 
 # Heatmap
@@ -343,10 +350,21 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
-### + AD genes
+### + AD genes mouse 
 
 ```{r LPS_AD, echo = TRUE}
 set2 <- AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+
+### + AD genes bulk
+
+```{r LPS_AD_bulk, echo = TRUE}
+set2 <- AD_bulk 
 set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")
@@ -463,6 +481,16 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
+### + homeostatic genes
+
+```{r LPS_hom, echo = TRUE}
+set2 <- HOM
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+ 
 
 # Cluster2 
 
@@ -581,10 +609,20 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
-### + AD genes
+### + AD genes mouse 
 
 ```{r LPS_AD2, echo = TRUE}
 set2 <- AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes bulk
+
+```{r LPS_AD_bulk2, echo = TRUE}
+set2 <- AD_bulk 
 set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")
@@ -695,6 +733,16 @@ list(overlap$symbol)
 
 ```{r LPS_aging_down2, echo = TRUE}
 set2 <- aging_down
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + homeostatic genes 
+
+```{r LPS_hom2, echo = TRUE}
+set2 <- HOM
 set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")
@@ -818,7 +866,7 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
-### + AD genes
+### + AD genes mouse 
 
 ```{r LPS_AD3, echo = TRUE}
 set2 <- AD
@@ -827,6 +875,17 @@ setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
+
+### + AD genes bulk 
+
+```{r LPS_AD_bulk3, echo = TRUE}
+set2 <- AD_bulk 
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
 
 ### + TWAS AD genes
 
@@ -938,6 +997,15 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
+### + homeostatic genes 
+
+```{r LPS_hom3, echo = TRUE}
+set2 <- HOM
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
 
 # Cluster 4
 
@@ -1056,10 +1124,20 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
-### + AD genes
+### + AD genes mouse 
 
 ```{r LPS_AD4, echo = TRUE}
 set2 <- AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes bulk 
+
+```{r LPS_AD_bulk4, echo = TRUE}
+set2 <- AD_bulk
 set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")
@@ -1176,6 +1254,16 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
+
+### + homeostatic genes 
+
+```{r LPS_HOM4, echo = TRUE}
+set2 <- HOM
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
 
 
 

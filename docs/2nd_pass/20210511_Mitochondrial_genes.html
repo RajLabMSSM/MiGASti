@@ -358,14 +358,14 @@ div.tocify {
 </div>
 <div id="how-many-genes-in-dataset" class="section level3">
 <h3>How many genes in dataset?</h3>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(res_name_LPS2<span class="sc">$</span>symbol)</span></code></pre></div>
-<p>[1] 18981</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(res_LPS_name<span class="sc">$</span>symbol)</span></code></pre></div>
+<p>[1] 19179</p>
 </div>
 <div id="percentage-mitochondrial-genes" class="section level3">
 <h3>Percentage mitochondrial genes?</h3>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>percentage <span class="ot">=</span> <span class="fu">length</span>(Mitochondrial_genes)<span class="sc">/</span><span class="fu">length</span>(res_name_LPS2<span class="sc">$</span>symbol) <span class="sc">*</span> <span class="dv">100</span></span>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>percentage <span class="ot">=</span> <span class="fu">length</span>(Mitochondrial_genes)<span class="sc">/</span><span class="fu">length</span>(res_LPS_name<span class="sc">$</span>symbol) <span class="sc">*</span> <span class="dv">100</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>percentage</span></code></pre></div>
-<p>[1] 0.08429482</p>
+<p>[1] 0.08342458</p>
 </div>
 
 
@@ -411,6 +411,9 @@ $(document).ready(function () {
 
 <script>
 $(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
 
     // move toc-ignore selectors from section div to header
     $('div.section.toc-ignore')

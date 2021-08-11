@@ -45,11 +45,11 @@ knitr::opts_chunk$set(
 
 ```{r data.load, echo=TRUE}
 load("~/Documents/MiGASti/Databases/gene_matrix.RData")
-metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata2.txt")
 #set rownames to Sample
 setwd("~/Documents/MiGASti/Databases")
 row.names(metadata) <- metadata$Sample 
-exclude <- read.table("samples2remove.txt")
+exclude <- read.table("samples2remove2.txt")
 exclude <- exclude$x
 genes_counts_filt = genes_counts[, !colnames(genes_counts) %in% exclude] 
 #Excludes the samples from filters. 
@@ -73,7 +73,7 @@ all(rownames(metadata_filt) == colnames (genes_counts_ordered)) #TRUE
 ```
 
 # PCA 
-#After filtering: 496 samples in total 
+#After filtering
 
 ```{r PCA, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
 pca = prcomp(t(genes_counts_ordered), scale. = TRUE, center = TRUE)
@@ -81,7 +81,9 @@ autoplot(pca, data= metadata_filt, colour = 'Stimulation', shape = FALSE, label.
 ```
 
 # PCA excluding uncultured samples  
-#After filtering: 454 samples in total 
+### Stimulation 
+#first plot: no regressing out of technical factors
+#second plot: regressing out of technical factors
 
 ```{r remove_ununstim_checks, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
 #remove ununstim samples in metadata
@@ -109,6 +111,129 @@ g6 <- autoplot(res.pca, data = metadata_cultured, colour = 'Stimulation')
 ggarrange(g1,g6, labels = c("a", "b"))
 ```
 
+### Region
+#first plot: no regressing out of technical factors
+#second plot: regressing out of technical factors
+
+```{r remove_ununstim_checks2, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata_filt$Stimulation)
+#remove samples in genes counts datafile
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+
+res.pca = prcomp(t(genes_counts_cultured)) 
+
+g1 <- autoplot(res.pca, data = metadata_cultured, colour = 'Region') 
+
+allResiduals <- removeBatchEffect(x = genes_counts_cultured, 
+                                  design = model.matrix(~ Region, data = metadata_cultured), 
+                                  covariates = as.matrix(metadata_cultured[, c("picard_pct_mrna_bases", "picard_pct_ribosomal_bases", "picard_pct_pf_reads_aligned", "picard_pct_percent_duplication")]))
+
+res.pca = prcomp(t(allResiduals)) 
+
+g6 <- autoplot(res.pca, data = metadata_cultured, colour = 'Region') 
+
+# dev.off()
+ggarrange(g1,g6, labels = c("a", "b"))
+```
+
+
+### Age
+#first plot: no regressing out of technical factors
+#second plot: regressing out of technical factors
+
+```{r remove_ununstim_checks3, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata_filt$Stimulation)
+#remove samples in genes counts datafile
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+
+res.pca = prcomp(t(genes_counts_cultured)) 
+
+g1 <- autoplot(res.pca, data = metadata_cultured, colour = 'age') 
+
+allResiduals <- removeBatchEffect(x = genes_counts_cultured, 
+                                  design = model.matrix(~ age, data = metadata_cultured), 
+                                  covariates = as.matrix(metadata_cultured[, c("picard_pct_mrna_bases", "picard_pct_ribosomal_bases", "picard_pct_pf_reads_aligned", "picard_pct_percent_duplication")]))
+
+res.pca = prcomp(t(allResiduals)) 
+
+g6 <- autoplot(res.pca, data = metadata_cultured, colour = 'age') 
+
+# dev.off()
+ggarrange(g1,g6, labels = c("a", "b"))
+```
+
+
+### Sex
+#first plot: no regressing out of technical factors
+#second plot: regressing out of technical factors
+
+```{r remove_ununstim_checks4, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata_filt$Stimulation)
+#remove samples in genes counts datafile
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+
+res.pca = prcomp(t(genes_counts_cultured)) 
+
+g1 <- autoplot(res.pca, data = metadata_cultured, colour = 'sex') 
+
+allResiduals <- removeBatchEffect(x = genes_counts_cultured, 
+                                  design = model.matrix(~ sex, data = metadata_cultured), 
+                                  covariates = as.matrix(metadata_cultured[, c("picard_pct_mrna_bases", "picard_pct_ribosomal_bases", "picard_pct_pf_reads_aligned", "picard_pct_percent_duplication")]))
+
+res.pca = prcomp(t(allResiduals)) 
+
+g6 <- autoplot(res.pca, data = metadata_cultured, colour = 'sex') 
+
+# dev.off()
+ggarrange(g1,g6, labels = c("a", "b"))
+```
+
+
+### PMD
+#first plot: no regressing out of technical factors
+#second plot: regressing out of technical factors
+
+```{r remove_ununstim_checks5, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
+#remove ununstim samples in metadata
+metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+#check numbers
+dim(metadata_cultured)
+#check numbers per stimulation
+table(metadata_filt$Stimulation)
+#remove samples in genes counts datafile
+genes_counts_cultured <- genes_counts_ordered[,metadata_cultured$Sample]
+
+res.pca = prcomp(t(genes_counts_cultured)) 
+
+g1 <- autoplot(res.pca, data = metadata_cultured, colour = 'pmd_minutes') 
+
+allResiduals <- removeBatchEffect(x = genes_counts_cultured, 
+                                  design = model.matrix(~ pmd_minutes, data = metadata_cultured), 
+                                  covariates = as.matrix(metadata_cultured[, c("picard_pct_mrna_bases", "picard_pct_ribosomal_bases", "picard_pct_pf_reads_aligned", "picard_pct_percent_duplication")]))
+
+res.pca = prcomp(t(allResiduals)) 
+
+g6 <- autoplot(res.pca, data = metadata_cultured, colour = 'pmd_minutes') 
+
+# dev.off()
+ggarrange(g1,g6, labels = c("a", "b"))
+```
+
 ### Summary of the PCA
 #how many PCS with > 95% variance in total?
 
@@ -123,8 +248,9 @@ co1 <- which(cumu > 0.95)[1]
 co1 
 ```
 
+
 # Heatmap with 20 PCS 
-#Including uncultured: 496 samples in total 
+#Including uncultured 
 
 ```{r heatmap_all, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
 #set metadata to no capitals
@@ -202,7 +328,7 @@ ggplot(data = df, mapping = aes(x = Stimulation, y = PC3)) +
 ```
 
 # Heatmap with 20 PCS after removal of uncultured samples (ununstim) 
-#Excluding uncultured: 454 samples in total 
+#Excluding uncultured 
 
 ```{r removal, echo=TRUE, fig.width=12, fig.height=8, dpi=300}
 #remove ununstim samples in metadata

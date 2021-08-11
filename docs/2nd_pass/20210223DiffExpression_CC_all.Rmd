@@ -55,12 +55,12 @@ return(data)
 
 ```{r data_load, echo = TRUE, results = 'hide'}
 load("~/Documents/MiGASti/Databases/gene_matrix.RData")
-metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata2.txt")
 #set rownames to Sample
 row.names(metadata) <- metadata$Sample 
 setwd("~/Documents/MiGASti/Databases")
 #exclude samples that did not pass QC filtering
-exclude <- read.table("samples2remove.txt")
+exclude <- read.table("samples2remove2.txt")
 exclude <- exclude$x
 genes_counts_filt = genes_counts[, !colnames(genes_counts) %in% exclude] 
 #Excludes the samples from filters. 
@@ -80,12 +80,13 @@ all(rownames(metadata_filt) == colnames (genes_counts_ordered)) #TRUE
 ```{r preparing, echo = TRUE}
 #remove uncultured samples
 metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+metadata_cultured_subset <- metadata_cultured[metadata_cultured$Stimulation != "ununstim",]
 #check numbers
 #dim(metadata_cultured)
 #check numbers per stimulation
 #table(metadata_filt$Stimulation)
 #select only CC samples in metadata
-metadata_CC = metadata_cultured[metadata_cultured$Region=="CC",]
+metadata_CC = metadata_cultured_subset[metadata_cultured_subset$Region=="CC",]
 #select only CC samples in genes counts
 genes_counts_CC <- genes_counts_ordered[,metadata_CC$Sample]
 #order metadata and genes_counts

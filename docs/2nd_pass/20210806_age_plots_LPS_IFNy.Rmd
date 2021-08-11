@@ -46,15 +46,43 @@ library(DESeq2)
 
 ```
 
+# Enrichment analyses 
+
+```{r function_setenrichment, echo = TRUE}
+# Function set enrichment
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+```
+
 # Load data
 
 ```{r data_load, echo=TRUE, results='hide'}
-metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata2.txt")
 #set rownames to Sample
 row.names(metadata) <- metadata$Sample 
 setwd("~/Documents/MiGASti/Databases")
 #exclude samples that did not pass QC filtering
-exclude <- read.table("samples2remove.txt")
+exclude <- read.table("samples2remove2.txt")
 exclude <- exclude$x
 #Excludes the samples from filters. 
 #dim(genes_counts_filt)
@@ -112,16 +140,11 @@ hist(IFNy, breaks=30, xlim=c(0,120), col=rgb(0,0,1,0.5), xlab="age",
 # Add legend
 legend("topright", legend=c("IFNy"), col=c(rgb(0,0,1,0.5), 
      rgb(0,0,1,0.5)), pt.cex=2, pch=15 )
-
-
-# Add legend
-legend("topright", legend=c("LPS","IFNy"), col=c(rgb(1,0,0,0.5), 
-     rgb(0,0,1,0.5)), pt.cex=2, pch=15 )
 ```
 
 # Aging in samples that are stimulated with LPS/IFNy? Does the immune response change in aging? 
 
-### Input: colMeans of the 6270 genes that respond to LPS in 128 LPS stimulated samples across aging
+### Input: colMeans of the genes that respond to LPS in 128 LPS stimulated samples across aging
 
 ```{r LPS, echo=TRUE, results='hide'}
 #remove ununstim samples in metadata
@@ -143,10 +166,10 @@ rownames(genes_counts_cultured) <- NULL
 
 ```{r LPS2, echo = TRUE, results = 'hide'}
 #data load 
-load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
-load("~/Documents/MiGASti/docs/res_name_IFNy2.Rdata")
-DEG_LPS <- subset(res_name_LPS2, adj.P.Val < 0.05)
-DEG_IFNy <- subset(res_name_IFNy2, adj.P.Val < 0.05)
+load("~/Documents/MiGASti/docs/2nd_pass/res_LPS_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_IFNy_name.Rdata")
+DEG_LPS <- subset(res_LPS_name, adj.P.Val < 0.05)
+DEG_IFNy <- subset(res_IFNy_name, adj.P.Val < 0.05)
 
 # select only sign LPS genes 
 LPS <- genes_counts_cultured[genes_counts_cultured$ensembl %in% DEG_LPS$ensembl, ]
@@ -183,7 +206,7 @@ stat_fit_glance(method = "lm", method.args = list(formula = formula), geom = "te
 ```
 
 
-### Input: colMeans of the 658 genes that respond to IFNy in 79 IFNy stimulated samples across aging
+### Input: colMeans of the genes that respond to IFNy in 79 IFNy stimulated samples across aging
 
 ```{r IFNy, echo = TRUE}
 IFNy.mic <- data.frame(cbind(IFNy = scale(colMeans(IFNy_ordered)), Age = metadata_IFNy$age))
@@ -202,8 +225,6 @@ stat_fit_glance(method = "lm", method.args = list(formula = formula), geom = "te
 ```
 
 # How many of the age related genes are in the stimulation genes? 
-#151 genes are both in aging dataset and LPS stimulation dataset
-#17 genes are both in aging dataset and IFNy stimulation dataset
 
 ```{r overlapbetweensets, echo = TRUE}
 load("/Users/gijsjesnijders/Documents/MiGASti/Databases/res_age.Rdata")
@@ -213,20 +234,115 @@ colnames(gencode_30) = c("ensembl","symbol")
 res_age <- tibble::rownames_to_column(res_age, "ensembl")
 res_name_age <- merge(res_age, gencode_30, by = "ensembl")
 sign_age <- subset(res_age, adj.P.Val < 0.05)
+age_up <- subset(sign_age, logFC > 0)
+age_down <- subset(sign_age, logFC < 0)
+DEG_LPS_up <- subset(DEG_LPS, logFC > 0)
+DEG_LPS_down <- subset(DEG_LPS, logFC < 0)
+DEG_IFNy_up <- subset(DEG_IFNy, logFC > 0)
+DEG_IFNy_down <- subset(DEG_IFNy, logFC < 0)
 length(rownames(sign_age))
-load("~/Documents/MiGASti/docs/res_name_LPS2.Rdata")
-load("~/Documents/MiGASti/docs/res_name_IFNy2.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_LPS_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_IFNy_Name.Rdata")
 LPS2_overlap <- merge(DEG_LPS, sign_age, by = "ensembl")
 length(LPS2_overlap$ensembl)
 IFNy2_overlap <- merge(DEG_IFNy, sign_age, by = "ensembl")
 length(IFNy2_overlap$ensembl)
 list(LPS2_overlap$symbol)
 list(IFNy2_overlap$symbol)
+aging_down = "~/Documents/MiGASti/Databases/aging_down_MIGA.xlsx"
+aging_down = read_excel(aging_down, col_names = TRUE) 
+aging_down = as.data.frame(aging_down)
+
+aging_up = "~/Documents/MiGASti/Databases/aging_up_MIGA.xlsx"
+aging_up = read_excel(aging_up, col_names = TRUE) 
+aging_up = as.data.frame(aging_up)
+```
+
+### significance? LPS
+
+```{r significance_LPS1, echo = TRUE}
+set1 <- DEG_LPS
+set1_v <- set1$ensembl
+
+set2 <- sign_age
+set2_v <- set2$ensembl
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+### significance? LPS up/age up
+
+```{r significance_LPS2, echo = TRUE}
+set1 <- DEG_LPS_up
+set1_v <- set1$ensembl
+
+set2 <- age_up
+set2_v <- set2$ensembl
+setEnrichment( set1 = set1_v, set2 = set2_v)
+
+sets <- merge(DEG_LPS_up, age_up, by = "ensembl")
+list(sets$symbol)
+
+miga <- merge(aging_up, sets, by = "symbol")
+list(miga$symbol)
 ```
 
 
+### significance? LPS down/age down
+
+```{r significance_LPS3, echo = TRUE}
+set1 <- DEG_LPS_down
+set1_v <- set1$ensembl
+
+set2 <- age_down
+set2_v <- set2$ensembl
+setEnrichment( set1 = set1_v, set2 = set2_v)
+
+sets <- merge(DEG_LPS_down, age_down, by = "ensembl")
+list(sets$symbol)
+miga <- merge(aging_down, sets, by = "symbol")
+list(miga$symbol)
+```
+
+
+### significance IFNy
+
+```{r significance_IFNy4, echo = TRUE}
+set1 <- DEG_IFNy
+set1_v <- set1$ensembl
+
+set2 <- sign_age
+set2_v <- set2$ensembl
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+### significance IFNy up / age up
+
+```{r significance_IFNy5, echo = TRUE}
+set1 <- DEG_IFNy_up
+set1_v <- set1$ensembl
+
+set2 <- age_up
+set2_v <- set2$ensembl
+setEnrichment( set1 = set1_v, set2 = set2_v)
+
+sets <- merge(DEG_IFNy_up, age_up, by = "ensembl")
+list(sets$symbol)
+miga <- merge(aging_up, sets, by = "symbol")
+list(miga$symbol)
+```
+### significance IFNy down / age down
+
+```{r significance_IFNy6, echo = TRUE}
+set1 <- DEG_IFNy_down
+set1_v <- set1$ensembl
+
+set2 <- age_down
+set2_v <- set2$ensembl
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+
+
 ### Aging in samples that are stimulated with LPS and known to show effect in aging and after LPS stimulation? Does the immune response change in aging? 
-#Input: colMeans of the 151 genes that respond to LPS and are found to be differentially expressed in aging in 128 LPS stimulated samples across aging
+#Input: colMeans of the genes that respond to LPS and are found to be differentially expressed in aging in 125 LPS stimulated samples across aging
  
 
 ```{r LPS_plot1, echo = TRUE, results = 'hide'}
@@ -274,7 +390,7 @@ stat_fit_glance(method = "lm", method.args = list(formula = formula), geom = "te
 
 
 ### Aging in samples that are stimulated with IFNy and known to show effect in aging and after IFNy stimulation? Does the immune response change in aging? 
-#Input: colMeans of the 17 genes that respond to IFNy and are found to be differentially expressed in aging in 79 LPS stimulated samples across aging
+#Input: colMeans of the genes that respond to IFNy and are found to be differentially expressed in aging in 79 LPS stimulated samples across aging
 
 ```{r 58genes_plot, echo = TRUE, results = 'hide'}
 #remove ununstim samples in metadata

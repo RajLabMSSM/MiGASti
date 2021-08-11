@@ -126,7 +126,7 @@ metadata$Main_diagnosis <- as.factor (metadata$Main_diagnosis)
 
 ```{r metadata_QC, echo=FALSE, results = 'hide'}
 setwd("~/Documents/MiGASti/Databases")
-exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove.txt")
+exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove2.txt")
 samplenames <- exclude
 metadata$outlier <- NA
 metadata[metadata$Sample %in% samplenames$x,]$outlier <- "TRUE"

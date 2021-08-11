@@ -126,7 +126,7 @@ metadata$Main_diagnosis <- as.factor (metadata$Main_diagnosis)
 
 ```{r metadata_QC, echo=FALSE, results = 'hide'}
 setwd("~/Documents/MiGASti/Databases")
-exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove.txt")
+exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove2.txt")
 samplenames <- exclude
 metadata$outlier <- NA
 metadata[metadata$Sample %in% samplenames$x,]$outlier <- "TRUE"
@@ -313,6 +313,14 @@ ggplot(data=df, aes(x=Cause_of_death, y=Frequency)) +
   theme_classic()
 ```
 
+# Number of unique donors of all cultured + stimulated samples  (minus TNFa)
+
+```{r metadata_Q3, echo=TRUE}
+#remove uncultured samples
+metadata_cultured2 <- metadata_cultured[metadata_cultured$Stimulation != "TNFa",]
+#check numbers
+length(unique(metadata_cultured2$Donor_id)) 
+```
 
 
 

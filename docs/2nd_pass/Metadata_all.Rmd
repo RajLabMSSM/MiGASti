@@ -126,12 +126,12 @@ metadata$Main_diagnosis <- as.factor (metadata$Main_diagnosis)
 
 ```{r metadata_QC, echo=TRUE, results = 'hide'}
 setwd("~/Documents/MiGASti/Databases")
-exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove.txt")
+exclude <- read.table("~/Documents/MiGASti/Databases/samples2remove2.txt")
 samplenames <- exclude
 metadata$outlier <- NA
 metadata[metadata$Sample %in% samplenames$x,]$outlier <- "TRUE"
 metadata[!metadata$Sample %in% samplenames$x,]$outlier <- "FALSE"
-#write.table(metadata, "metadata.txt")
+#write.table(metadata, "metadata2.txt")
 ```
 
 # Number of unique donors 

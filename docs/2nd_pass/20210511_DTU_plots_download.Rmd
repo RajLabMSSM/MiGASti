@@ -31,6 +31,7 @@ library(readr)
 library(data.table)
 library(tidyverse)
 library(UpSetR)
+library(readxl)
 
 library(RColorBrewer)
 library(ComplexHeatmap)
@@ -112,51 +113,159 @@ all_res %>%
   theme_bw()
 ```
 
-# Boxplot 
+# Boxplot for TYROBP in LPS
 
-```{r boxplot_age, echo = TRUE}
-gene_meta <- 
-  read_tsv("~/Documents/MiGASti/Databases/gencode.v30.genes.gtf") %>% 
-  janitor::clean_names() %>%
-  rename(txname = "isoform_id", geneid = "gene_id", genename = "gene")
+```{r boxplot_LPS_tyroBP, echo = TRUE}
+markers = "~/Documents/MiGASti/docs/2nd_pass/TYROBP.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
 
-gene_meta <- 
-  read_tsv("~/GENCODE/gencode.v30.tx2gene.tsv.gz") %>% 
-  janitor::clean_names() %>%
-  dplyr::rename(isoform_id = txname, gene_id = geneid, gene = genename)
+isoform_id <- rownames(tx_ratio)
+copy <- cbind (isoform_id, tx_ratio)
+ratio <- merge(copy, markers, by = "isoform_id")
+sample <- colnames(ratio)
+rownames(ratio) = ratio$isoform_id
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+ratio = ratio[, !colnames(ratio) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
 
-gene_meta <- read.delim("~/Documents/MiGASti/Databases/gencode.v30.genes.gtf", header=FALSE) %>% 
-  janitor::clean_names() %>%
-  dplyr::rename(isoform_id = txname, gene_id = geneid, gene = genename)
+samples_LPS = metadata_filt$Sample[metadata_filt$Stimulation %in% "LPS"]  
+samples_unstim = metadata_filt$Sample[metadata_filt$Stimulation %in% "unstim"] 
 
-dtu_plot <- function(gene, plot_type = "LPS"){
-  id <- unique(gene_meta[ gene_meta$gene == gene,]$gene_id)
-  tx <- gene_meta[gene_meta$gene == gene, "isoform_id", drop = TRUE]
-  tx <- tx[ tx %in% rownames(tx_ratio)]
-  df <- tx_ratio[ tx,]
-  #df <- df[complete.cases(df),]
-  ratio_df <- 
-    df %>%
-    rownames_to_column(var = "isoform_id") %>%
-    pivot_longer(names_to = "sample", values_to = "ratio", -isoform_id) %>%
-    left_join(support, by = "sample")
+metadata4deg = metadata_filt[rownames(metadata_filt) %in% c(samples_LPS,samples_unstim) ,]
 
-  if( plot_type == "LPS"){
-    res <- res$gene[ res$gene == gene,]
-    
-    ratio_df$FDR <- res$empirical_FDR[match(ratio_df$isoform_id, res$isoform_id)]
-    ratio_df$isoform_id <- paste0(ratio_df$isoform_id, "\nFDR = ", signif(ratio_df$FDR, digits = 2) )
-    
-    p <- ggplot(ratio_df, aes(x = age, y = ratio, colour = condition )) + 
-      geom_point(size = 1) + 
-      facet_wrap(~isoform_id, scales = "free") + theme_classic() +
-      geom_smooth(method = "lm",alpha = 0) + labs(x = "LPS (stimulation)")
-  }
-  return(p)
-}
-  
-dtu_plot("TYROBP", "LPS")
-  
+ratio_LPS_unstim = as.data.frame(ratio[, colnames(ratio) %in% c(samples_LPS, samples_unstim)])
+
+ratio_m <- melt(as.matrix(ratio_LPS_unstim))
+gene2check_charac = merge(ratio_m, metadata4deg, by.x = "Var2", by.y = "Sample")
+
+# show direction of effect for male versus female
+ggplot(gene2check_charac, aes(x = Stimulation, y = value, fill = Stimulation)) +
+  geom_boxplot(notch = F, na.rm = T) +
+  geom_jitter() +
+  scale_y_continuous(limits = c(0,1)) +
+  theme_bw() + facet_wrap(~Var1, scales = "free_y") +
+  ggpubr::stat_compare_means(label = "p.format", label.x.npc = "centre", method = "wilcox.test")
+
+
+p <- ggplot(gene2check_charac, aes(x = Stimulation, y = value, fill = Stimulation)) + 
+    geom_violin(width = 0.5) +
+    geom_jitter(width = 0.25, aes(colour = Stimulation), size = 1) + 
+    geom_boxplot(fill = NA, outlier.colour = NA, width = 0.25) +
+    facet_wrap(~Var1) + theme_classic() 
+p 
+```
+
+# Boxplot for WARS in IFNy
+
+```{r boxplot_WARS_IFNy, echo = TRUE}
+IFNy <- all_res$IFNy
+markers = "~/Documents/MiGASti/docs/2nd_pass/WARS.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+
+isoform_id <- rownames(tx_ratio)
+copy <- cbind (isoform_id, tx_ratio)
+ratio <- merge(copy, markers, by = "isoform_id")
+sample <- colnames(ratio)
+rownames(ratio) = ratio$isoform_id
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+ratio = ratio[, !colnames(ratio) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+
+samples_IFNy = metadata_filt$Sample[metadata_filt$Stimulation %in% "IFNy"]  
+samples_unstim = metadata_filt$Sample[metadata_filt$Stimulation %in% "unstim"] 
+
+metadata4deg = metadata_filt[rownames(metadata_filt) %in% c(samples_IFNy,samples_unstim) ,]
+
+ratio_IFNy_unstim = as.data.frame(ratio[, colnames(ratio) %in% c(samples_IFNy, samples_unstim)])
+
+ratio_m <- melt(as.matrix(ratio_IFNy_unstim))
+gene2check_charac = merge(ratio_m, metadata4deg, by.x = "Var2", by.y = "Sample")
+
+# show direction of effect for male versus female
+ggplot(gene2check_charac, aes(x = Stimulation, y = value, fill = Stimulation)) +
+  geom_boxplot(notch = F, na.rm = T) +
+  geom_jitter() +
+  scale_y_continuous(limits = c(0,1)) +
+  theme_bw() + facet_wrap(~Var1, scales = "free_y") +
+  ggpubr::stat_compare_means(label = "p.format", label.x.npc = "centre", method = "wilcox.test")
+
+
+p <- ggplot(gene2check_charac, aes(x = Stimulation, y = value, fill = Stimulation)) + 
+    geom_violin(width = 0.5) +
+    geom_jitter(width = 0.25, aes(colour = Stimulation), size = 1) + 
+    geom_boxplot(fill = NA, outlier.colour = NA, width = 0.25) +
+    facet_wrap(~Var1) + theme_classic() 
+p 
+```
+
+### Boxplot CIITA IFNy
+
+```{r boxplot_CIITA_IFNy, echo = TRUE}
+IFNy <- all_res$IFNy
+markers = "~/Documents/MiGASti/docs/2nd_pass/CIITA.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+
+isoform_id <- rownames(tx_ratio)
+copy <- cbind (isoform_id, tx_ratio)
+ratio <- merge(copy, markers, by = "isoform_id")
+sample <- colnames(ratio)
+rownames(ratio) = ratio$isoform_id
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove.txt")
+exclude <- exclude$x
+ratio = ratio[, !colnames(ratio) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+
+samples_IFNy = metadata_filt$Sample[metadata_filt$Stimulation %in% "IFNy"]  
+samples_unstim = metadata_filt$Sample[metadata_filt$Stimulation %in% "unstim"] 
+
+metadata4deg = metadata_filt[rownames(metadata_filt) %in% c(samples_IFNy,samples_unstim) ,]
+
+ratio_IFNy_unstim = as.data.frame(ratio[, colnames(ratio) %in% c(samples_IFNy, samples_unstim)])
+
+ratio_m <- melt(as.matrix(ratio_IFNy_unstim))
+gene2check_charac = merge(ratio_m, metadata4deg, by.x = "Var2", by.y = "Sample")
+
+# show direction of effect for male versus female
+ggplot(gene2check_charac, aes(x = Stimulation, y = value, fill = Stimulation)) +
+  geom_boxplot(notch = F, na.rm = T) +
+  geom_jitter() +
+  scale_y_continuous(limits = c(0,1)) +
+  theme_bw() + facet_wrap(~Var1, scales = "free_y") +
+  ggpubr::stat_compare_means(label = "p.format", label.x.npc = "centre", method = "wilcox.test")
+
+
+p <- ggplot(gene2check_charac, aes(x = Stimulation, y = value, fill = Stimulation)) + 
+    geom_violin(width = 0.5) +
+    geom_jitter(width = 0.25, aes(colour = Stimulation), size = 1) + 
+    geom_boxplot(fill = NA, outlier.colour = NA, width = 0.25) +
+    facet_wrap(~Var1) + theme_classic() 
+p + stat_compare_means(label = "p.format", label.x.npc = "centre", method = "wilcox.test")
 ```
 
 # LPS 

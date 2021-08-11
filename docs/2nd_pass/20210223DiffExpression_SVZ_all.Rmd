@@ -55,12 +55,12 @@ return(data)
 
 ```{r data_load, echo = TRUE, results = 'hide'}
 load("~/Documents/MiGASti/Databases/gene_matrix.RData")
-metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata2.txt")
 #set rownames to Sample
 row.names(metadata) <- metadata$Sample 
 setwd("~/Documents/MiGASti/Databases")
 #exclude samples that did not pass QC filtering
-exclude <- read.table("samples2remove.txt")
+exclude <- read.table("samples2remove2.txt")
 exclude <- exclude$x
 genes_counts_filt = genes_counts[, !colnames(genes_counts) %in% exclude] 
 #Excludes the samples from filters. 
@@ -75,20 +75,12 @@ genes_counts_ordered <- genes_counts_filt[,rownames(metadata_filt)]
 all(rownames(metadata_filt) == colnames (genes_counts_ordered)) #TRUE
 ```
 
-
-```{r data_load_outline, echo = TRUE}
-# Counts, TPM, voom and metadata filtered 
-# 496 samples!  
-# Filter for genes not expressed: 50 % of the samples! 
-# dim(genes_counts_ordered) #18997   496
-# dim(metadata_filt) #496  38
-```
-
 # Preparing the samples for DEG
 
 ```{r preparing, echo = TRUE}
 #remove uncultured samples
 metadata_cultured <- metadata_filt[metadata_filt$Stimulation != "ununstim",]
+metadata_cultured_subset <- metadata_cultured[metadata_cultured$Stimulation != "TNFa",]
 #check numbers
 #dim(metadata_cultured)
 #check numbers per stimulation
@@ -216,42 +208,6 @@ createDT(resOrdered_IFNy_top)
 write.table(resOrdered_IFNy_top, "DEG_IFNy_SVZ.txt")
 ```
 
-# DESeq2: TNFa vs unstim
-
-```{r TNFa_IFNy, echo = TRUE}
-# generate results table for TNFa vs unstim
-res_TNFa <- results(dds, name="Stimulation_TNFa_vs_unstim")
-sum(res_TNFa$padj < 0.05, na.rm=TRUE)
-resOrdered_TNFa <- res_TNFa[order(res_TNFa$pvalue),] 
-resOrdered_TNFa <- as.data.frame(resOrdered_TNFa)
-```
-
-### Volcano plot TNFa vs unstim
-
-```{r vulcano_TNFa, echo = TRUE}
-head(res_TNFa)
-with(res_TNFa, plot(log2FoldChange, -log10(pvalue), pch=20, main="Volcano plot", xlim=c(-10,10)))
-with(subset(res_TNFa, padj<.05 ), points(log2FoldChange, -log10(pvalue), pch=20, col="red"))
-```
-
-### MA plot TNFa vs unstim
-
-```{r MA_TNFa, echo = TRUE}
-plotMA(res_TNFa, ylim=c(-2,2))
-```
-
-### Top differentially expressed genes TNFa vs unstim
-
-```{r diff_TNFa, echo = TRUE}
-setDT(resOrdered_TNFa, keep.rownames = "ensembl")
-resOrdered_TNFa <- merge(resOrdered_TNFa, gencode_30, by = "ensembl")
-resOrdered_TNFa_top = resOrdered_TNFa[order(resOrdered_TNFa$padj) ,]
-setDT(resOrdered_TNFa_top, keep.rownames = "ensembl")
-resOrdered_TNFa_top = resOrdered_TNFa_top[, c("ensembl", "symbol", "baseMean", "log2FoldChange", "lfcSE", "stat", "pvalue", "padj")]
-createDT(resOrdered_TNFa_top)
-write.table(resOrdered_TNFa_top, "DEG_TNFa_SVZ.txt")
-```
-
 # DESeq2: R848 vs unstim
 ### Number of differentially expressed genes
 
@@ -338,14 +294,9 @@ resOrdered_IFNy_p <- subset(resOrdered_IFNy_top, padj < 0.05)
 resOrdered_IFNy_LFC <- subset(resOrdered_IFNy_p, log2FoldChange > 1 | log2FoldChange < -1)
 write.table(resOrdered_IFNy_LFC, "IFNy_SVZ_FC1.txt")
 
-resOrdered_TNFa_p <- subset(resOrdered_TNFa, padj < 0.05)
-resOrdered_TNFa_LFC <- subset(resOrdered_TNFa_p, log2FoldChange > 1 | log2FoldChange < -1)
-write.table(resOrdered_TNFa_LFC, "TNFa_SVZ_FC1.txt")
-
 resOrdered_R848_p <- subset(resOrdered_R848_top, padj < 0.05)
 resOrdered_R848_LFC <- subset(resOrdered_R848_p, log2FoldChange > 1 | log2FoldChange < -1)
 write.table(resOrdered_R848_LFC, "R848_SVZ_FC1.txt")
-
 ```
  
 

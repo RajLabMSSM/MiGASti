@@ -47,6 +47,15 @@ metadata <- merge(metadata, general_stats, by = "Sample")
 row.names(metadata) <- metadata$Sample 
 ```
 
+# Number of donors before QC
+
+```{r load_file2, echo=FALSE}
+#remove uncultured samples
+metadata_cultured <- metadata[metadata$Stimulation != "ununstim",]
+#check numbers
+length(unique(metadata_cultured$Donor_id)) 
+```
+
 ### Change names
 
 ```{r metadata1, echo=FALSE, results = 'hide'}
@@ -314,6 +323,14 @@ ggplot(data=df, aes(x=Cause_of_death, y=Frequency)) +
 ```
 
 
+# Number of unique donors of all cultured + stimulated samples  (minus TNFa)
+
+```{r metadata_QC4, echo=TRUE}
+#remove uncultured samples
+metadata_cultured2 <- metadata_cultured[metadata_cultured$Stimulation != "TNFa",]
+#check numbers
+length(unique(metadata_cultured2$Donor_id)) 
+```
 
 
 

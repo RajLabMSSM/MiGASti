@@ -47,6 +47,15 @@ metadata <- merge(metadata, general_stats, by = "Sample")
 row.names(metadata) <- metadata$Sample 
 ```
 
+### number of unique donors before QC
+
+```{r load_file2, echo=FALSE}
+metadata_uncultured <- subset(metadata, Stimulation == "ununstim")
+#check numbers
+length(unique(metadata_uncultured$Donor_id))
+save(metadata_uncultured, file = "metadata_uncultured.Rdata")
+```
+
 ### Change names
 
 ```{r metadata1, echo=FALSE, results = 'hide'}

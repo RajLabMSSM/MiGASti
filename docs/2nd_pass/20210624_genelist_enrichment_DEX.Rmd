@@ -168,6 +168,9 @@ aging_down = as.data.frame(aging_down)
 aging_up = "~/Documents/MiGASti/Databases/aging_up_MIGA.xlsx"
 aging_up = read_excel(aging_up, col_names = TRUE) 
 aging_up = as.data.frame(aging_up)
+
+load("~/Documents/MiGASti/docs/2nd_pass/AD_bulk_3datasets.Rdata")
+AD_bulk <- genes3
 ```
 
 # DEX UP FDR 5% logFC > 1 
@@ -293,7 +296,7 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
-### + AD genes
+### + AD genes mouse
 
 ```{r LPS_AD, echo = TRUE}
 set2 <- AD
@@ -302,6 +305,17 @@ setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
+
+### + AD genes bulk 
+
+```{r DEX_AD_bulk1, echo = TRUE}
+set2 <- AD_bulk
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
 
 ### + TWAS AD genes
 
@@ -537,10 +551,20 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
-### + AD genes
+### + AD genes mouse 
 
 ```{r LPS_AD2, echo = TRUE}
 set2 <- AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes bulk 
+
+```{r DEX_AD_bulk, echo = TRUE}
+set2 <- AD_bulk
 set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")
@@ -782,10 +806,20 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
-### + AD genes
+### + AD genes mouse
 
 ```{r LPS_AD3, echo = TRUE}
 set2 <- AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes bulk 
+
+```{r DEX_AD_bulk2, echo = TRUE}
+set2 <- AD_bulk
 set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")
@@ -1026,10 +1060,20 @@ overlap <- merge(set1, set2, by = "symbol")
 list(overlap$symbol)
 ```
 
-### + AD genes
+### + AD genes mouse 
 
 ```{r LPS_AD4, echo = TRUE}
 set2 <- AD
+set2_v <- set2$symbol
+setEnrichment( set1 = set1_v, set2 = set2_v)
+overlap <- merge(set1, set2, by = "symbol")
+list(overlap$symbol)
+```
+
+### + AD genes bulk 
+
+```{r DEX_AD_bulk4, echo = TRUE}
+set2 <- AD_bulk
 set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 overlap <- merge(set1, set2, by = "symbol")

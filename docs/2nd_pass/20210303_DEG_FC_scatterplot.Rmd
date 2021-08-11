@@ -38,6 +38,9 @@ library(purrr)
 library(corrplot)
 library(ggplot2)
 library(ggpubr)
+library(patchwork)
+library(ggrepel)
+library(ggeasy)
 
 
 knitr::opts_chunk$set( 
@@ -51,18 +54,12 @@ knitr::opts_chunk$set(
 
 # Do regions respond in the same way to different stimulations?
 #Number of samples per stimulation:
-#GFM: unstim 38, LPS 35, IFNy 23, R848 17, TNFa 23, ATP 4, DEX 10, IL4 8
-#SVZ: unstim 29, LPS 29, IFNy 24, R848 24, TNFa 24, ATP 1 
-#GTS: unstim 30, LPS 25, IFNy 12
-#THA: unstim 22, LPS 22, IFNy 9
-#CC:  unstim 15, LPS 16, IFNy 10
 
 # LPS
 ### GFM x SVZ
-#16108 genes 
 
 ```{r scatter_:PS_GFM_SVZ, echo = TRUE}
-setwd("~/Documents/MiGASti/Databases")
+setwd("~/Documents/MiGASti/docs/2nd_pass")
 DEG_LPS_GFM <- read.table("DEG_LPS_GFM.txt")
 DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
 DEG_genes_LPS_GFM_SVZ = merge(DEG_LPS_GFM, DEG_LPS_SVZ, by ="symbol")
@@ -70,20 +67,19 @@ DEG_genes_LPS_GFM_SVZ = merge(DEG_LPS_GFM, DEG_LPS_SVZ, by ="symbol")
 GFM <- DEG_genes_LPS_GFM_SVZ[,4]
 SVZ <- DEG_genes_LPS_GFM_SVZ[,11]
 df = data.frame(GFM, SVZ)
-p <- ggplot(df, aes(x=GFM, y=SVZ) ) +
+p1 <- ggplot(df, aes(x=GFM, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
   geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
-p + stat_cor(method = "spearman")
+p1 <- p1 + stat_cor(method = "spearman")
 ```
 
 ### CC x SVZ
-#16020 genes 
 
 ```{r scatter_LPS_CC_SVZ, echo = TRUE}
-setwd("~/Documents/MiGASti/Databases")
+setwd("~/Documents/MiGASti/docs/2nd_pass")
 DEG_LPS_CC <- read.table("DEG_LPS_CC.txt")
 DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
 DEG_genes_LPS_CC_SVZ = merge(DEG_LPS_CC, DEG_LPS_SVZ, by ="symbol")
@@ -91,107 +87,61 @@ DEG_genes_LPS_CC_SVZ = merge(DEG_LPS_CC, DEG_LPS_SVZ, by ="symbol")
 CC <- DEG_genes_LPS_CC_SVZ[,4]
 SVZ <- DEG_genes_LPS_CC_SVZ[,11]
 df = data.frame(CC, SVZ)
-p <- ggplot(df, aes(x=CC, y=SVZ) ) +
+p2 <- ggplot(df, aes(x=CC, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
   geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
-p + stat_cor(method = "spearman")
+p2 <- p2 + stat_cor(method = "spearman")
 ```
 
-### GTS x THA
-#21558 genes 
+### GTS x SVZ
 
-```{r scatter_LPS_GTS_THA, echo = TRUE}
-setwd("~/Documents/MiGASti/Databases")
-DEG_LPS_THA <- read.table("DEG_LPS_THA.txt")
+```{r scatter_LPS_GTS_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
 DEG_LPS_GTS <- read.table("DEG_LPS_GTS.txt")
-DEG_genes_LPS_GTS_THA = merge(DEG_LPS_THA, DEG_LPS_GTS, by ="symbol")
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
+DEG_genes_LPS_GTS_SVZ = merge(DEG_LPS_GTS, DEG_LPS_SVZ, by ="symbol")
 
-THA <- DEG_genes_LPS_GTS_THA[,4]
-GTS <- DEG_genes_LPS_GTS_THA[,11]
-df = data.frame(THA, GTS)
-p <- ggplot(df, aes(x=GTS, y=THA) ) +
+GTS <- DEG_genes_LPS_GTS_SVZ[,4]
+SVZ <- DEG_genes_LPS_GTS_SVZ[,11]
+df = data.frame(GTS, SVZ)
+p3 <- ggplot(df, aes(x=GTS, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
   geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
-p + stat_cor(method = "spearman")
+p3 <- p3 + stat_cor(method = "spearman")
 ```
 
-### GFM x CC 
-#20493 genes 
+### THA x SVZ
 
-```{r scatter_LPS_GFM_CC, echo = TRUE}
-setwd("~/Documents/MiGASti/Databases")
-DEG_LPS_GFM <- read.table("DEG_LPS_GFM.txt")
-DEG_LPS_CC <- read.table("DEG_LPS_CC.txt")
-DEG_genes_LPS_GFM_CC = merge(DEG_LPS_GFM, DEG_LPS_CC, by ="symbol")
-
-GFM <- DEG_genes_LPS_GFM_CC[,4]
-CC <- DEG_genes_LPS_GFM_CC[,11]
-df = data.frame(GFM, CC)
-p <- ggplot(df, aes(x=GFM, y=CC) ) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_bin2d(bins = 100) +
-  scale_fill_continuous(type = "viridis") +
-  geom_abline(slope = 1, intercept = 0, linetype = 3) +
-  theme_bw()
-p + stat_cor(method = "spearman")
-```
-
-### GFM x GTS 
-#21345 genes 
-
-```{r scatter_LPS_GFM_GTS, echo = TRUE}
-setwd("~/Documents/MiGASti/Databases")
-DEG_LPS_GFM <- read.table("DEG_LPS_GFM.txt")
-DEG_LPS_GTS <- read.table("DEG_LPS_GTS.txt")
-DEG_genes_LPS_GFM_GTS = merge(DEG_LPS_GFM, DEG_LPS_GTS, by ="symbol")
-
-GFM <- DEG_genes_LPS_GFM_GTS[,4]
-GTS <- DEG_genes_LPS_GFM_GTS[,11]
-df = data.frame(GFM, GTS)
-p <- ggplot(df, aes(x=GFM, y=GTS) ) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_bin2d(bins = 100) +
-  scale_fill_continuous(type = "viridis") +
-  geom_abline(slope = 1, intercept = 0, linetype = 3) +
-  theme_bw()
-p + stat_cor(method = "spearman")
-```
-
-
-### GFM x THA 
-#20900 genes 
-
-```{r scatter_LPS_GFM_THA, echo = TRUE}
-setwd("~/Documents/MiGASti/Databases")
-DEG_LPS_GFM <- read.table("DEG_LPS_GFM.txt")
+```{r scatter_LPS_THA_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
 DEG_LPS_THA <- read.table("DEG_LPS_THA.txt")
-DEG_genes_LPS_GFM_THA = merge(DEG_LPS_GFM, DEG_LPS_THA, by ="symbol")
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
+DEG_genes_LPS_THA_SVZ = merge(DEG_LPS_THA, DEG_LPS_SVZ, by ="symbol")
 
-GFM <- DEG_genes_LPS_GFM_THA[,4]
-THA <- DEG_genes_LPS_GFM_THA[,11]
-df = data.frame(GFM, THA)
-p <- ggplot(df, aes(x=GFM, y=THA) ) +
+THA <- DEG_genes_LPS_THA_SVZ[,4]
+SVZ <- DEG_genes_LPS_THA_SVZ[,11]
+df = data.frame(THA, SVZ)
+p4 <- ggplot(df, aes(x=THA, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
   geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
-p + stat_cor(method = "spearman")
+p4 <- p4 + stat_cor(method = "spearman")
 ```
 
 
 # IFNy
 ### GFM x SVZ
-#16108 genes 
 
-```{r scatter_IFNy_GFM_SVZ, echo = TRUE, results = 'hide'}
-setwd("~/Documents/MiGASti/Databases")
+```{r scatter_IFNy_GFM_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
 DEG_IFNy_GFM <- read.table("DEG_IFNy_GFM.txt")
 DEG_IFNy_SVZ <- read.table("DEG_IFNy_SVZ.txt")
 DEG_genes_IFNy_GFM_SVZ = merge(DEG_IFNy_GFM, DEG_IFNy_SVZ, by ="symbol")
@@ -199,133 +149,396 @@ DEG_genes_IFNy_GFM_SVZ = merge(DEG_IFNy_GFM, DEG_IFNy_SVZ, by ="symbol")
 GFM <- DEG_genes_IFNy_GFM_SVZ[,4]
 SVZ <- DEG_genes_IFNy_GFM_SVZ[,11]
 df = data.frame(GFM, SVZ)
-p <- ggplot(df, aes(x=GFM, y=SVZ) ) +
+p5 <- ggplot(df, aes(x=GFM, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
   geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
-p + stat_cor(method = "spearman")
+p5 <- p5 + stat_cor(method = "spearman")
 ```
 
-### GFM x GTS 
-#21345 genes 
+### CC x SVZ
 
-```{r scatter_LPS_GFM_SVZ, echo = TRUE, results = 'hide'}
-setwd("~/Documents/MiGASti/Databases")
-DEG_IFNy_GFM <- read.table("DEG_IFNy_GFM.txt")
-DEG_IFNy_GTS <- read.table("DEG_IFNy_GTS.txt")
-DEG_genes_IFNy_GFM_GTS = merge(DEG_IFNy_GFM, DEG_IFNy_GTS, by ="symbol")
-
-GFM <- DEG_genes_IFNy_GFM_GTS[,4]
-GTS <- DEG_genes_IFNy_GFM_GTS[,11]
-df = data.frame(GFM, GTS)
-p <- ggplot(df, aes(x=GFM, y=GTS) ) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_bin2d(bins = 100) +
-  scale_fill_continuous(type = "viridis") +
-  geom_abline(slope = 1, intercept = 0, linetype = 3) +
-  theme_bw()
-p + stat_cor(method = "spearman")
-```
-
-### GFM x THA 
-#20900 genes 
-
-```{r scatter_IFNy_GFM_THA, echo = TRUE}
-setwd("~/Documents/MiGASti/Databases")
-DEG_IFNy_GFM <- read.table("DEG_IFNy_GFM.txt")
-DEG_IFNy_THA <- read.table("DEG_IFNy_THA.txt")
-DEG_genes_IFNy_GFM_THA = merge(DEG_IFNy_GFM, DEG_IFNy_THA, by ="symbol")
-
-GFM <- DEG_genes_IFNy_GFM_THA[,4]
-THA <- DEG_genes_IFNy_GFM_THA[,11]
-df = data.frame(GFM, THA)
-p <- ggplot(df, aes(x=GFM, y=THA) ) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_bin2d(bins = 100) +
-  scale_fill_continuous(type = "viridis") +
-  geom_abline(slope = 1, intercept = 0, linetype = 3) +
-  theme_bw()
-p + stat_cor(method = "spearman")
-```
-
-### GFM x CC 
-#20493 genes 
-
-```{r scatter_IFNy_GFM_CC, echo = TRUE}
-setwd("~/Documents/MiGASti/Databases")
-DEG_IFNy_GFM <- read.table("DEG_IFNy_GFM.txt")
+```{r scatter_IFNy_CC_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
 DEG_IFNy_CC <- read.table("DEG_IFNy_CC.txt")
-DEG_genes_IFNy_GFM_CC = merge(DEG_IFNy_GFM, DEG_IFNy_CC, by ="symbol")
+DEG_IFNy_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+DEG_genes_IFNy_CC_SVZ = merge(DEG_IFNy_CC, DEG_IFNy_SVZ, by ="symbol")
 
-GFM <- DEG_genes_IFNy_GFM_CC[,4]
-CC <- DEG_genes_IFNy_GFM_CC[,11]
-df = data.frame(GFM, CC)
-p <- ggplot(df, aes(x=GFM, y=CC) ) +
+CC <- DEG_genes_IFNy_CC_SVZ[,4]
+SVZ <- DEG_genes_IFNy_CC_SVZ[,11]
+df = data.frame(CC, SVZ)
+p6 <- ggplot(df, aes(x=CC, y=SVZ) ) +
   geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
   geom_bin2d(bins = 100) +
   scale_fill_continuous(type = "viridis") +
   geom_abline(slope = 1, intercept = 0, linetype = 3) +
   theme_bw()
-p + stat_cor(method = "spearman")
+p6 <- p6 + stat_cor(method = "spearman")
 ```
 
-# TNFa
+### GTS x SVZ
+
+```{r scatter_IFNy_GTS_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_IFNy_GTS <- read.table("DEG_IFNy_GTS.txt")
+DEG_IFNy_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+DEG_genes_IFNy_GTS_SVZ = merge(DEG_IFNy_GTS, DEG_IFNy_SVZ, by ="symbol")
+
+GTS <- DEG_genes_IFNy_GTS_SVZ[,4]
+SVZ <- DEG_genes_IFNy_GTS_SVZ[,11]
+df = data.frame(GTS, SVZ)
+p7 <- ggplot(df, aes(x=GTS, y=SVZ) ) +
+  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
+  geom_bin2d(bins = 100) +
+  scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
+  theme_bw()
+p7 <- p7 + stat_cor(method = "spearman")
+```
+
+### THA x SVZ
+
+```{r scatter_IFNy_THA_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_IFNy_THA <- read.table("DEG_IFNy_THA.txt")
+DEG_IFNy_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+DEG_genes_IFNy_THA_SVZ = merge(DEG_IFNy_THA, DEG_IFNy_SVZ, by ="symbol")
+
+THA <- DEG_genes_IFNy_THA_SVZ[,4]
+SVZ <- DEG_genes_IFNy_THA_SVZ[,11]
+df = data.frame(THA, SVZ)
+p8 <- ggplot(df, aes(x=THA, y=SVZ) ) +
+  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
+  geom_bin2d(bins = 100) +
+  scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
+  theme_bw()
+p8 <- p8 + stat_cor(method = "spearman")
+```
+
+### Combined plot LPS 
+
+```{r scatterplot2, echo = TRUE}
+p1 + p2+ p3 + p4 
+```
+
+
+### Combined plot IFNy
+
+```{r scatterplot3, echo = TRUE}
+p5 + p6 + p7 + p8 
+```
+
+# FDR < 5%
+
 ### GFM x SVZ
-#16108 genes 
 
-```{r scatter_TNFa_GFM_SVZ, echo = TRUE, results = 'hide'}
-setwd("~/Documents/MiGASti/Databases")
-DEG_TNFa_GFM <- read.table("DEG_TNFa_GFM.txt")
-DEG_TNFa_SVZ <- read.table("DEG_TNFa_SVZ.txt")
-DEG_genes_TNFa_GFM_SVZ = merge(DEG_TNFa_GFM, DEG_TNFa_SVZ, by ="symbol")
-
-GFM <- DEG_genes_TNFa_GFM_SVZ[,4]
-SVZ <- DEG_genes_TNFa_GFM_SVZ[,11]
-df = data.frame(GFM, SVZ)
-p <- ggplot(df, aes(x=GFM, y=SVZ) ) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_bin2d(bins = 100) +
-  scale_fill_continuous(type = "viridis") +
-  geom_abline(slope = 1, intercept = 0, linetype = 3) +
-  theme_bw()
-p + stat_cor(method = "spearman")
+```{r Patir, echo = TRUE}
+Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
+names(Patir)[1] <- "symbol"
 ```
 
-# R848
-### GFM x SVZ
-#16108 genes
+```{r scatter1_LPS_GFM_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_LPS_GFM <- read.table("DEG_LPS_GFM.txt")
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
+DEG_LPS_GFM <- subset(DEG_LPS_GFM, padj < 0.05)
+DEG_LPS_SVZ <- subset(DEG_LPS_SVZ, padj < 0.05)
+DEG_genes_LPS_GFM_SVZ = merge(DEG_LPS_GFM, DEG_LPS_SVZ, by ="symbol")
 
-```{r scatter_R848_GFM_SVZ, echo = TRUE, results = 'hide'}
-setwd("~/Documents/MiGASti/Databases")
-DEG_R848_GFM <- read.table("DEG_R848_GFM.txt")
-DEG_R848_SVZ <- read.table("DEG_R848_SVZ.txt")
-DEG_genes_R848_GFM_SVZ = merge(DEG_R848_GFM, DEG_R848_SVZ, by ="symbol")
+genelist <- merge(Patir, DEG_genes_LPS_GFM_SVZ, by = "symbol")
+list(genelist$symbol)
 
-GFM <- DEG_genes_R848_GFM_SVZ[,4]
-SVZ <- DEG_genes_R848_GFM_SVZ[,11]
+GFM <- DEG_genes_LPS_GFM_SVZ[,4]
+SVZ <- DEG_genes_LPS_GFM_SVZ[,11]
 df = data.frame(GFM, SVZ)
-p <- ggplot(df, aes(x=GFM, y=SVZ) ) +
-  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
-  geom_bin2d(bins = 100) +
-  scale_fill_continuous(type = "viridis") +
-  geom_abline(slope = 1, intercept = 0, linetype = 3) +
-  theme_bw()
-p + stat_cor(method = "spearman")
+
+rownames(df) = DEG_genes_LPS_GFM_SVZ$symbol
+
+symbol4label = c("CD86", "EBI3", "FCGR2A", "GPR183", "HCK", "IFI30", "LAPTM5", "PLXDC2", "SERPINA1", "SLC37A2", "TMEM106A")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
+
+
+p1 <-  ggplot(genes_m_filt4lab, aes(x = GFM, y = SVZ)) + 
+  geom_point(alpha=.5, color="green")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)    
+p1 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("GFM (", logFC,")")), y = expression(paste("SVZ (", logFC, ")"))) +
+  theme_classic()
 ```
 
+### CC x SVZ
+
+```{r scatter2_LPS_CC_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_LPS_CC <- read.table("DEG_LPS_CC.txt")
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
+DEG_LPS_CC <- subset(DEG_LPS_CC, padj < 0.05)
+DEG_LPS_SVZ <- subset(DEG_LPS_SVZ, padj < 0.05)
+DEG_genes_LPS_CC_SVZ = merge(DEG_LPS_CC, DEG_LPS_SVZ, by ="symbol")
+
+genelist <- merge(Patir, DEG_genes_LPS_CC_SVZ, by = "symbol")
+list(genelist$symbol)
+
+CC <- DEG_genes_LPS_CC_SVZ[,4]
+SVZ <- DEG_genes_LPS_CC_SVZ[,11]
+df = data.frame(CC, SVZ)
+
+rownames(df) = DEG_genes_LPS_CC_SVZ$symbol
+
+symbol4label = c("ABI3", "EB13", "GPR183", "HAMP", "LAPTM5", "PYCARD", "SLC37A2", "TMEM119")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
 
 
+p2 <-  ggplot(genes_m_filt4lab, aes(x = CC, y = SVZ)) + 
+  geom_point(alpha=.5, color="purple")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)    
+p2 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("CC (", logFC,")")), y = expression(paste("SVZ (", logFC, ")"))) +
+  theme_classic()
+
+```
+
+### GTS x SVZ
+
+```{r scatter3_LPS_GTS_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_LPS_GTS <- read.table("DEG_LPS_GTS.txt")
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
+DEG_LPS_GTS <- subset(DEG_LPS_GTS, padj < 0.05)
+DEG_LPS_SVZ <- subset(DEG_LPS_SVZ, padj < 0.05)
+DEG_genes_LPS_GTS_SVZ = merge(DEG_LPS_GTS, DEG_LPS_SVZ, by ="symbol")
+
+genelist <- merge(Patir, DEG_genes_LPS_GTS_SVZ, by = "symbol")
+list(genelist$symbol)
+
+GTS <- DEG_genes_LPS_GTS_SVZ[,4]
+SVZ <- DEG_genes_LPS_GTS_SVZ[,11]
+df = data.frame(GTS, SVZ)
+
+rownames(df) = DEG_genes_LPS_GTS_SVZ$symbol
+
+symbol4label = c("SERPINA1", "SLC37A2")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
 
 
+p3 <-  ggplot(genes_m_filt4lab, aes(x = GTS, y = SVZ)) + 
+  geom_point(alpha=.5, color="pink")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)    
+p3 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("GTS (", logFC,")")), y = expression(paste("SVZ (", logFC, ")"))) +
+  theme_classic()
+
+```
+
+### THA x SVZ
+
+```{r scatter4_LPS_THA_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_LPS_THA <- read.table("DEG_LPS_THA.txt")
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
+DEG_LPS_SVZ <- subset(DEG_LPS_SVZ, padj < 0.05)
+DEG_LPS_THA <- subset(DEG_LPS_THA, padj < 0.05)
+DEG_genes_LPS_THA_SVZ = merge(DEG_LPS_THA, DEG_LPS_SVZ, by ="symbol")
+
+genelist <- merge(Patir, DEG_genes_LPS_THA_SVZ, by = "symbol")
+list(genelist$symbol)
+
+THA <- DEG_genes_LPS_THA_SVZ[,4]
+SVZ <- DEG_genes_LPS_THA_SVZ[,11]
+df = data.frame(THA, SVZ)
+
+rownames(df) = DEG_genes_LPS_THA_SVZ$symbol
+
+symbol4label = c("ADAM28", "CCR1", "CD300A", "EB13", "FGL2", "GPR183", "HAVCR2", "IFI30", "LAPTM5", "LILRB2", "MPEG1", "OLR1", "SLC37A2", "TBXAS1", "TMEM106A", "VAV1")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
 
 
+p4 <-  ggplot(genes_m_filt4lab, aes(x = THA, y = SVZ)) + 
+  geom_point(alpha=.5, color="yellow")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)    
+p4 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("THA (", logFC,")")), y = expression(paste("SVZ (", logFC, ")"))) +
+  theme_classic()
+```
+
+### Combined plots
+
+```{r scatt13, echo = TRUE}
+p1 + p2 + p3 + p4
+```
+
+```{r scatter1_IFNy_GFM_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_IFNy_GFM <- read.table("DEG_IFNy_GFM.txt")
+DEG_IFNy_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+DEG_IFNy_GFM <- subset(DEG_IFNy_GFM, padj < 0.05)
+DEG_IFNy_SVZ <- subset(DEG_IFNy_SVZ, padj < 0.05)
+DEG_genes_IFNy_GFM_SVZ = merge(DEG_IFNy_GFM, DEG_IFNy_SVZ, by ="symbol")
+
+genelist <- merge(Patir, DEG_genes_IFNy_GFM_SVZ, by = "symbol")
+list(genelist$symbol)
+
+GFM <- DEG_genes_IFNy_GFM_SVZ[,4]
+SVZ <- DEG_genes_IFNy_GFM_SVZ[,11]
+df = data.frame(GFM, SVZ)
+
+rownames(df) = DEG_genes_IFNy_GFM_SVZ$symbol
+
+symbol4label = c("C1QB", "C1QC", "C2", "CIITA", "CTSS", "FCGR1A", "GIMAP4", "HLA-DMA", "HLA-DPA1", "HLA-DPB1", "IRF5", "IRF8", "TRIM22")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
 
 
+p1 <-  ggplot(genes_m_filt4lab, aes(x = GFM, y = SVZ)) + 
+  geom_point(alpha=.5, color="green")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)    
+p1 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("GFM (", logFC,")")), y = expression(paste("SVZ (", logFC, ")"))) +
+  theme_classic()
+```
+
+### CC x SVZ
+
+```{r scatter2_IFNy_CC_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_IFNy_CC <- read.table("DEG_IFNy_CC.txt")
+DEG_IFNy_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+DEG_IFNy_CC <- subset(DEG_IFNy_CC, padj < 0.05)
+DEG_IFNy_SVZ <- subset(DEG_IFNy_SVZ, padj < 0.05)
+DEG_genes_IFNy_CC_SVZ = merge(DEG_IFNy_CC, DEG_IFNy_SVZ, by ="symbol")
+
+genelist <- merge(Patir, DEG_genes_IFNy_CC_SVZ, by = "symbol")
+list(genelist$symbol)
+
+CC <- DEG_genes_IFNy_CC_SVZ[,4]
+SVZ <- DEG_genes_IFNy_CC_SVZ[,11]
+df = data.frame(CC, SVZ)
+
+rownames(df) = DEG_genes_IFNy_CC_SVZ$symbol
+
+symbol4label = c("C2", "CIITA", "CTSS", "IRF5", "IRF8")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
 
 
+p2 <-  ggplot(genes_m_filt4lab, aes(x = CC, y = SVZ)) + 
+  geom_point(alpha=.5, color="purple")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)    
+p2 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("CC (", logFC,")")), y = expression(paste("SVZ (", logFC, ")"))) +
+  theme_classic()
 
+```
+
+### GTS x SVZ
+
+```{r scatter3_IFNy_GTS_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_IFNy_GTS <- read.table("DEG_IFNy_GTS.txt")
+DEG_IFNy_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+DEG_IFNy_GTS <- subset(DEG_IFNy_GTS, padj < 0.05)
+DEG_IFNy_SVZ <- subset(DEG_IFNy_SVZ, padj < 0.05)
+DEG_genes_IFNy_GTS_SVZ = merge(DEG_IFNy_GTS, DEG_IFNy_SVZ, by ="symbol")
+
+genelist <- merge(Patir, DEG_genes_IFNy_GTS_SVZ, by = "symbol")
+list(genelist$symbol)
+
+GTS <- DEG_genes_IFNy_GTS_SVZ[,4]
+SVZ <- DEG_genes_IFNy_GTS_SVZ[,11]
+df = data.frame(GTS, SVZ)
+
+rownames(df) = DEG_genes_IFNy_GTS_SVZ$symbol
+
+symbol4label = c("CTSS", "IRF5")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
+
+
+p3 <-  ggplot(genes_m_filt4lab, aes(x = GTS, y = SVZ)) + 
+  geom_point(alpha=.5, color="pink")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)    
+p3 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("GTS (", logFC,")")), y = expression(paste("SVZ (", logFC, ")"))) +
+  theme_classic()
+
+```
+
+### THA x SVZ
+
+```{r scatter4_IFNy_THA_SVZ, echo = TRUE}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+DEG_IFNy_THA <- read.table("DEG_IFNy_THA.txt")
+DEG_IFNy_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+DEG_IFNy_SVZ <- subset(DEG_IFNy_SVZ, padj < 0.05)
+DEG_IFNy_THA <- subset(DEG_IFNy_THA, padj < 0.05)
+DEG_genes_IFNy_THA_SVZ = merge(DEG_IFNy_THA, DEG_IFNy_SVZ, by ="symbol")
+
+genelist <- merge(Patir, DEG_genes_IFNy_THA_SVZ, by = "symbol")
+list(genelist$symbol)
+
+THA <- DEG_genes_IFNy_THA_SVZ[,4]
+SVZ <- DEG_genes_IFNy_THA_SVZ[,11]
+df = data.frame(THA, SVZ)
+
+rownames(df) = DEG_genes_IFNy_THA_SVZ$symbol
+
+symbol4label = c("C2", "CIITA", "GIMAP2", "IRF5", "TRIM22")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
+
+
+p4 <-  ggplot(genes_m_filt4lab, aes(x = THA, y = SVZ)) + 
+  geom_point(alpha=.5, color="yellow")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)    
+p4 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("THA (", logFC,")")), y = expression(paste("SVZ (", logFC, ")"))) +
+  theme_classic()
+```
+
+### Combined plots
+
+```{r scatt12344, echo = TRUE}
+p1 + p2 + p3 + p4
+```
 
 
 

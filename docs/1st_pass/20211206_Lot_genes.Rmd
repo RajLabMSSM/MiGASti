@@ -47,6 +47,20 @@ knitr::opts_chunk$set(
 ```
 
 
+```{r Helper Functions, echo = FALSE}
+createDT <- function(DF, caption="", scrollY=500){
+data <- DT::datatable(DF, caption=caption,
+extensions = 'Buttons',
+options = list( dom = 'Bfrtip',
+buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+scrollY = scrollY, scrollX=T, scrollCollapse = T, paging = F,
+columnDefs = list(list(className = 'dt-center', targets = "_all"))
+)
+)
+return(data)
+}
+```
+
 ```{r check, echo = TRUE, results = 'hide'}
 load("~/Documents/MiGASti/Databases/gene_matrix.RData")
 metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
@@ -84,6 +98,12 @@ metadata_filt_ordered = metadata_filt_ordered[-1,]
 all(rownames(metadata_filt_ordered) == colnames (genes_tpm_filt)) #TRUEgit 
 Stimulation <- metadata_filt_ordered$Stimulation
 ```
+
+```{DT, echo = TRUE}
+createDT(marker_expression)
+```
+
+
 ### Boxplot  MECP2
 
 ```{r MECP2, echo = TRUE}
@@ -98,6 +118,7 @@ ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
   xlab("Stimulation") + ylab("log2((TPM)+1)")
 ```
 
+
 ### Boxplot  KDM6B
 
 ```{r KDM6B, echo = TRUE}
@@ -111,7 +132,6 @@ ggplot(data = df, mapping = aes(x = Stimulation, y = V1)) +
   ggtitle("KDM6B") +
   xlab("Stimulation") + ylab("log2((TPM)+1)")
 ```
-
 
 ### Boxplot  EHMT1
 

@@ -49,7 +49,7 @@ library(ggrastr)
 
 # All samples
 
-```{r function vulcano, echo = TRUE}
+```{r function vulcano1, echo = TRUE}
 # Function Vulcano plot 
 volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL, type ='ALS'){
   res <- 
@@ -61,14 +61,14 @@ volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL,
     )) %>%
     mutate(direction = ifelse(logFC > 0, "up", "down")) %>%
     mutate(logFC = case_when(
-      logFC > 3 ~ Inf,
-    logFC < -3 ~ -Inf,
+      logFC > 5 ~ Inf,
+    logFC < -5 ~ -Inf,
     TRUE ~ logFC
     )) %>%
     mutate(class = paste(sig, direction))
   if( type == "ALS"){
     xpos <- 0.5
-    ymax <- 16.5
+    ymax <- 50
     xlim <- c(-3,3)
   }else{
     xpos <- 0.025
@@ -81,7 +81,7 @@ volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL,
     mutate(position = ifelse( direction == "down", -1 * position, position)) %>%
     mutate(n = formatC(n, format="f", big.mark=",", digits=0))
   plot <- res %>%
-    mutate( P.Value = ifelse( P.Value < 1e-16, Inf, P.Value)) %>% #threshold at 1e16
+    mutate( P.Value = ifelse( P.Value < 1e-90, Inf, P.Value)) %>% #threshold at 1e16
     ggplot(aes(x = logFC, y = -log10(P.Value))) + 
     #geom_point(aes(colour = class ), size = 0.5) +
     rasterise(geom_point(aes(colour = class ), size = 0.5), dpi = 300) +
@@ -125,45 +125,31 @@ volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL,
 ```
 
 
-```{r exvivo_invitro, echo = TRUE}
-load("~/Documents/MiGASti/Databases/res_uncultured_cultured.Rdata")
-res_cult <- res_uncultured_cultured
-gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
-colnames(gencode_30) = c("ensembl","symbol")
-res_cult <- tibble::rownames_to_column(res_cult, "ensembl")
-res <- merge(res_cult, gencode_30, by = "ensembl")
-
-volcano_plot(res, title = "DEG", 
-               subtitle = "In vitro vs ex vivo",
-               annotate_by = c('P2RY12', 'P2YR13', 'TLR2', 'TMEM119', 'TLR7', 'CIITA', 'ITGAM', 'SLC11A1', 'ITGB2', 'ITGAX', 'HLA-DRA', 'IFI16', 'IL6R', 'MAFB', 'C3', 'ADAP2', 'CCR5', 'CX3CR1', 'CSF1R'))
-
-sign <- subset(res, adj.P.Val < 0.05)
-sign_LF <- subset(sign, logFC > 0)
-length(sign_LF$symbol)
-
-sign_LF <- subset(sign, logFC < 0)
-length(sign_LF$symbol)
-
-sign_LF <- subset(sign, logFC > 1)
-length(sign_LF$symbol)
-
-sign_LF <- subset(sign, logFC < -1)
-length(sign_LF$symbol)
-```
-
 # Data load
 
 ```{r Patir, echo = TRUE}
 Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
 names(Patir)[1] <- "symbol"
+LPS_S = "~/Documents/MiGASti/Databases/LPS_DTU.xlsx"
+LPS_S = read_excel(LPS_S, col_names = TRUE) 
+LPS_S = as.data.frame(LPS_S)
+
+IFNy_S = "~/Documents/MiGASti/Databases/DTU_IFNy.xlsx"
+IFNy_S = read_excel(IFNy_S, col_names = TRUE) 
+IFNy_S = as.data.frame(IFNy_S)
 ```
 
 # LPS
 
 ```{r vul_LPS, echo = TRUE}
-load("~/Documents/MiGASti/res_name_LPS2.Rdata")
-res_LPS <- res_name_LPS2
-res <- res_name_LPS2[!duplicated(res_name_LPS2$symbol), ]
+load("~/Documents/MiGASti/docs/2nd_pass/res_LPS_name.Rdata")
+res_LPS <- res_LPS_name
+res_sign <- subset(res_LPS, adj.P.Val < 0.05)
+check_genes <- merge(res_sign, Patir, by = "symbol")
+check_genes2 <- merge(check_genes, LPS_S, by = "symbol")
+list(check_genes)
+list(check_genes2)
+res <- res_LPS_name[!duplicated(res_LPS_name$symbol), ]
 rownames(res) <- res$symbol
 EnhancedVolcano(res,
     lab = rownames(res),
@@ -172,7 +158,7 @@ EnhancedVolcano(res,
 
 volcano_plot(res_LPS, title = "DEG", 
                subtitle = "LPS vs unstimulated",
-               annotate_by = c('IL6','CCL5','CSF3', 'IL12B','IDO1','TNIP3','CXCL2','PTX3','GPAT3', 'CD9', 'ZNF331', 'ITGB5'))
+               annotate_by = c('DHRS9', 'IFI30', 'LCP1', 'LPAR6', 'SERPINA1', 'TYROBP', 'CCR1', 'CD14', 'ADAM28', 'CSF1R', 'FCGR1A', 'GPR34', 'HLA_DPA1', 'IL6R', 'IRF8', 'MS4A4A', 'OLR1', 'RGS1', 'ITGAM', 'IL6', 'CCL5', 'IL23A', 'TNF', 'IDO1', 'IL12B')) 
 
 sign <- subset(res, adj.P.Val < 0.05)
 sign_LF <- subset(sign, logFC > 0)
@@ -191,59 +177,100 @@ length(sign_LF$symbol)
 
 # IFNy
 
-```{r vul_IFNy, echo = TRUE}
-load("~/Documents/MiGASti/docs/res_name_IFNy2.Rdata")
-res_IFNy <- res_name_IFNy2
-res <- res_name_IFNy2[!duplicated(res_name_IFNy2$symbol), ]
-rownames(res) <- res$symbol
-EnhancedVolcano(res,
-    lab = rownames(res),
-    x = 'logFC',
-    y = 'adj.P.Val')
-
-
-
-sign <- subset(res, adj.P.Val < 0.05)
-sign_LF <- subset(sign, logFC > 0)
-length(sign_LF$symbol)
-
-sign_LF <- subset(sign, logFC < 0)
-length(sign_LF$symbol)
-
-sign_LF <- subset(sign, logFC > 1)
-length(sign_LF$symbol)
-
-sign_LF <- subset(sign, logFC < -1)
-length(sign_LF$symbol)
-
+```{r function vulcano2, echo = TRUE}
+# Function Vulcano plot 
+volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL, type ='ALS'){
+  res <- 
+    mutate(res,
+           sig = case_when(
+      adj.P.Val >= 0.05 ~ "non_sig",
+      adj.P.Val < 0.05 & abs(logFC) < 1 ~ "sig",
+      adj.P.Val < 0.05 & abs(logFC) >= 1 ~ "sig - strong"
+    )) %>%
+    mutate(direction = ifelse(logFC > 0, "up", "down")) %>%
+    mutate(logFC = case_when(
+      logFC > 5 ~ Inf,
+    logFC < -5 ~ -Inf,
+    TRUE ~ logFC
+    )) %>%
+    mutate(class = paste(sig, direction))
+  if( type == "ALS"){
+    xpos <- 0.5
+    ymax <- 80
+    xlim <- c(-3,3)
+  }else{
+    xpos <- 0.025
+    ymax <- 8.5
+    xlim <- c(-0.042, 0.042)
+  }
+  de_tally <- group_by(res, sig, direction, class) %>% tally() %>%
+    filter(sig != "non_sig") %>%
+    mutate( position = ifelse(sig == "sig", xpos, 2) ) %>%
+    mutate(position = ifelse( direction == "down", -1 * position, position)) %>%
+    mutate(n = formatC(n, format="f", big.mark=",", digits=0))
+  plot <- res %>%
+    mutate( P.Value = ifelse( P.Value < 1e-90, Inf, P.Value)) %>% #threshold at 1e16
+    ggplot(aes(x = logFC, y = -log10(P.Value))) + 
+    #geom_point(aes(colour = class ), size = 0.5) +
+    rasterise(geom_point(aes(colour = class ), size = 0.5), dpi = 300) +
+    scale_colour_manual(values = c("non_sig up" = "gray", 
+                                   "non_sig down" = "gray",
+                                   "sig up" = "#EB7F56", 
+                                   "sig - strong up" = "#B61927",
+                                   "sig down" = "#4F8FC4",
+                                   "sig - strong down" = "dodgerblue4"
+                                   )) +
+    theme_bw() +
+    labs(y = expression(-log[10]~P~value), x = expression(log[2]~"(fold change)"), title = title, subtitle = subtitle) +
+    guides(colour = FALSE) +
+    scale_y_continuous(expand = c(0,0), limits = c(0,ymax)) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5),
+      panel.border = element_blank(),
+      axis.ticks = element_line(colour = "black")
+    ) +
+    geom_text(fontface = "bold", data = de_tally, aes(x = position, y = ymax - 0.5, label = n, colour = class), size = 2.5 ) +
+    scale_x_continuous(limits = xlim)
+  if(!is.null(annotate_by)){
+    plot <- plot + 
+      ggrepel::geom_text_repel(
+        fontface = "italic",
+        data = filter(res, symbol %in% annotate_by), 
+        aes(x = logFC, y = -log10(P.Value), label = symbol), 
+        min.segment.length = unit(0, "lines"),
+        size = 2.5) +
+      geom_point(
+        data = filter(res, symbol %in% annotate_by), size = 0.8, colour = "black"
+      ) +
+      geom_point(aes(colour = class ),
+        data = filter(res, symbol %in% annotate_by), size = 0.6
+      )
+  }
+  return(plot)
+}
 ```
 
-
-# TNFa
-
-```{r Vul_TNFa, echo = TRUE}
-load("~/Documents/MiGASti/Databases/res_name_TNFa2.Rdata")
-res <- res_name_TNFa2[!duplicated(res_name_TNFa2$symbol), ]
+```{r vul_IFNy, echo = TRUE}
+load("~/Documents/MiGASti/docs/2nd_pass/res_IFNy_name.Rdata")
+res_IFNy <- res_IFNy_name
+res_sign <- subset(res_IFNy, adj.P.Val < 0.05)
+check_genes <- merge(res_sign, Patir, by = "symbol")
+check_genes2 <- merge(check_genes, LPS_S, by = "symbol")
+list(check_genes)
+list(check_genes2)
+res <- res_IFNy_name[!duplicated(res_IFNy_name$symbol), ]
 rownames(res) <- res$symbol
 EnhancedVolcano(res,
     lab = rownames(res),
     x = 'logFC',
     y = 'adj.P.Val')
 
+volcano_plot(res_IFNy, title = "DEG", 
+               subtitle = "IFNy vs unstimulated",
+               annotate_by = c('C1QB', 'C2', 'CIITA', 'GBP1', 'GBP5', 'IDO1', 'IFITM2', 'IL15', 'IL18BP', 'IRF1', 'MLKL', 'OAS1', 'CXCL9', 'CXCL10','WARS', 'CXCL10', 'IRF1', 'CCL24', 'TMEM160', 'HPS6', 'IL24'))
 
-EnhancedVolcano(res,
-    lab = rownames(res),
-    x = 'logFC',
-    y = 'adj.P.Val',
-    selectLab = c('GGA2', 'IRF8', 'TNFRSF1B', 'LPAR5'),
-    xlab = bquote(~Log[2]~ 'fold change'),
-    pCutoff = 0.05,
-    FCcutoff = 1.0,
-    pointSize = 2.0,
-    labSize = 3.0,
-    legendPosition = 'right',
-    legendLabSize = 6,
-    legendIconSize = 2.0)
 
 sign <- subset(res, adj.P.Val < 0.05)
 sign_LF <- subset(sign, logFC > 0)
@@ -251,9 +278,6 @@ length(sign_LF$symbol)
 
 sign_LF <- subset(sign, logFC < 0)
 length(sign_LF$symbol)
-
-overlap <- merge(sign_LF, Patir, by = "symbol")
-list(overlap$symbol)
 
 sign_LF <- subset(sign, logFC > 1)
 length(sign_LF$symbol)
@@ -265,9 +289,85 @@ length(sign_LF$symbol)
 
 # R848
 
+```{r function vulcano3, echo = TRUE}
+# Function Vulcano plot 
+volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL, type ='ALS'){
+  res <- 
+    mutate(res,
+           sig = case_when(
+      adj.P.Val >= 0.05 ~ "non_sig",
+      adj.P.Val < 0.05 & abs(logFC) < 1 ~ "sig",
+      adj.P.Val < 0.05 & abs(logFC) >= 1 ~ "sig - strong"
+    )) %>%
+    mutate(direction = ifelse(logFC > 0, "up", "down")) %>%
+    mutate(logFC = case_when(
+      logFC > 5 ~ Inf,
+    logFC < -5 ~ -Inf,
+    TRUE ~ logFC
+    )) %>%
+    mutate(class = paste(sig, direction))
+  if( type == "ALS"){
+    xpos <- 0.5
+    ymax <- 30
+    xlim <- c(-3,3)
+  }else{
+    xpos <- 0.025
+    ymax <- 8.5
+    xlim <- c(-0.042, 0.042)
+  }
+  de_tally <- group_by(res, sig, direction, class) %>% tally() %>%
+    filter(sig != "non_sig") %>%
+    mutate( position = ifelse(sig == "sig", xpos, 2) ) %>%
+    mutate(position = ifelse( direction == "down", -1 * position, position)) %>%
+    mutate(n = formatC(n, format="f", big.mark=",", digits=0))
+  plot <- res %>%
+    mutate( P.Value = ifelse( P.Value < 1e-90, Inf, P.Value)) %>% #threshold at 1e16
+    ggplot(aes(x = logFC, y = -log10(P.Value))) + 
+    #geom_point(aes(colour = class ), size = 0.5) +
+    rasterise(geom_point(aes(colour = class ), size = 0.5), dpi = 300) +
+    scale_colour_manual(values = c("non_sig up" = "gray", 
+                                   "non_sig down" = "gray",
+                                   "sig up" = "#EB7F56", 
+                                   "sig - strong up" = "#B61927",
+                                   "sig down" = "#4F8FC4",
+                                   "sig - strong down" = "dodgerblue4"
+                                   )) +
+    theme_bw() +
+    labs(y = expression(-log[10]~P~value), x = expression(log[2]~"(fold change)"), title = title, subtitle = subtitle) +
+    guides(colour = FALSE) +
+    scale_y_continuous(expand = c(0,0), limits = c(0,ymax)) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5),
+      panel.border = element_blank(),
+      axis.ticks = element_line(colour = "black")
+    ) +
+    geom_text(fontface = "bold", data = de_tally, aes(x = position, y = ymax - 0.5, label = n, colour = class), size = 2.5 ) +
+    scale_x_continuous(limits = xlim)
+  if(!is.null(annotate_by)){
+    plot <- plot + 
+      ggrepel::geom_text_repel(
+        fontface = "italic",
+        data = filter(res, symbol %in% annotate_by), 
+        aes(x = logFC, y = -log10(P.Value), label = symbol), 
+        min.segment.length = unit(0, "lines"),
+        size = 2.5) +
+      geom_point(
+        data = filter(res, symbol %in% annotate_by), size = 0.8, colour = "black"
+      ) +
+      geom_point(aes(colour = class ),
+        data = filter(res, symbol %in% annotate_by), size = 0.6
+      )
+  }
+  return(plot)
+}
+```
+
 ```{r vul_R848, echo = TRUE}
-load("~/Documents/MiGASti/Databases/res_name_R8482.Rdata")
-res <- res_name_R8482[!duplicated(res_name_R8482$symbol), ]
+load("~/Documents/MiGASti/docs/2nd_pass/res_R848_name.Rdata")
+res_R848 <- res_R848_name
+res <- res_R848_name[!duplicated(res_R848_name$symbol), ]
 rownames(res) <- res$symbol
 EnhancedVolcano(res,
     lab = rownames(res),
@@ -275,19 +375,9 @@ EnhancedVolcano(res,
     y = 'adj.P.Val')
 
 
-EnhancedVolcano(res,
-    lab = rownames(res),
-    x = 'logFC',
-    y = 'adj.P.Val',
-    selectLab = c('TNF', 'IL6', 'IL12B', 'CSF3', 'GPAT3', 'RAB7B'),
-    xlab = bquote(~Log[2]~ 'fold change'),
-    pCutoff = 0.05,
-    FCcutoff = 1.0,
-    pointSize = 2.0,
-    labSize = 3.0,
-    legendPosition = 'right',
-    legendLabSize = 6,
-    legendIconSize = 2.0)
+volcano_plot(res_R848, title = "DEG", 
+               subtitle = "R848 vs unstimulated",
+               annotate_by = c('C12orf57',  'CXCL3', 'DNAAF1', 'GAS7', 'IFI30', 'IL6', 'LUCAT1', 'MCPH1', 'SPP1', 'WDR74', 'TNF', 'IL6', 'IL12B', 'IL23A', 'RAB7B', 'ITGB7'))
 
 sign <- subset(res, adj.P.Val < 0.05)
 sign_LF <- subset(sign, logFC > 0)
@@ -306,15 +396,94 @@ length(sign_LF$symbol)
 
 # DEX 
 
+```{r function vulcano4, echo = TRUE}
+# Function Vulcano plot 
+volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL, type ='ALS'){
+  res <- 
+    mutate(res,
+           sig = case_when(
+      adj.P.Val >= 0.05 ~ "non_sig",
+      adj.P.Val < 0.05 & abs(logFC) < 1 ~ "sig",
+      adj.P.Val < 0.05 & abs(logFC) >= 1 ~ "sig - strong"
+    )) %>%
+    mutate(direction = ifelse(logFC > 0, "up", "down")) %>%
+    mutate(logFC = case_when(
+      logFC > 5 ~ Inf,
+    logFC < -5 ~ -Inf,
+    TRUE ~ logFC
+    )) %>%
+    mutate(class = paste(sig, direction))
+  if( type == "ALS"){
+    xpos <- 0.5
+    ymax <- 40
+    xlim <- c(-3,3)
+  }else{
+    xpos <- 0.025
+    ymax <- 8.5
+    xlim <- c(-0.042, 0.042)
+  }
+  de_tally <- group_by(res, sig, direction, class) %>% tally() %>%
+    filter(sig != "non_sig") %>%
+    mutate( position = ifelse(sig == "sig", xpos, 2) ) %>%
+    mutate(position = ifelse( direction == "down", -1 * position, position)) %>%
+    mutate(n = formatC(n, format="f", big.mark=",", digits=0))
+  plot <- res %>%
+    mutate( P.Value = ifelse( P.Value < 1e-90, Inf, P.Value)) %>% #threshold at 1e16
+    ggplot(aes(x = logFC, y = -log10(P.Value))) + 
+    #geom_point(aes(colour = class ), size = 0.5) +
+    rasterise(geom_point(aes(colour = class ), size = 0.5), dpi = 300) +
+    scale_colour_manual(values = c("non_sig up" = "gray", 
+                                   "non_sig down" = "gray",
+                                   "sig up" = "#EB7F56", 
+                                   "sig - strong up" = "#B61927",
+                                   "sig down" = "#4F8FC4",
+                                   "sig - strong down" = "dodgerblue4"
+                                   )) +
+    theme_bw() +
+    labs(y = expression(-log[10]~P~value), x = expression(log[2]~"(fold change)"), title = title, subtitle = subtitle) +
+    guides(colour = FALSE) +
+    scale_y_continuous(expand = c(0,0), limits = c(0,ymax)) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5),
+      panel.border = element_blank(),
+      axis.ticks = element_line(colour = "black")
+    ) +
+    geom_text(fontface = "bold", data = de_tally, aes(x = position, y = ymax - 0.5, label = n, colour = class), size = 2.5 ) +
+    scale_x_continuous(limits = xlim)
+  if(!is.null(annotate_by)){
+    plot <- plot + 
+      ggrepel::geom_text_repel(
+        fontface = "italic",
+        data = filter(res, symbol %in% annotate_by), 
+        aes(x = logFC, y = -log10(P.Value), label = symbol), 
+        min.segment.length = unit(0, "lines"),
+        size = 2.5) +
+      geom_point(
+        data = filter(res, symbol %in% annotate_by), size = 0.8, colour = "black"
+      ) +
+      geom_point(aes(colour = class ),
+        data = filter(res, symbol %in% annotate_by), size = 0.6
+      )
+  }
+  return(plot)
+}
+```
+
 ```{r vul_DEX, echo = TRUE}
-load("~/Documents/MiGASti/Databases/res_name_DEX2.Rdata")
-res <- res_name_DEX2[!duplicated(res_name_DEX2$symbol), ]
+load("~/Documents/MiGASti/docs/2nd_pass/res_DEX_name.Rdata")
+res_DEX <- res_DEX_name
+res <- res_DEX_name[!duplicated(res_DEX_name$symbol), ]
 rownames(res) <- res$symbol
 EnhancedVolcano(res,
     lab = rownames(res),
     x = 'logFC',
     y = 'adj.P.Val')
 
+volcano_plot(res_DEX, title = "DEG", 
+               subtitle = "DEX vs unstimulated",
+               annotate_by = c('FKBP5', 'ALOX15B', 'CD163', 'MRC1', 'TSC22D3', 'IL27RA', 'IL19', 'CXCL1', 'IL1B', 'CCL2', 'TLR2', 'TMEM119', 'MS4A4A', 'TMEM163', 'CD72'))
 
 EnhancedVolcano(res,
     lab = rownames(res),
@@ -346,15 +515,94 @@ length(sign_LF$symbol)
 
 # IL4 
 
+```{r function vulcano5, echo = TRUE}
+# Function Vulcano plot 
+volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL, type ='ALS'){
+  res <- 
+    mutate(res,
+           sig = case_when(
+      adj.P.Val >= 0.05 ~ "non_sig",
+      adj.P.Val < 0.05 & abs(logFC) < 1 ~ "sig",
+      adj.P.Val < 0.05 & abs(logFC) >= 1 ~ "sig - strong"
+    )) %>%
+    mutate(direction = ifelse(logFC > 0, "up", "down")) %>%
+    mutate(logFC = case_when(
+      logFC > 5 ~ Inf,
+    logFC < -5 ~ -Inf,
+    TRUE ~ logFC
+    )) %>%
+    mutate(class = paste(sig, direction))
+  if( type == "ALS"){
+    xpos <- 0.5
+    ymax <- 30
+    xlim <- c(-3,3)
+  }else{
+    xpos <- 0.025
+    ymax <- 8.5
+    xlim <- c(-0.042, 0.042)
+  }
+  de_tally <- group_by(res, sig, direction, class) %>% tally() %>%
+    filter(sig != "non_sig") %>%
+    mutate( position = ifelse(sig == "sig", xpos, 2) ) %>%
+    mutate(position = ifelse( direction == "down", -1 * position, position)) %>%
+    mutate(n = formatC(n, format="f", big.mark=",", digits=0))
+  plot <- res %>%
+    mutate( P.Value = ifelse( P.Value < 1e-90, Inf, P.Value)) %>% #threshold at 1e16
+    ggplot(aes(x = logFC, y = -log10(P.Value))) + 
+    #geom_point(aes(colour = class ), size = 0.5) +
+    rasterise(geom_point(aes(colour = class ), size = 0.5), dpi = 300) +
+    scale_colour_manual(values = c("non_sig up" = "gray", 
+                                   "non_sig down" = "gray",
+                                   "sig up" = "#EB7F56", 
+                                   "sig - strong up" = "#B61927",
+                                   "sig down" = "#4F8FC4",
+                                   "sig - strong down" = "dodgerblue4"
+                                   )) +
+    theme_bw() +
+    labs(y = expression(-log[10]~P~value), x = expression(log[2]~"(fold change)"), title = title, subtitle = subtitle) +
+    guides(colour = FALSE) +
+    scale_y_continuous(expand = c(0,0), limits = c(0,ymax)) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5),
+      panel.border = element_blank(),
+      axis.ticks = element_line(colour = "black")
+    ) +
+    geom_text(fontface = "bold", data = de_tally, aes(x = position, y = ymax - 0.5, label = n, colour = class), size = 2.5 ) +
+    scale_x_continuous(limits = xlim)
+  if(!is.null(annotate_by)){
+    plot <- plot + 
+      ggrepel::geom_text_repel(
+        fontface = "italic",
+        data = filter(res, symbol %in% annotate_by), 
+        aes(x = logFC, y = -log10(P.Value), label = symbol), 
+        min.segment.length = unit(0, "lines"),
+        size = 2.5) +
+      geom_point(
+        data = filter(res, symbol %in% annotate_by), size = 0.8, colour = "black"
+      ) +
+      geom_point(aes(colour = class ),
+        data = filter(res, symbol %in% annotate_by), size = 0.6
+      )
+  }
+  return(plot)
+}
+```
+
 ```{r vul_IL4, echo = TRUE}
-load("~/Documents/MiGASti/Databases/res_name_IL42.Rdata")
-res <- res_name_IL42[!duplicated(res_name_IL42$symbol), ]
+load("~/Documents/MiGASti/docs/2nd_pass/res_IL4_name.Rdata")
+res <- res_IL4_name[!duplicated(res_IL4_name$symbol), ]
+res_IL4 <- res_IL4_name 
 rownames(res) <- res$symbol
 EnhancedVolcano(res,
     lab = rownames(res),
     x = 'logFC',
     y = 'adj.P.Val')
 
+volcano_plot(res_IL4, title = "DEG", 
+               subtitle = "IL4 vs unstimulated",
+               annotate_by = c('ARHGAP25', 'PPARG', 'MAOA', 'MS4A4A', 'SCIMP', 'FCER', 'IL12B', 'ZNF709', 'FCAMR', 'CTSC', 'CLEC4A', 'SPINT2', 'CISH', 'P2RY12'))
 
 EnhancedVolcano(res,
     lab = rownames(res),
@@ -390,15 +638,94 @@ list(overlap$symbol)
 
 # ATP
 
+```{r function vulcano6, echo = TRUE}
+# Function Vulcano plot 
+volcano_plot <- function(res, title = NULL, subtitle = NULL, annotate_by = NULL, type ='ALS'){
+  res <- 
+    mutate(res,
+           sig = case_when(
+      adj.P.Val >= 0.05 ~ "non_sig",
+      adj.P.Val < 0.05 & abs(logFC) < 1 ~ "sig",
+      adj.P.Val < 0.05 & abs(logFC) >= 1 ~ "sig - strong"
+    )) %>%
+    mutate(direction = ifelse(logFC > 0, "up", "down")) %>%
+    mutate(logFC = case_when(
+      logFC > 5 ~ Inf,
+    logFC < -5 ~ -Inf,
+    TRUE ~ logFC
+    )) %>%
+    mutate(class = paste(sig, direction))
+  if( type == "ALS"){
+    xpos <- 0.5
+    ymax <- 10
+    xlim <- c(-3,3)
+  }else{
+    xpos <- 0.025
+    ymax <- 8.5
+    xlim <- c(-0.042, 0.042)
+  }
+  de_tally <- group_by(res, sig, direction, class) %>% tally() %>%
+    filter(sig != "non_sig") %>%
+    mutate( position = ifelse(sig == "sig", xpos, 2) ) %>%
+    mutate(position = ifelse( direction == "down", -1 * position, position)) %>%
+    mutate(n = formatC(n, format="f", big.mark=",", digits=0))
+  plot <- res %>%
+    mutate( P.Value = ifelse( P.Value < 1e-90, Inf, P.Value)) %>% #threshold at 1e16
+    ggplot(aes(x = logFC, y = -log10(P.Value))) + 
+    #geom_point(aes(colour = class ), size = 0.5) +
+    rasterise(geom_point(aes(colour = class ), size = 0.5), dpi = 300) +
+    scale_colour_manual(values = c("non_sig up" = "gray", 
+                                   "non_sig down" = "gray",
+                                   "sig up" = "#EB7F56", 
+                                   "sig - strong up" = "#B61927",
+                                   "sig down" = "#4F8FC4",
+                                   "sig - strong down" = "dodgerblue4"
+                                   )) +
+    theme_bw() +
+    labs(y = expression(-log[10]~P~value), x = expression(log[2]~"(fold change)"), title = title, subtitle = subtitle) +
+    guides(colour = FALSE) +
+    scale_y_continuous(expand = c(0,0), limits = c(0,ymax)) +
+    theme_bw() +
+    theme(
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5),
+      panel.border = element_blank(),
+      axis.ticks = element_line(colour = "black")
+    ) +
+    geom_text(fontface = "bold", data = de_tally, aes(x = position, y = ymax - 0.5, label = n, colour = class), size = 2.5 ) +
+    scale_x_continuous(limits = xlim)
+  if(!is.null(annotate_by)){
+    plot <- plot + 
+      ggrepel::geom_text_repel(
+        fontface = "italic",
+        data = filter(res, symbol %in% annotate_by), 
+        aes(x = logFC, y = -log10(P.Value), label = symbol), 
+        min.segment.length = unit(0, "lines"),
+        size = 2.5) +
+      geom_point(
+        data = filter(res, symbol %in% annotate_by), size = 0.8, colour = "black"
+      ) +
+      geom_point(aes(colour = class ),
+        data = filter(res, symbol %in% annotate_by), size = 0.6
+      )
+  }
+  return(plot)
+}
+```
+
 ```{r vul_ATP, echo = TRUE}
-load("~/Documents/MiGASti/Databases/res_name_ATP2.Rdata")
-res <- res_name_ATP2[!duplicated(res_name_ATP2$symbol), ]
+load("~/Documents/MiGASti/docs/2nd_pass/res_ATP_name.Rdata")
+res <- res_ATP_name[!duplicated(res_ATP_name$symbol), ]
+res_ATP <- res_ATP_name 
 rownames(res) <- res$symbol
 EnhancedVolcano(res,
     lab = rownames(res),
     x = 'logFC',
     y = 'adj.P.Val')
 
+volcano_plot(res_ATP, title = "DEG", 
+               subtitle = "ATP vs unstimulated",
+               annotate_by = c('LINC-PINT', 'NR4A2', 'ZNF26', 'OVOL1', 'EGR3', 'RN7SK', 'MAP1A', 'TMEM150B'))
 
 EnhancedVolcano(res,
     lab = rownames(res),

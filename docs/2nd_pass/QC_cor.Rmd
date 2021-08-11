@@ -336,17 +336,20 @@ upset(fromList(list_filters), order.by = "freq")
 #filter 4: RNA degraded: 5 samples
 #filter 5: duplicates: 2 samples
 #filter 6: outlier (PCA): 1 sample 
+#filter 7: mismatch
 
 ```{r filters_6, echo=TRUE}
 setwd("~/Documents/MiGASti/Databases")
 Degraded_RNA = c("MG-24-HIP-RNA", "MG-12-CER-RNA", "15-089-GTS-unstim", "MG-15-SVZ-RNA", "MG-08-CER-RNA") 
 duplicates =c("15-024-GFM_unstim", "16-074-GFM-unstim")
 outliers =c("13-095-GTS-unstim")
+mismatch =c("18-118-GFM-IL4", "18-018-SVZ-TNFa", "18-021-GFM-DEX", "18-021-GFM-LPS", "18-021-THA-LPS", "18-021-GTS-unstim", "18-064-GFM-ATP", 
+"17-029-GTS-unstim", "17-029-GFM-LPS", "18-105-GTS-unstim", "MG-01-RNA", "MG-02-RNA", "MG-03-RNA")
 
-list_filters = list(filter1 = star_alignment_1m, filter2 = mrna_mapping_5, filter3 = ribosomal_bases_20, filter4 = Degraded_RNA, filter5 = duplicates, filter6 = outliers)
+list_filters = list(filter1 = star_alignment_1m, filter2 = mrna_mapping_5, filter3 = ribosomal_bases_20, filter4 = Degraded_RNA, filter5 = duplicates, filter6 = outliers, filter7 = mismatch)
 list_filters
 samples2remove = unlist(list_filters)
-write.table(samples2remove, "samples2remove.txt")
+write.table(samples2remove, "samples2remove2.txt")
 ```
 
 ### Unique samples 2 remove 
