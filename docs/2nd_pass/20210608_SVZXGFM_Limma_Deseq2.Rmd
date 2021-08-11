@@ -1,0 +1,857 @@
+---
+title: "Comparison limma/DeSeq2 SVZ x GFM unstimulated"
+author: "Gijsje"
+date: "08/06/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+if(!require("limma")) install.packages("limma"); library("limma")
+if(!require("DESeq2")) install.packages("DESeq2"); library("DESeq2")
+if(!require("edgeR")) install.packages("edgeR"); library("edgeR")
+if(!require("RColorBrewer")) install.packages("RColorBrewer"); library("RColorBrewer")
+if(!require("gplots")) install.packages("gplots"); library("gplots")
+if(!require("ggplot2")) install.packages("ggplot2"); library("ggplot2")
+if(!require("DESeq2")) install.packages("DESeq2"); library("DESeq2")
+library(venn)
+library(ggsci)
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+if(!require("limma")) install.packages("limma"); library("limma")
+#if(!require("DESeq2")) install.packages("DESeq2"); library("DESeq2")
+if(!require("edgeR")) install.packages("edgeR"); library("edgeR")
+if(!require("RColorBrewer")) install.packages("RColorBrewer"); library("RColorBrewer")
+if(!require("gplots")) install.packages("gplots"); library("gplots")
+if(!require("ggplot2")) install.packages("ggplot2"); library("ggplot2")
+if(!require("reshape2")) install.packages("reshape2"); library("reshape2")
+if(!require("variancePartition")) BiocManager::install("variancePartition"); library("variancePartition")
+if(!require("BiocParallel")) install.packages("BiocParallel"); library("BiocParallel")
+if(!require("statmod")) install.packages("statmod"); library("statmod")
+if(!require("ggpubr")) install.packages("ggpubr"); library("ggpubr")
+library('BiocParallel')
+library('doParallel')
+library(dplyr)
+library(tidyr)
+library(ggrepel)
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(shiny)
+library(pheatmap)
+library(ggfortify)
+library(ggplot2)
+library(UpSetR)
+library(VennDiagram)
+library(knitr) 
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(purrr)
+library(corrplot)
+library(ggplot2)
+library(ggpubr)
+library(patchwork)
+library(ggrepel)
+library(ggeasy)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+```{r Helper Functions, echo=FALSE}
+createDT <- function(DF, caption="", scrollY=500){
+  data <- DT::datatable(DF, caption=caption,
+    extensions =  'Buttons',
+    options = list( dom = 'Bfrtip', 
+                    buttons = c('copy', 'csv', 'excel', 'pdf', 'print'), 
+                    scrollY = scrollY, scrollX=T, scrollCollapse = T, paging = F,  
+                      columnDefs = list(list(className = 'dt-center', targets = "_all"))
+    )
+  ) 
+   return(data)
+}
+```
+
+```{r folders, echo=TRUE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata2.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+#exclude samples that did not pass QC filtering
+exclude <- read.table("samples2remove2.txt")
+exclude <- exclude$x
+genes_counts_filt = genes_counts[, !colnames(genes_counts) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_counts_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+#order metadata and genes counts
+genes_counts_ordered <- genes_counts_filt[,rownames(metadata_filt)]
+#head(genes_counts_ordered)
+all(rownames(metadata_filt) == colnames (genes_counts_ordered)) #TRUE
+```
+
+```{r Patir, echo = TRUE}
+Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
+names(Patir)[1] <- "symbol"
+```
+
+# Preparing the samples for DEG
+
+```{r preparing, echo = TRUE}
+#remove uncultured samples
+metadata_baseline <- metadata_filt[metadata_filt$Stimulation == "unstim",]
+
+genes_counts_DEG <- genes_counts_ordered[,rownames(metadata_baseline)]
+
+samples_reg1 = metadata_baseline$Sample[metadata_baseline$Region %in% "GFM"] 
+samples_reg2 = metadata_baseline$Sample[metadata_baseline$Region %in% "SVZ"] 
+#To pick up only the samples for DEG analysis
+genes_counts4deg = genes_counts_DEG[, colnames(genes_counts_DEG) %in% c(samples_reg1,samples_reg2) ]
+metadata4deg = metadata_baseline[rownames(metadata_baseline) %in% c(samples_reg1,samples_reg2) ,]
+
+rownames(metadata4deg) == colnames(genes_counts4deg) # Just to check 
+```
+
+## Samples for DEG
+### Number of samples: GFM
+
+```{r num.cases, echo=TRUE}
+length(samples_reg1)
+```
+
+### GFM samples
+
+```{r samples.case, echo=TRUE}
+as.character(samples_reg1)
+```
+
+### Number of samples: SVZ
+
+```{r num.control, echo=TRUE}
+length(samples_reg2)
+```
+
+### SVZ samples
+
+```{r samples.control, echo=TRUE}
+as.character(samples_reg2)
+```
+
+## Limma
+
+```{r factors, echo=TRUE}
+# Transforms characters columns in factors columns 
+indx <- sapply(metadata4deg, is.character)
+metadata4deg[indx] <- lapply(metadata4deg[indx], function(x) as.factor(x))
+metadata4deg$Sample = as.factor(as.character(metadata4deg$Sample))
+metadata4deg$age <- as.numeric(metadata4deg$age)
+#str(metadata4deg) #shows class for all columns 
+```
+
+```{r design0, echo=TRUE}
+names(metadata4deg) = tolower(names(metadata4deg))
+design <- model.matrix(~ age + sex + picard_pct_ribosomal_bases + picard_pct_mrna_bases + picard_pct_percent_duplication + picard_pct_pf_reads_aligned + region, data = metadata4deg)
+# Normalization
+#norm = calcNormFactors(genes_counts4deg, method = "TMM")
+# Create Limma Object
+#x <- DGEList(counts = genes_counts4deg, samples = metadata4deg, norm.factors = norm)
+#v = voom(x, design)
+#vfit <- lmFit(v, design)
+#efit <- eBayes(vfit)
+#summary(efit, coef=ncol(design))
+#summary(decideTests(efit, p.value  = "0.05"))
+#design # Check the coef name 
+# coef is region in this comparison 
+#res_limma <- data.frame(topTable(efit, coef = "regionSVZ",
+                             #number = nrow(genes_counts4deg), sort.by = "p"), check.names = F)
+# dim(res_limma)
+# dim(genes_counts4deg)
+```
+
+### FDR < 0.15
+
+```{r limma_0_15, echo=TRUE}
+load("~/Documents/MiGASti/Databases/res_limma_SVZ_GFM.Rdata")
+length(which(res_limma$adj.P.Val<0.15))
+```
+
+### FDR < 0.10
+
+```{r limma_10, echo=TRUE}
+length(which(res_limma$adj.P.Val<0.10))
+```
+
+### FDR < 0.05
+
+```{r limma_5, echo=TRUE}
+length(which(res_limma$adj.P.Val<0.05))
+```
+
+## DESeq2
+
+```{r deseq2, echo=TRUE}
+metadata4deg2 = metadata4deg
+# Zscale for these columns to re-scale. 
+
+#cannot create dds object with numeric values
+metadata4deg2$donor_id <- as.factor(metadata4deg2$donor_id)
+metadata4deg2$age <- as.integer(metadata4deg2$age)
+metadata4deg2$sex <- as.factor(metadata4deg2$sex)
+metadata4deg2$picard_pct_ribosomal_bases = scale(metadata4deg2$picard_pct_ribosomal_bases)
+metadata4deg2$picard_pct_mrna_bases = scale(metadata4deg2$picard_pct_mrna_bases)
+metadata4deg2$picard_pct_pf_reads_aligned = scale(metadata4deg2$picard_pct_pf_reads_aligned)
+metadata4deg2$picard_pct_percent_duplication = scale(metadata4deg2$picard_pct_percent_duplication)
+
+# With DESeq tissue should be the last covariate in the design
+#dds <- DESeqDataSetFromMatrix(countData = round(genes_counts4deg),
+                             # colData = metadata4deg2,
+                            #  design= ~ age + sex + picard_pct_ribosomal_bases + picard_pct_mrna_bases + picard_pct_percent_duplication + picard_pct_pf_reads_aligned + region)
+#dds <- DESeq(dds)
+#resultsNames(dds) # lists the coefficients
+#res <- results(dds, name="region_SVZ_vs_GFM")
+# or to shrink log fold changes association with condition:
+#res <- lfcShrink(dds, coef="tissue_GTS_vs_GFM", type="apeglm")
+#resNorm <- lfcShrink(dds, coef="tissue_GTS_vs_GFM", type="normal")
+#resAsh <- lfcShrink(dds, coef="tissue_GTS_vs_GFM", type="ashr")
+```
+
+
+### FDR < 0.15
+
+```{r deseq_0.15, echo=TRUE}
+load("~/Documents/MiGASti/Databases/res_DESEQ_SVZvsGFM.Rdata")
+length(which(res$padj<0.15))
+```
+
+### FDR < 0.10
+
+```{r deseq_010, echo=TRUE}
+length(which(res$padj<0.10))
+```
+
+### FDR < 0.05
+
+```{r deseq_5, echo=TRUE}
+length(which(res$padj<0.05))
+```
+
+# overlap Limma/DESeq 
+
+### FDR 15%
+
+```{r venn1533, echo=TRUE}
+df = merge(res_limma, as.data.frame(res), by=0, all=T)
+# ggplot(df, aes(x = -log10(adj.P.Val), y = -log10(padj))) + geom_point(alpha=0.5)
+rownames(res_limma) = res_limma$ensembl
+ll = list(DEseq = rownames(res[which(res$padj<0.15),]),
+     Limma = rownames(res_limma[which(res_limma$adj.P.Val<0.15),]))
+venn(ll)
+```
+
+### FDR 10%
+
+```{r venn10, echo=TRUE}
+df = merge(res_limma, as.data.frame(res), by=0, all=T)
+# ggplot(df, aes(x = -log10(adj.P.Val), y = -log10(padj))) + geom_point(alpha=0.5)
+ll = list(DEseq = rownames(res[which(res$padj<0.10),]),
+     Limma = rownames(res_limma[which(res_limma$adj.P.Val<0.10),]))
+venn(ll)
+```
+
+### FDR 5%
+
+```{r venn1224, echo=TRUE}
+df = merge(res_limma, as.data.frame(res), by=0, all=T)
+# ggplot(df, aes(x = -log10(adj.P.Val), y = -log10(padj))) + geom_point(alpha=0.5)
+ll = list(DEseq = rownames(res[which(res$padj<0.05),]),
+     Limma = rownames(res_limma[which(res_limma$adj.P.Val<0.05),]))
+venn(ll)
+```
+
+# Plots DESeq
+
+### FDR distibution
+
+```{r FDRdistribution, echo = TRUE}
+res <- as.data.frame(res)
+res = res
+p = ggplot(res, aes(pvalue))
+p + geom_density(color="darkblue", fill="lightblue") +
+theme_classic() +
+ggtitle("FDR Distribution")
+```
+
+### Fold change distribution
+
+```{r foldchangedistribution, echo = TRUE}
+p = ggplot(res, aes(log2FoldChange))
+p + geom_density(color = "darkblue", fill = "lightblue") +
+theme_classic() +
+ggtitle("Fold Change Distribution")
+```
+
+### MA plot 
+
+```{r MAplot, echo = TRUE}
+plot.data = res
+plot.data$id = rownames(plot.data)
+data = data.frame(plot.data)
+data$pvalue = -log10(data$pvalue)
+data$fifteen = as.factor(abs(data$padj < 0.05))
+ma = ggplot(data, aes(baseMean, log2FoldChange, color = fifteen))
+ma + geom_point() +
+scale_color_manual(values = c("black", "red"), labels = c ("> 0.05", "< 0.05")) +
+labs(title = "MA plot", color = "labels") +
+theme_classic()
+```
+
+### Volcano plot 
+
+```{r Volcano, echo = TRUE}
+vp = ggplot(data, aes(log2FoldChange, pvalue, color = fifteen))
+vp + geom_point() +
+scale_color_manual(values = c("black", "red"), labels = c("> 0.05", "< 0.05")) +
+labs(title = "Gene Level Volcano Plot", color = "FDR") +
+#theme(plot.title = element_text(hjust = 0.5)) +
+theme_classic() +
+xlim(-5,5) + ylim(0, 20) + ylab("-log10 pvalue")
+```
+
+### Direction of effect
+#Direction of effect for SVZ compared to GFM is given, so logFC > 1 (these genes go up in SVZ, logFC < -1; these genes go down in SVZ)
+
+```{r direction, echo=TRUE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata2.txt", quote="\"", comment.char="")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+#exclude samples that did not pass QC
+exclude <- read.csv("~/Documents/MiGASti/Databases/samples2remove2.txt", sep="")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+genes_tpm_ordered <- genes_tpm_filt[,rownames(metadata_filt)]
+#head(genes_tpm_ordered)
+all(rownames(metadata_filt) == colnames (genes_tpm_ordered)) #TRUE
+```
+
+```{r boxplot_age, echo=TRUE, warning=FALSE}
+load("~/Documents/MiGASti/Databases/res_DESEQ_SVZvsGFM.Rdata")
+res_D <- as.data.frame(res)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+res_2 <- tibble::rownames_to_column(res_D, "ensembl")
+colnames(gencode_30) = c("ensembl","symbol")
+res3 <- merge(res_2, gencode_30, by = "ensembl")
+
+metadata_filt <- metadata_filt[metadata_filt$Stimulation == "unstim",]
+
+samples_baseline = metadata_filt$Sample[metadata_filt$Region %in% "GFM"] # Includes same donor 
+samples_condition = metadata_filt$Sample[metadata_filt$Region %in% "SVZ"] # Includes same donor  
+
+metadata4deg = metadata_filt[rownames(metadata_filt) %in% c(samples_baseline,samples_condition) ,]
+
+genes_voom_baseline_condition = as.data.frame(genes_tpm_ordered[, colnames(genes_tpm_ordered) %in% c(samples_baseline, samples_condition)])
+# dim(genes_voom_baseline_condition)
+# dim(metadata4deg)
+
+
+deg_lists = res3[order(res$padj) ,]
+top_6 = head(deg_lists)
+top_6 <- as.data.frame(top_6)
+gene2check = as.data.frame(genes_voom_baseline_condition[top_6$ensembl, ])
+
+gene2check$ensembl = rownames(gene2check)
+gene2check = merge(gene2check, top_6[, c("ensembl", "symbol")], by = "ensembl")
+
+names(metadata4deg) = tolower(names(metadata4deg))
+
+gene2check_m = melt(gene2check, id.vars = c("ensembl", "symbol"))
+gene2check_charac = merge(gene2check_m, metadata4deg, by.x = "variable", by.y = "sample")
+
+ggplot(gene2check_charac, aes(x = region, y = value, fill = region)) +
+  geom_boxplot(notch = F, na.rm = T) +
+  geom_jitter() +
+  theme_bw() + facet_wrap(~symbol, scales = "free_y") +
+  ggpubr::stat_compare_means(label = "p.format", label.x.npc = "centre", method = "wilcox.test")
+```
+
+# gprofiler 
+### DESeq SVZ x GFM up (logFC > 1)
+
+```{r venn5, echo=TRUE}
+set3 <- subset(res3, padj< 0.05)
+set3 <- subset(set3, log2FoldChange > 1)
+set3_v <- set3$symbol
+genes1 <- set3_v
+library(gProfileR)
+
+genes1 <- set3_v #SVZ up
+go_res <- gprofiler(genes1, organism = "hsapiens", hier_filtering= "strong", min_set_size=5,  src_filter="GO" )
+go_res %>% select(term.name, p.value, term.size, overlap.size)  %>% as_tibble() %>% arrange(p.value)
+go_res
+```
+
+### DESeq SVZ x GFM down (logFC < -1)
+
+```{r venn14, echo=TRUE}
+set3 <- subset(res3, padj < 0.05)
+set3 <- subset(set3, log2FoldChange < -1)
+set3_v <- set3$symbol
+genes1 <- set3_v
+library(gProfileR)
+
+genes1 <- set3_v #SVZ down
+go_res <- gprofiler(genes1, organism = "hsapiens", hier_filtering= "strong", min_set_size=5,  src_filter="GO" )
+go_res %>% select(term.name, p.value, term.size, overlap.size)  %>% as_tibble() %>% arrange(p.value)
+go_res
+```
+
+# Comparison plots  
+
+### Venn diagram showing overlap of differentially expressed genes SVZ x GFM in vitro + SVZ LPS 
+
+```{r venn1555, echo=TRUE}
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
+DEG_LPS_SVZ <- DEG_LPS_SVZ[!duplicated(DEG_LPS_SVZ$symbol), ]
+res3 <- res3[!duplicated(res3$symbol), ]
+rownames(DEG_LPS_SVZ) = DEG_LPS_SVZ$symbol
+rownames(res3) = res3$symbol
+df = merge(DEG_LPS_SVZ, as.data.frame(res3), by=0, all=T)
+# ggplot(df, aes(x = -log10(adj.P.Val), y = -log10(padj))) + geom_point(alpha=0.5)
+ll = list(LPS_SVZ = rownames(DEG_LPS_SVZ[which(DEG_LPS_SVZ$padj<0.05),]),
+     Baseline_SVZ_GFM = rownames(res3[which(res3$padj<0.05),]))
+venn(ll)
+```
+
+### Venn diagram showing overlap of differentially expressed genes SVZ x GFM in vitro + SVZ IFNy 
+
+```{r venn15234, echo=TRUE}
+DEG_LPS_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+load("~/Documents/MiGASti/Databases/res_DESEQ_SVZvsGFM.Rdata")
+res_D <- as.data.frame(res)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+res_2 <- tibble::rownames_to_column(res_D, "ensembl")
+colnames(gencode_30) = c("ensembl","symbol")
+res3 <- merge(res_2, gencode_30, by = "ensembl")
+DEG_LPS_SVZ <- DEG_LPS_SVZ[!duplicated(DEG_LPS_SVZ$symbol), ]
+res3 <- res3[!duplicated(res3$symbol), ]
+rownames(DEG_LPS_SVZ) = DEG_LPS_SVZ$symbol
+rownames(res3) = res3$symbol
+df = merge(DEG_LPS_SVZ, as.data.frame(res3), by=0, all=T)
+# ggplot(df, aes(x = -log10(adj.P.Val), y = -log10(padj))) + geom_point(alpha=0.5)
+rownames(DEG_LPS_SVZ) = DEG_LPS_SVZ$symbol
+rownames(res3) = res3$symbol
+ll = list(IFNy_SVZ = rownames(DEG_LPS_SVZ[which(DEG_LPS_SVZ$padj<0.05),]),
+     Baseline_SVZ_GFM = rownames(res3[which(res3$padj<0.05),]))
+venn(ll)
+```
+
+### Plot showing differential expressed genes in SVZ after LPS stimulation compared to genes that are differentially expressed in vitro in SVZ to GFM 
+#1.Genes that overlap between datasets
+#2.Genes that overlap with Patir
+
+```{r LPS_SVZ_INVITRO_SVZ, echo=TRUE}
+load("~/Documents/MiGASti/Databases/res_DESEQ_SVZvsGFM.Rdata")
+res_D <- as.data.frame(res)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+res_2 <- tibble::rownames_to_column(res_D, "ensembl")
+colnames(gencode_30) = c("ensembl","symbol")
+res3 <- merge(res_2, gencode_30, by = "ensembl")
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
+DEG_LPS_SVZ <- subset(DEG_LPS_SVZ, padj < 0.05)
+DEG_baseline_SVZ <- subset(res3, padj < 0.05)
+
+overlap <- merge(DEG_LPS_SVZ, DEG_baseline_SVZ, by = "symbol")
+unique(overlap$symbol)
+
+genes <- merge(overlap, Patir, by = "symbol")
+list(genes$symbol)
+
+LPS_SVZ <- overlap[,4]
+baseline_SVZ <- overlap[,11]
+df = data.frame(LPS_SVZ, baseline_SVZ)
+
+rownames(df) = overlap$symbol
+
+symbol4label = c("AB13", "ADAM28", "CD14", "CLEC17A", "TREM2", "TYROBP", "TMEM106A")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
+
+
+p3 <-  ggplot(genes_m_filt4lab, aes(x = baseline_SVZ, y = LPS_SVZ)) + 
+  geom_point(alpha=.5, color="pink")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F) + 
+  geom_abline(slope = 1, intercept = 0, linetype = 3) 
+p3 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("baseline(", logFC,")")), y = expression(paste("LPS (", logFC, ")"))) +
+  theme_classic()
+```
+
+### Plot showing differential expressed genes in SVZ after IFNy stimulation compared to genes that are differentially expressed in vitro in SVZ to GFM 
+#1. Genes that overlap between datasets
+#2. Genes that overlap with Patir
+
+```{r IFNy_SVZ_INVITRO_SVZ, echo=TRUE}
+DEG_LPS_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+DEG_LPS_SVZ <- subset(DEG_LPS_SVZ, padj < 0.05)
+DEG_baseline_SVZ <- subset(res3, padj < 0.05)
+
+overlap <- merge(DEG_LPS_SVZ, DEG_baseline_SVZ, by = "symbol")
+list(overlap$symbol)
+
+genes <- merge(overlap, Patir, by = "symbol")
+list(genes$symbol)
+
+LPS_SVZ <- overlap[,4]
+baseline_SVZ <- overlap[,11]
+df = data.frame(baseline_SVZ, LPS_SVZ)
+
+rownames(df) = overlap$symbol
+
+symbol4label = c("AB13", "ADAM28", "CD14", "CLEC17A", "TREM2", "TYROBP", "TMEM106A")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
+
+
+p3 <-  ggplot(genes_m_filt4lab, aes(x = baseline_SVZ, y = LPS_SVZ)) + 
+  geom_point(alpha=.5, color="green")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F) +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) 
+p3 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("baseline(", logFC,")")), y = expression(paste("IFNy (", logFC, ")"))) +
+  theme_classic()
+```
+
+# Enrichment
+
+### Overlap up LPS SVZ up + in vitro SVZ up (logFC > 1)
+
+```{r overlap_up, echo=TRUE}
+set3 <- subset(DEG_LPS_SVZ, log2FoldChange > 1)
+set4 <- subset(DEG_baseline_SVZ, log2FoldChange > 1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+### Overlap down LPS SVZ + in vitro SVZ down (logFC < -1)
+
+```{r overlap_down, echo=TRUE}
+set3 <- subset(DEG_LPS_SVZ, log2FoldChange < -1)
+set4 <- subset(DEG_baseline_SVZ, log2FoldChange < -1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+
+```
+
+### Overlap up LPS SVZ + in vitro down SVZ (logFC |1|)
+
+```{r overlap_down2, echo=TRUE}
+set3 <- subset(DEG_LPS_SVZ, log2FoldChange > 1)
+set4 <- subset(DEG_baseline_SVZ, log2FoldChange < -1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+### Overlap down SVZ LPS genes + in vitro up SVZ (logFC |1|) 
+
+```{r overlap_down4, echo=TRUE}
+set3 <- subset(DEG_LPS_SVZ, log2FoldChange < -1)
+set4 <- subset(DEG_baseline_SVZ, log2FoldChange > 1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+
+# In vitro vs ex vivo 
+
+## Comparisons
+
+### Scatterplot in vitro vs ex vivo SVZ x GFM
+
+```{r comparison1, echo=TRUE}
+setwd("~/Documents/MiGASti/Databases")
+MIGA = "~/Documents/MiGASti/Databases/MIGA_GFM_SVZ.xlsx"
+MIGA = read_excel(MIGA, col_names = TRUE) 
+MIGA = as.data.frame(MIGA)
+
+load("~/Documents/MiGASti/Databases/res_DESEQ_SVZvsGFM.Rdata")
+res_D <- as.data.frame(res)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+res_2 <- tibble::rownames_to_column(res_D, "ensembl")
+colnames(gencode_30) = c("ensembl","symbol")
+res3 <- merge(res_2, gencode_30, by = "ensembl")
+
+DEG_MIGA <- MIGA
+DEG_MIGASTI <- res3
+DEG = merge(DEG_MIGA, DEG_MIGASTI, by ="symbol")
+
+ex_vivo <- DEG[,3]
+in_vitro <- DEG[,11]
+df = data.frame(ex_vivo, in_vitro)
+p1 <- ggplot(df, aes(x=ex_vivo, y=in_vitro) ) +
+  geom_smooth(method = "lm", se=FALSE, color="black", formula = y ~ x) +
+  geom_bin2d(bins = 100) +
+  scale_fill_continuous(type = "viridis") +
+  geom_abline(slope = 1, intercept = 0, linetype = 3) +
+  theme_bw()
+p1 <- p1 + stat_cor(method = "spearman")
+p1 
+```
+
+### Venn diagram showing overlap of differentially expressed genes SVZ x GFM in vitro + SVZ LPS 
+
+```{r venn15345, echo=TRUE}
+MIGA = "~/Documents/MiGASti/Databases/MIGA_GFM_SVZ.xlsx"
+MIGA = read_excel(MIGA, col_names = TRUE) 
+MIGA = as.data.frame(MIGA)
+MIGA$adj.P.Val <- as.numeric(MIGA$adj.P.Val)
+MIGA <- MIGA[!duplicated(MIGA$symbol), ]
+rownames(MIGA) = MIGA$symbol
+load("~/Documents/MiGASti/Databases/res_DESEQ_SVZvsGFM.Rdata")
+res_D <- as.data.frame(res)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+res_2 <- tibble::rownames_to_column(res_D, "ensembl")
+colnames(gencode_30) = c("ensembl","symbol")
+res3 <- merge(res_2, gencode_30, by = "ensembl")
+res3 <- res3[!duplicated(res3$symbol), ]
+rownames(res3) = res3$symbol
+df = merge(MIGA, as.data.frame(res3), by=0, all=T)
+# ggplot(df, aes(x = -log10(adj.P.Val), y = -log10(padj))) + geom_point(alpha=0.5)
+ll = list(exvivo_SVZ_GFM = rownames(MIGA[which(MIGA$adj.P.Val<0.05),]),
+     invitro_SVZ_GFM = rownames(res3[which(res3$padj<0.05),]))
+venn(ll)
+```
+
+### Scatterplot FDR 5% in vitro + ex vivo SVZ x GFM
+
+```{r comparison2, echo=TRUE}
+MIGA = "~/Documents/MiGASti/Databases/MIGA_GFM_SVZ.xlsx"
+MIGA = read_excel(MIGA, col_names = TRUE) 
+MIGA = as.data.frame(MIGA)
+MIGA$adj.P.Val <- as.numeric(MIGA$adj.P.Val)
+MIGA2 <- subset(MIGA, adj.P.Val < 0.05)
+MIGA2 <- MIGA2[!duplicated(MIGA2$symbol), ]
+load("~/Documents/MiGASti/Databases/res_DESEQ_SVZvsGFM.Rdata")
+res_D <- as.data.frame(res)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+res_2 <- tibble::rownames_to_column(res_D, "ensembl")
+colnames(gencode_30) = c("ensembl","symbol")
+res3 <- merge(res_2, gencode_30, by = "ensembl")
+res3 <- res3[!duplicated(res3$symbol), ]
+rownames(res3) = res3$symbol
+MIGASTI <- subset(res3, padj < 0.05)
+ex_in <- merge(MIGA2, MIGASTI, by ="symbol")
+
+list(ex_in$symbol)
+
+genelist <- merge(Patir, ex_in, by = "symbol")
+list(genelist$symbol)
+
+ex_vivo <- ex_in[,3]
+in_vitro <- ex_in[,11]
+df = data.frame(ex_vivo, in_vitro)
+
+rownames(df) = ex_in$symbol
+
+symbol4label = c("TLR6", "TYROBP", "TBXAS1", "TLR1", "TREM2", "ITGAM", "IRF5", "CD14", "CD33", "MS4A4A", "SPP1", "CSF1R", "C3")
+genes_m_filt4lab = df
+genes_m_filt4lab$overlap = rownames(genes_m_filt4lab)
+genes_m_filt4lab$overlap[(!genes_m_filt4lab$overlap %in% symbol4label)] = ""
+
+
+p3 <-  ggplot(genes_m_filt4lab, aes(x = ex_vivo, y = in_vitro)) + 
+  geom_point(alpha=.5, color="green")+
+  geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
+  geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
+  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F)  + 
+  geom_abline(slope = 1, intercept = 0, linetype = 3) 
+p3 + geom_text_repel(aes(label = overlap),
+                    size = 3) + easy_labs(x = expression(paste("ex_vivo(", logFC,")")), y = expression(paste("in_vitro (", logFC, ")"))) +
+  theme_classic()
+```
+
+### Overlap up SVZ ex vivo + in vitro up SVZ (logFC >1) 
+
+```{r overlap_up_ex_in, echo=TRUE}
+set3 <- subset(MIGA, adj.P.Val < 0.05)
+set3 <- subset(set3, logFC > 1)
+set4 <- subset(res3, padj < 0.05)
+set4 <- subset(res3, log2FoldChange > 1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+### Overlap up SVZ ex vivo + in vitro up SVZ (logFC  < -1) 
+
+```{r overlap_down5_ex_in, echo=TRUE}
+set3 <- subset(MIGA, adj.P.Val < 0.05)
+set3 <- subset(set3, logFC < -1)
+set4 <- subset(res3, padj < 0.05)
+set4 <- subset(set4, log2FoldChange < - 1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+## gprofiler 
+
+## ex vivo SVZ vs GFM up (logFC > 1)
+
+```{r gprofiler3, echo=TRUE}
+setwd("~/Documents/MiGASti/Databases")
+MIGA = "~/Documents/MiGASti/Databases/MIGA_GFM_SVZ.xlsx"
+MIGA = read_excel(MIGA, col_names = TRUE) 
+MIGA = as.data.frame(MIGA)
+MIGA$adj.P.Val <- as.numeric(MIGA$adj.P.Val)
+
+set3 <- subset(MIGA, adj.P.Val < 0.05)
+set3 <- subset(set3, logFC > 1)
+set3_v <- set3$symbol
+genes1 <- set3_v
+library(gProfileR)
+
+genes1 <- set3_v #SVZ up
+go_res <- gprofiler(genes1, organism = "hsapiens", hier_filtering= "strong", min_set_size=5,  src_filter="GO" )
+go_res %>% select(term.name, p.value, term.size, overlap.size)  %>% as_tibble() %>% arrange(p.value)
+go_res
+```
+
+## ex vivo SVZ vs GFM down  (log FC < -1)
+
+```{r gprofiler4, echo=TRUE}
+setwd("~/Documents/MiGASti/Databases")
+MIGA = "~/Documents/MiGASti/Databases/MIGA_GFM_SVZ.xlsx"
+MIGA = read_excel(MIGA, col_names = TRUE) 
+MIGA = as.data.frame(MIGA)
+MIGA$adj.P.Val <- as.numeric(MIGA$adj.P.Val)
+
+set3 <- subset(MIGA, adj.P.Val < 0.05)
+set3 <- subset(set3, logFC < -1)
+set3_v <- set3$symbol
+genes1 <- set3_v
+library(gProfileR)
+
+genes1 <- set3_v #SVZ down
+go_res <- gprofiler(genes1, organism = "hsapiens", hier_filtering= "strong", min_set_size=5,  src_filter="GO" )
+go_res %>% select(term.name, p.value, term.size, overlap.size)  %>% as_tibble() %>% arrange(p.value)
+go_res
+```
+
+
+

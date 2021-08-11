@@ -1,0 +1,170 @@
+---
+title: "20210224_DEG_heatmap"
+author: "Gijsje"
+date: "2/24/2021"
+output: 
+  rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+
+```{r packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(shiny)
+library(DT)
+library(pheatmap)
+library(ggfortify)
+library(ggplot2)
+library(UpSetR)
+library(VennDiagram)
+library(knitr) 
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(purrr)
+library(corrplot)
+library(ggplot2)
+library(ComplexHeatmap)
+library(RColorBrewer)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+# DEG across stimulations
+
+```{r Patir, echo = TRUE}
+Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
+names(Patir)[1] <- "symbol"
+```
+
+#log odds ratio 
+
+```{r load tables1, echo = TRUE, results = 'hide'}
+setwd("~/Documents/MiGASti/docs/2nd_pass")
+load("~/Documents/MiGASti/docs/2nd_pass/res_LPS_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_IFNy_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_R848_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_ATP_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_IL4_name.Rdata")
+load("~/Documents/MiGASti/docs/2nd_pass/res_DEX_name.Rdata")
+
+LPS <- subset(res_LPS_name, adj.P.Val < 0.05)
+LPS <- subset(LPS, logFC > 1 | logFC < -1)
+IFNy <- subset(res_IFNy_name, adj.P.Val < 0.05)
+IFNy <- subset(IFNy, logFC > 1 | logFC < -1)
+R848 <- subset(res_R848_name, adj.P.Val < 0.05)
+R848 <- subset(R848, logFC > 1 | logFC < -1)
+DEX <- subset(res_DEX_name, adj.P.Val < 0.05)
+DEX <- subset(DEX, logFC > 1 | logFC < -1)
+IL4 <- subset(res_IL4_name, adj.P.Val < 0.05)
+IL4 <- subset(IL4, logFC > 1 | logFC < -1)
+ATP <- subset(res_ATP_name, adj.P.Val < 0.05)
+ATP <- subset(ATP, logFC > 1 | logFC < -1)
+
+genes_LPS_GFM <- LPS$symbol
+genes_ATP_GFM <- ATP$symbol
+genes_R848_GFM <- R848$symbol
+genes_IFNy_GFM <- IFNy$symbol
+genes_DEX_GFM <- DEX$symbol
+genes_IL4_GFM <- IL4$symbol
+
+    
+# create a vector with all genes listed
+x <- c(genes_LPS_GFM, genes_ATP_GFM, genes_R848_GFM, genes_IFNy_GFM, genes_DEX_GFM, genes_IL4_GFM)
+# make a dataframe
+as.data.frame(x) #1201 genes 
+# check if there are genes duplicate 
+duplicated(x) 
+unique(x)
+#remove duplicated
+symbol <- x[!duplicated(x)] #1201 genes 
+
+genelist_GFM <- as.data.frame(symbol)
+
+DEG_genes_LPS_GFM = merge(res_LPS_name, genelist_GFM, by ="symbol")
+DEG_genes_IFNy_GFM = merge(res_IFNy_name, genelist_GFM, by = "symbol")
+DEG_genes_IL4_GFM = merge(res_IL4_name, genelist_GFM, by = "symbol")
+DEG_genes_R848_GFM = merge(res_R848_name, genelist_GFM, by = "symbol")
+DEG_genes_ATP_GFM = merge(res_ATP_name, genelist_GFM, by = "symbol")
+DEG_genes_DEX_GFM = merge(res_DEX_name, genelist_GFM, by = "symbol")
+
+all(colnames(DEG_genes_LPS_GFM) == colnames (DEG_genes_IFNy_GFM))#TRUE
+Expression_stimulations_GFM <- cbind(DEG_genes_LPS_GFM, DEG_genes_IFNy_GFM, DEG_genes_IL4_GFM, DEG_genes_R848_GFM, DEG_genes_ATP_GFM, DEG_genes_DEX_GFM)
+#write.table(Expression_stimulations_GFM, "Expression_stimulations_GFM.txt")
+
+as.data.frame(Expression_stimulations_GFM) 
+# changes names in data frame
+names(Expression_stimulations_GFM)[3] <- "LPS"
+names(Expression_stimulations_GFM)[11] <- "IFNy"
+names(Expression_stimulations_GFM)[19] <- "IL4"
+names(Expression_stimulations_GFM)[27] <- "R848"
+names(Expression_stimulations_GFM)[35] <- "ATP"
+names(Expression_stimulations_GFM)[43] <- "DEX"
+
+DF_log2FC <- Expression_stimulations_GFM[, c(1, 3, 11, 19, 27, 35, 43)]
+DF <- as.data.frame(DF_log2FC)
+DF <- t(DF)
+head( DF )[,1:10]
+
+# fill NA with 0
+DF_log2FC[is.na(DF_log2FC)] = 0
+# remove the first column
+df_num = as.matrix(DF_log2FC[,2:7])
+# scale the data 
+df_num_scale = scale(df_num)
+
+overlap <- merge(Patir, DF_log2FC, by = "symbol")
+list(overlap$symbol)
+```
+
+
+
+```{r heatmap_GFM_cor12, echo=TRUE, message=FALSE}
+
+rownames(df_num_scale) = DF_log2FC$symbol
+labels2remove = c("ADORA3", "ALOX5AP", "ARGHGAP25", "C1QB", "C1QC", "C2", "C3AR1", "CD300A", "CIITA", "CTSC", "FCGR1A", "GPR183", "HAMP", "IFI30", "IL13RA1", "IRF5", "P2RY12", "LY86", "LYL1", "MS4A4A", "TMEM119", "TNFSF8", "TRIM22", "IL6", "IL12B", "IL23A", "OVOL1", "EGR1")
+signature_genes2_sel = DF_log2FC[DF_log2FC$symbol %in% labels2remove ,]
+
+labels_match = signature_genes2_sel[signature_genes2_sel$symbol %in% rownames(df_num_scale) ,]
+labels_match = labels_match$symbol
+
+ha = rowAnnotation(foo = anno_mark(labels_gp = gpar(fontsize = 8), at = which(rownames(df_num_scale) %in% signature_genes2_sel$symbol), 
+                                   labels = labels_match))
+
+colors = colorRampPalette(rev(brewer.pal(n = 10, name ="RdBu")))(15)
+
+Heatmap(df_num_scale,
+        cluster_rows = T,
+        right_annotation = ha,
+        show_row_dend = F,
+        show_column_dend = T,
+        show_row_names = F,
+        col = colors,
+        show_column_names = T,
+        name = "log fold change", 
+        clustering_method_rows = "ward.D2",
+        clustering_distance_rows = "pearson") 
+```
+
+

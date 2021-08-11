@@ -1,0 +1,318 @@
+---
+title: "20210224_DEG_heatmap"
+author: "Gijsje"
+date: "2/24/2021"
+output: 
+  rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+
+```{r packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+library(shiny)
+library(DT)
+library(pheatmap)
+library(ggfortify)
+library(ggplot2)
+library(UpSetR)
+library(VennDiagram)
+library(knitr) 
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(tibble)
+library(purrr)
+library(corrplot)
+library(ggplot2)
+library(ComplexHeatmap)
+library(RColorBrewer)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+# DTU across stimulations
+
+```{r Patir, echo = TRUE}
+Patir <- read.csv("~/Documents/MiGASti/Databases/Patir.txt", sep="")
+names(Patir)[1] <- "gene"
+```
+
+#log odds ratio 
+
+```{r load tables1, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/splicing_dtu_stimulation_microglia.Rdata")
+
+LPS <- all_res$LPS
+LPS <- subset(LPS, empirical_FDR < 0.05)
+IFNy <- all_res$IFNy
+IFNy <- subset(IFNy, empirical_FDR < 0.05)
+R848 <- all_res$R848
+R848 <- subset(R848, empirical_FDR < 0.05)
+ATP <- all_res$ATP
+ATP <- subset(ATP, empirical_FDR < 0.05)
+DEX <- all_res$DEX
+DEX <- subset(DEX, empirical_FDR < 0.05)
+IL4 <- all_res$IL4
+IL4 <- subset(IL4, empirical_FDR < 0.05)
+
+
+genes_LPS_GFM <- LPS$isoform_id
+genes_ATP_GFM <- ATP$isoform_id
+genes_R848_GFM <- R848$isoform_id
+genes_IFNy_GFM <- IFNy$isoform_id
+genes_DEX_GFM <- DEX$isoform_id
+genes_IL4_GFM <- IL4$isoform_id
+
+    
+# create a vector with all genes listed
+x <- c(genes_LPS_GFM, genes_ATP_GFM, genes_R848_GFM, genes_IFNy_GFM, genes_DEX_GFM, genes_IL4_GFM)
+# make a dataframe
+as.data.frame(x) #1201 genes 
+# check if there are genes duplicate 
+duplicated(x) 
+unique(x)
+#remove duplicated
+isoform_id <- x[!duplicated(x)] #1201 genes 
+
+genelist_GFM <- as.data.frame(isoform_id)
+
+DEG_genes_LPS_GFM = merge(all_res$LPS, genelist_GFM, by ="isoform_id")
+DEG_genes_IFNy_GFM = merge(all_res$IFNy, genelist_GFM, by = "isoform_id")
+DEG_genes_IL4_GFM = merge(all_res$IL4, genelist_GFM, by = "isoform_id")
+DEG_genes_R848_GFM = merge(all_res$R848, genelist_GFM, by = "isoform_id")
+DEG_genes_ATP_GFM = merge(all_res$ATP, genelist_GFM, by = "isoform_id")
+DEG_genes_DEX_GFM = merge(all_res$DEX, genelist_GFM, by = "isoform_id")
+
+all(colnames(DEG_genes_LPS_GFM) == colnames (DEG_genes_IFNy_GFM))#TRUE
+Expression_stimulations_GFM <- cbind(DEG_genes_LPS_GFM, DEG_genes_IFNy_GFM, DEG_genes_IL4_GFM, DEG_genes_R848_GFM, DEG_genes_ATP_GFM, DEG_genes_DEX_GFM)
+#write.table(Expression_stimulations_GFM, "Expression_stimulations_GFM.txt")
+
+as.data.frame(Expression_stimulations_GFM) 
+# changes names in data frame
+names(Expression_stimulations_GFM)[2] <- "LPS"
+names(Expression_stimulations_GFM)[13] <- "IFNy"
+names(Expression_stimulations_GFM)[24] <- "IL4"
+names(Expression_stimulations_GFM)[35] <- "R848"
+names(Expression_stimulations_GFM)[46] <- "ATP"
+names(Expression_stimulations_GFM)[57] <- "DEX"
+
+DF_log2FC <- Expression_stimulations_GFM[, c(1, 11, 2, 13, 24, 35, 46, 57)]
+DF <- as.data.frame(DF_log2FC)
+DF <- t(DF)
+head( DF )[,1:10]
+
+DF_log2FC <- DF_log2FC[-c(447), ] 
+
+# fill NA with 0
+DF_log2FC[is.na(DF_log2FC)] = 0
+# remove the first column
+df_num = as.matrix(DF_log2FC[,3:8])
+# scale the data 
+df_num_scale = scale(df_num)
+
+overlap <- merge(Patir, DF_log2FC, by = "gene")
+list(overlap$gene)
+```
+
+
+
+```{r heatmap_GFM_cor12, echo=TRUE, message=FALSE}
+
+rownames(df_num_scale) = DF_log2FC$isoform_id
+labels2remove = c("TYROBP", "CIITA", "FKBP5", "CD44", "ITGB8", "CXCL3", "'IL6", "PPARG", "NR4A2", "ARHGAP25", "C1QB", "DHRS9", "IFI30", "SERPINA1", "HAMP", "SLC11A1", "DOCK8", "WARS")
+signature_genes2_sel = DF_log2FC[DF_log2FC$gene %in% labels2remove ,]
+
+labels_match = signature_genes2_sel[signature_genes2_sel$isoform_id %in% rownames(df_num_scale) ,]
+labels_match = labels_match$gene
+
+ha = rowAnnotation(foo = anno_mark(labels_gp = gpar(fontsize = 8), at = which(rownames(df_num_scale) %in% signature_genes2_sel$isoform_id), 
+                                   labels = labels_match))
+
+colors = colorRampPalette(rev(brewer.pal(n = 5, name ="RdBu")))(20)
+
+Heatmap(df_num_scale,
+        cluster_rows = T,
+        right_annotation = ha,
+        show_row_dend = F,
+        show_column_dend = T,
+        show_row_names = F,
+        col = colors,
+        show_column_names = T,
+        name = "log odds ratio",
+        clustering_method_rows = "ward.D2",
+        clustering_distance_rows = "pearson") 
+
+rownames(df_num) = DF_log2FC$isoform_id
+labels2remove = c("TYROBP", "CIITA", "WARS", "FKBP5", "CD44", "ITGB8", "CXCL3", "'IL6", "PPARG", "NR4A2")
+signature_genes2_sel = DF_log2FC[DF_log2FC$gene %in% labels2remove ,]
+
+labels_match = signature_genes2_sel[signature_genes2_sel$isoform_id %in% rownames(df_num) ,]
+labels_match = labels_match$gene
+
+ha = rowAnnotation(foo = anno_mark(labels_gp = gpar(fontsize = 8), at = which(rownames(df_num_scale) %in% signature_genes2_sel$isoform_id), 
+                                   labels = labels_match))
+
+colors = colorRampPalette(rev(brewer.pal(n = 7, name ="RdBu")))(10)
+
+Heatmap(df_num,
+        cluster_rows = T,
+        right_annotation = ha,
+        show_row_dend = F,
+        show_column_dend = F,
+        show_row_names = F,
+        col = colors,
+        show_column_names = T,
+        name = "empirical_FDR",
+        clustering_method_rows = "ward.D2",
+        clustering_distance_rows = "pearson") 
+```
+
+### pvalue
+
+# DTU across stimulations
+
+#log odds ratio 
+
+```{r load tables3, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/splicing_dtu_stimulation_microglia.Rdata")
+
+LPS <- all_res$LPS
+LPS <- subset(LPS, empirical_FDR < 0.05)
+IFNy <- all_res$IFNy
+IFNy <- subset(IFNy, empirical_FDR < 0.05)
+R848 <- all_res$R848
+R848 <- subset(R848, empirical_FDR < 0.05)
+ATP <- all_res$ATP
+ATP <- subset(ATP, empirical_FDR < 0.05)
+DEX <- all_res$DEX
+DEX <- subset(DEX, empirical_FDR < 0.05)
+IL4 <- all_res$IL4
+IL4 <- subset(IL4, empirical_FDR < 0.05)
+
+
+genes_LPS_GFM <- LPS$isoform_id
+genes_ATP_GFM <- ATP$isoform_id
+genes_R848_GFM <- R848$isoform_id
+genes_IFNy_GFM <- IFNy$isoform_id
+genes_DEX_GFM <- DEX$isoform_id
+genes_IL4_GFM <- IL4$isoform_id
+
+    
+# create a vector with all genes listed
+x <- c(genes_LPS_GFM, genes_ATP_GFM, genes_R848_GFM, genes_IFNy_GFM, genes_DEX_GFM, genes_IL4_GFM)
+# make a dataframe
+as.data.frame(x) #1201 genes 
+# check if there are genes duplicate 
+duplicated(x) 
+unique(x)
+#remove duplicated
+isoform_id <- x[!duplicated(x)] #1201 genes 
+
+genelist_GFM <- as.data.frame(isoform_id)
+
+DEG_genes_LPS_GFM = merge(all_res$LPS, genelist_GFM, by ="isoform_id")
+DEG_genes_IFNy_GFM = merge(all_res$IFNy, genelist_GFM, by = "isoform_id")
+DEG_genes_IL4_GFM = merge(all_res$IL4, genelist_GFM, by = "isoform_id")
+DEG_genes_R848_GFM = merge(all_res$R848, genelist_GFM, by = "isoform_id")
+DEG_genes_ATP_GFM = merge(all_res$ATP, genelist_GFM, by = "isoform_id")
+DEG_genes_DEX_GFM = merge(all_res$DEX, genelist_GFM, by = "isoform_id")
+
+all(colnames(DEG_genes_LPS_GFM) == colnames (DEG_genes_IFNy_GFM))#TRUE
+Expression_stimulations_GFM <- cbind(DEG_genes_LPS_GFM, DEG_genes_IFNy_GFM, DEG_genes_IL4_GFM, DEG_genes_R848_GFM, DEG_genes_ATP_GFM, DEG_genes_DEX_GFM)
+#write.table(Expression_stimulations_GFM, "Expression_stimulations_GFM.txt")
+
+as.data.frame(Expression_stimulations_GFM) 
+# changes names in data frame
+names(Expression_stimulations_GFM)[9] <- "LPS"
+names(Expression_stimulations_GFM)[20] <- "IFNy"
+names(Expression_stimulations_GFM)[31] <- "IL4"
+names(Expression_stimulations_GFM)[42] <- "R848"
+names(Expression_stimulations_GFM)[53] <- "ATP"
+names(Expression_stimulations_GFM)[64] <- "DEX"
+
+DF_log2FC <- Expression_stimulations_GFM[, c(1, 11, 9, 20, 31, 42, 53, 64)]
+DF <- as.data.frame(DF_log2FC)
+DF <- t(DF)
+head( DF )[,1:10]
+
+DF_log2FC <- DF_log2FC[-c(447), ] 
+
+# fill NA with 0
+DF_log2FC[is.na(DF_log2FC)] = 0
+# remove the first column
+df_num = as.matrix(DF_log2FC[,3:8])
+# scale the data 
+df_num_scale = scale(df_num)
+```
+
+```{r heatmap_GFM_cor123, echo=TRUE, message=FALSE}
+
+rownames(df_num_scale) = DF_log2FC$isoform_id
+labels2remove = c("TYROBP", "CIITA", "WARS", "FKBP5", "CD44", "ITGB8", "CXCL3", "'IL6", "PPARG", "NR4A2")
+signature_genes2_sel = DF_log2FC[DF_log2FC$gene %in% labels2remove ,]
+
+labels_match = signature_genes2_sel[signature_genes2_sel$isoform_id %in% rownames(df_num_scale) ,]
+labels_match = labels_match$gene
+
+ha = rowAnnotation(foo = anno_mark(labels_gp = gpar(fontsize = 8), at = which(rownames(df_num_scale) %in% signature_genes2_sel$isoform_id), 
+                                   labels = labels_match))
+
+colors = colorRampPalette(rev(brewer.pal(n = 10, name ="RdBu")))(20)
+
+Heatmap(df_num_scale,
+        cluster_rows = T,
+        right_annotation = ha,
+        show_row_dend = F,
+        show_column_dend = F,
+        show_row_names = F,
+        col = colors,
+        show_column_names = T,
+        name = "log odds ratio",
+        clustering_method_rows = "ward.D2",
+        clustering_distance_rows = "pearson") 
+
+rownames(df_num) = DF_log2FC$isoform_id
+labels2remove = c("TYROBP", "CIITA", "WARS", "FKBP5", "CD44", "ITGB8", "CXCL3", "'IL6", "PPARG", "NR4A2")
+signature_genes2_sel = DF_log2FC[DF_log2FC$gene %in% labels2remove ,]
+
+labels_match = signature_genes2_sel[signature_genes2_sel$isoform_id %in% rownames(df_num) ,]
+labels_match = labels_match$gene
+
+ha = rowAnnotation(foo = anno_mark(labels_gp = gpar(fontsize = 8), at = which(rownames(df_num_scale) %in% signature_genes2_sel$isoform_id), 
+                                   labels = labels_match))
+
+colors = colorRampPalette(rev(brewer.pal(n = 7, name ="RdBu")))(10)
+
+Heatmap(df_num,
+        cluster_rows = T,
+        right_annotation = ha,
+        show_row_dend = F,
+        show_column_dend = F,
+        show_row_names = F,
+        col = colors,
+        show_column_names = T,
+        name = "empirical_FDR",
+        clustering_method_rows = "ward.D2",
+        clustering_distance_rows = "pearson") 
+```

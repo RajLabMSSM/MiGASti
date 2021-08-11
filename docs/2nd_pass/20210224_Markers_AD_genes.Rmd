@@ -1,0 +1,282 @@
+---
+title: "Markers AD"
+author: "Gijsje"
+date: "2/24/2021"
+output: 
+ rmarkdown::html_document:
+   theme: united
+   highlight: tango
+   code_folding: hide
+   toc: true
+   toc_float: true
+   df_print: paged
+   smooth_scroll: true
+   number_sections: false
+   self_contained: true
+---
+
+```{r load.packages, echo=FALSE, message=FALSE, results='hide'}
+library(readxl)
+library(edgeR)
+library(limma)
+library(DESeq2)
+library(tidyverse)
+library(data.table)
+
+
+knitr::opts_chunk$set( 
+  warning=FALSE,
+  message=FALSE,
+  results = 'asis',
+  error = FALSE,
+  tidy = FALSE,
+  fig.show = "hold")
+```
+
+
+```{r data_load, echo = TRUE, results = 'hide'}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove2.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGASti/Databases/AD_genes.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+
+#remove ununstim samples in metadata
+metadata_cultured <- subset(metadata_filt, Stimulation == "unstim" | Stimulation == "DEX" | Stimulation == "IL4")
+#remove samples in genes counts datafile 
+genes_tpm_cultured <- genes_tpm_filt[,metadata_cultured$Sample]
+
+setDT(genes_tpm_cultured, keep.rownames = "ensembl")
+res_name = merge(genes_tpm_cultured, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+
+marker_expression = merge(res_name, markers, by ="symbol")
+rownames(marker_expression) = marker_expression$symbol
+marker_expression$ensembl <- NULL
+```
+
+
+```{r data_load_markers, echo = TRUE, results = 'hide'}
+metadata_filt_ordered <- metadata_filt[colnames(marker_expression),]
+metadata_filt_ordered = metadata_filt_ordered[-1,]
+Stimulation <- metadata_filt_ordered$Stimulation
+```
+
+### Boxplot  C1QB
+
+```{r data_load_C1QB, echo = TRUE}
+C1QB <- marker_expression[1, ] 
+C1QB$ensembl = NULL
+C1QB$symbol = NULL
+C1QB_new<-as.data.frame(t(C1QB))
+df = data.frame(Stimulation, C1QB_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
+### Boxplot C1QC
+
+```{r data_load_C1QC, echo = TRUE}
+C1QC <- marker_expression[2, ] 
+C1QC$ensembl = NULL
+C1QC$symbol = NULL
+C1QC_new<-as.data.frame(t(C1QC))
+df = data.frame(Stimulation, C1QC_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="C1QC",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
+### Boxplot DENND3
+
+```{r data_load_DENND3, echo = TRUE}
+DENND3 <- marker_expression[3, ] 
+DENND3$ensembl = NULL
+DENND3$symbol = NULL
+DENND3_new<-as.data.frame(t(DENND3))
+df = data.frame(Stimulation, DENND3_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="DENND3",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
+### Boxplot MS4A4A
+
+```{r data_load_MS4A4A, echo = TRUE}
+MS4A4A <- marker_expression[4, ] 
+MS4A4A$ensembl = NULL
+MS4A4A$symbol = NULL
+MS4A4A_new<-as.data.frame(t(MS4A4A))
+df = data.frame(Stimulation, MS4A4A_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="MS4A4A",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
+### Boxplot PHC2
+
+```{r data_load_PHC2, echo = TRUE}
+PHC2 <- marker_expression[5, ] 
+PHC2$ensembl = NULL
+PHC2$symbol = NULL
+PHC2_new<-as.data.frame(t(PHC2))
+df = data.frame(Stimulation, PHC2_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="PHC2",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
+### Boxplot PLEKH7
+
+```{r data_load_PLEKH7, echo = TRUE}
+PLEKH7 <- marker_expression[6, ] 
+PLEKH7$ensembl = NULL
+PLEKH7$symbol = NULL
+PLEKH7_new<-as.data.frame(t(PLEKH7))
+df = data.frame(Stimulation, PLEKH7_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="PLEKH7",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
+### Boxplot SCIMP
+
+```{r data_load_SCIMP, echo = TRUE}
+SCIMP <- marker_expression[7, ] 
+SCIMP$ensembl = NULL
+SCIMP$symbol = NULL
+SCIMP_new<-as.data.frame(t(SCIMP))
+df = data.frame(Stimulation, SCIMP_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="SCIMP",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+
+```
+
+
+### Boxplot SLC2A5
+
+```{r data_load_SLC2A5, echo = TRUE}
+SLC2A5 <- marker_expression[8, ] 
+SLC2A5$ensembl = NULL
+SLC2A5$symbol = NULL
+SLC2A5_new<-as.data.frame(t(SLC2A5))
+df = data.frame(Stimulation, SLC2A5_new)
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="SLC2A5",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
+
+### Boxplot TBC1D14
+
+```{r data_load_TBC1D14, echo = TRUE}
+TBC1D14 <- marker_expression[9, ] 
+TBC1D14$ensembl = NULL
+TBC1D14$symbol = NULL
+TBC1D14_new<-as.data.frame(t(TBC1D14))
+df = data.frame(Stimulation, TBC1D14_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="TBC1D14",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
+
+### Boxplot TMEM163
+
+```{r data_load_TMEM163, echo = TRUE}
+TMEM163 <- marker_expression[10, ] 
+TMEM163$ensembl = NULL
+TMEM163$symbol = NULL
+TMEM163_new<-as.data.frame(t(TMEM163))
+df = data.frame(Stimulation, TMEM163_new)
+
+ggplot(df, aes(x=Stimulation, y=V1)) + 
+  geom_boxplot(fill="gray")+
+  labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
+  theme_classic()
+# Change  automatically color by groups
+bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
+  geom_boxplot()+
+  labs(title="TMEM163",x="Stimulation", y = "log2((TPM)+1)")
+bp + theme_classic()
+```
+
