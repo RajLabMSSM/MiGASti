@@ -61,6 +61,7 @@ library(tidyr)
 library(patchwork)
 library(colorRamps)
 library(circlize)
+library(tidyverse)
 
 
 knitr::opts_chunk$set( 
@@ -838,6 +839,7 @@ p3 <- Heatmap(sorted_scale,
         top_annotation = ha1)
 ```
 
+
 ### IFNy samples across aging top 50 genes 
 
 ```{r check_IFNy_all samples_c34, echo = TRUE}
@@ -921,8 +923,268 @@ p1 <- Heatmap(sorted_scale,
 
 ### Expression aging genes in baseline, LPS and IFNy top 50 genes in each condition 
 
-
 ```{r check_combined23_expr, echo = TRUE}
+p2 + p3 + p1
+```
+
+### Baseline samples across aging top 100 genes 
+
+```{r check_baseline_100_all__agingsamples_5023, echo = TRUE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove2.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGA/Revision/AgeMiGA.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+
+#remove ununstim samples in metadata
+metadata_cultured <- subset(metadata_filt, Stimulation == "unstim")
+#remove samples in genes counts datafile 
+genes_tpm_cultured <- genes_tpm_filt[,metadata_cultured$Sample]
+
+setDT(genes_tpm_cultured, keep.rownames = "ensembl")
+res_name = merge(genes_tpm_cultured, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+
+marker_expression = merge(res_name, markers, by ="symbol")
+marker_expression <- marker_expression[!duplicated(marker_expression$symbol), ]
+marker_expression = marker_expression[1:25 ,]
+rownames(marker_expression) = marker_expression$symbol
+marker_expression$ensembl <- NULL
+df_num = as.matrix(marker_expression[,2:138])
+rownames(df_num) = marker_expression$symbol
+
+#plot the genes based on samples 
+
+metadata_cultured$age <- as.numeric(metadata_cultured$age)
+metadata_filt2 <- metadata_cultured %>%
+    mutate(quantile = ntile(age, 5))
+
+table(metadata_filt2$quantile)
+
+metadata_filt2$quantile <- as.factor(metadata_filt2$quantile)
+metadata_filt3 <- metadata_filt2[order(metadata_filt2$quantile, decreasing = T), ]
+df <- t(df_num)
+sorted <- df[rownames(metadata_filt3),]
+sorted2 <- t(sorted)
+sorted3 <- as.data.frame(sorted2)
+sorted4 <- mutate_all(sorted3, function(x) as.numeric(as.character(x)))
+sorted_scale <- scale(sorted4)
+
+
+age_quantiles <- metadata_filt3$quantile
+
+ann <- data.frame(metadata_filt3$quantile)
+colnames(ann) <- c('age')
+colours <- list('age' = c('1' = 'royalblue', '2'='pink', '3'='green', '4'='red', '5'='navy'))
+colAnn <- HeatmapAnnotation(df = ann,
+  which = 'col',
+  col = colours,
+  annotation_width = unit(c(1, 4), 'cm'),
+  gap = unit(1, 'mm'))
+
+
+colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(79)
+p2 <- Heatmap(sorted_scale,
+        col = colPalette,
+        name = "log2(TPM+1)", # Legend title
+        cluster_rows = F,
+        cluster_columns = F,
+        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
+        show_column_dend = F, 
+        show_column_names = F,
+        show_row_names = F,
+        top_annotation = colAnn)
+```
+
+
+### LPS samples across aging top 50 genes
+
+```{r check_LPS_100_all__agingsamples_LPS33_50, echo = TRUE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove2.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGA/Revision/AgeMiGA.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+
+#remove ununstim samples in metadata
+metadata_cultured <- subset(metadata_filt, Stimulation == "LPS")
+#remove samples in genes counts datafile 
+genes_tpm_cultured <- genes_tpm_filt[,metadata_cultured$Sample]
+
+setDT(genes_tpm_cultured, keep.rownames = "ensembl")
+res_name = merge(genes_tpm_cultured, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+
+marker_expression = merge(res_name, markers, by ="symbol")
+marker_expression <- marker_expression[!duplicated(marker_expression$symbol), ]
+marker_expression = marker_expression[1:50,]
+rownames(marker_expression) = marker_expression$symbol
+marker_expression$ensembl <- NULL
+df_num = as.matrix(marker_expression[,2:131])
+rownames(df_num) = marker_expression$symbol
+
+#plot the genes based on samples 
+
+metadata_cultured$age <- as.numeric(metadata_cultured$age)
+metadata_filt2 <- metadata_cultured %>%
+    mutate(quantile = ntile(age, 5))
+
+table(metadata_filt2$quantile)
+
+metadata_filt2$quantile <- as.factor(metadata_filt2$quantile)
+metadata_filt3 <- metadata_filt2[order(metadata_filt2$quantile, decreasing = T), ]
+df <- t(df_num)
+sorted <- df[rownames(metadata_filt3),]
+sorted2 <- t(sorted)
+sorted3 <- as.data.frame(sorted2)
+sorted4 <- mutate_all(sorted3, function(x) as.numeric(as.character(x)))
+sorted_scale <- scale(sorted4)
+
+
+age_quantiles <- metadata_filt3$quantile
+
+ann <- data.frame(metadata_filt3$quantile)
+colnames(ann) <- c('age')
+colours <- list('age' = c('1' = 'royalblue', '2'='pink', '3'='green', '4'='red', '5'='navy'))
+colAnn <- HeatmapAnnotation(df = ann,
+  which = 'col',
+  col = colours,
+  annotation_width = unit(c(1, 4), 'cm'),
+  gap = unit(1, 'mm'))
+
+
+colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(79)
+p3 <- Heatmap(sorted_scale,
+        col = colPalette,
+        name = "log2(TPM+1)", # Legend title
+        cluster_rows = T,
+        cluster_columns = F,
+        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
+        show_column_dend = F, 
+        show_column_names = F,
+        show_row_names = F,
+        top_annotation = colAnn)
+```
+
+
+
+### IFNy samples top 50 genes age quantiles 
+
+```{r check_IFNy_all_100_samples_c34, echo = TRUE}
+load("~/Documents/MiGASti/Databases/gene_matrix.RData")
+metadata <- read.table("~/Documents/MiGASti/Databases/metadata.txt")
+#set rownames to Sample
+row.names(metadata) <- metadata$Sample 
+setwd("~/Documents/MiGASti/Databases")
+exclude <- read.table("samples2remove2.txt")
+exclude <- exclude$x
+genes_tpm_filt = genes_tpm[, !colnames(genes_tpm) %in% exclude] 
+#Excludes the samples from filters. 
+#dim(genes_tpm_filt)
+metadata_filt = metadata[ !(rownames(metadata) %in% exclude), ]
+length(metadata_filt)
+#check for expression of markers in dataset
+markers = "~/Documents/MiGA/Revision/AgeMiGA.xlsx"
+markers = read_excel(markers, col_names = TRUE) 
+markers = as.data.frame(markers)
+gencode_30 = read.table("~/Documents/MiGASti/Databases/ens.geneid.gencode.v30")
+colnames(gencode_30) = c("ensembl","symbol")
+genes_tpm_filt = log2((genes_tpm_filt) + 1)
+genes_tpm_filt <- as.data.frame(genes_tpm_filt)
+
+#remove ununstim samples in metadata
+metadata_cultured <- subset(metadata_filt, Stimulation == "IFNy")
+#remove samples in genes counts datafile 
+genes_tpm_cultured <- genes_tpm_filt[,metadata_cultured$Sample]
+
+setDT(genes_tpm_cultured, keep.rownames = "ensembl")
+res_name = merge(genes_tpm_cultured, gencode_30, by="ensembl")
+rownames(res_name) = res_name$ensembl
+
+marker_expression = merge(res_name, markers, by ="symbol")
+marker_expression <- marker_expression[!duplicated(marker_expression$symbol), ]
+marker_expression = marker_expression[1:50,]
+rownames(marker_expression) = marker_expression$symbol
+marker_expression$ensembl <- NULL
+df_num = as.matrix(marker_expression[,2:85])
+rownames(df_num) = marker_expression$symbol
+
+#plot the genes based on samples 
+
+metadata_cultured$age <- as.numeric(metadata_cultured$age)
+metadata_filt2 <- metadata_cultured %>%
+    mutate(quantile = ntile(age, 5))
+
+table(metadata_filt2$quantile)
+
+metadata_filt2$quantile <- as.factor(metadata_filt2$quantile)
+metadata_filt3 <- metadata_filt2[order(metadata_filt2$quantile, decreasing = T), ]
+df <- t(df_num)
+sorted <- df[rownames(metadata_filt3),]
+sorted2 <- t(sorted)
+sorted3 <- as.data.frame(sorted2)
+sorted4 <- mutate_all(sorted3, function(x) as.numeric(as.character(x)))
+sorted_scale <- scale(sorted4)
+
+
+age_quantiles <- metadata_filt3$quantile
+
+ann <- data.frame(metadata_filt3$quantile)
+colnames(ann) <- c('age')
+colours <- list('age' = c('1' = 'royalblue', '2'='pink', '3'='green', '4'='red', '5'='navy'))
+colAnn <- HeatmapAnnotation(df = ann,
+  which = 'col',
+  col = colours,
+  annotation_width = unit(c(1, 4), 'cm'),
+  gap = unit(1, 'mm'))
+
+  
+colPalette <- colorRampPalette(rev(brewer.pal(10, "RdYlBu")))(79)
+p1 <- Heatmap(sorted_scale,
+        col = colPalette,
+        name = "log2(TPM+1)", # Legend title
+        cluster_rows = T,
+        cluster_columns = F,
+        #  row_names_gp = gpar(fontsize = 6), # Text size for row names)
+        show_column_dend = F, 
+        show_column_names = F,
+        show_row_names = F,
+        top_annotation = colAnn)
+```
+
+### Expression aging genes in baseline, LPS and IFNy top 50 genes age quantiles 
+
+```{r check_combined23_expr_aging_combo, echo = TRUE}
 p2 + p3 + p1
 ```
 

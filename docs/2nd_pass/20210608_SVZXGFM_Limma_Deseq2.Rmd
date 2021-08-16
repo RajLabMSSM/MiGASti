@@ -514,8 +514,7 @@ p3 <-  ggplot(genes_m_filt4lab, aes(x = baseline_SVZ, y = LPS_SVZ)) +
   geom_point(alpha=.5, color="pink")+
   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
   geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
-  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
-  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F) + 
+  stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line  + 
   geom_abline(slope = 1, intercept = 0, linetype = 3) 
 p3 + geom_text_repel(aes(label = overlap),
                     size = 3) + easy_labs(x = expression(paste("baseline(", logFC,")")), y = expression(paste("LPS (", logFC, ")"))) +
@@ -554,7 +553,6 @@ p3 <-  ggplot(genes_m_filt4lab, aes(x = baseline_SVZ, y = LPS_SVZ)) +
   geom_hline(yintercept = 0, linetype = "dashed", colour = "black") +
   geom_vline(xintercept = 0, linetype = "dashed", colour = "black") + 
   stat_smooth(method = "lm", se=F, color="black") + # Add Regression Line 
-  stat_regline_equation(aes(label = ..adj.rr.label..), show.legend = F) +
   geom_abline(slope = 1, intercept = 0, linetype = 3) 
 p3 + geom_text_repel(aes(label = overlap),
                     size = 3) + easy_labs(x = expression(paste("baseline(", logFC,")")), y = expression(paste("IFNy (", logFC, ")"))) +
@@ -563,9 +561,12 @@ p3 + geom_text_repel(aes(label = overlap),
 
 # Enrichment
 
+## LPS
+
 ### Overlap up LPS SVZ up + in vitro SVZ up (logFC > 1)
 
-```{r overlap_up, echo=TRUE}
+```{r overlap_up1, echo=TRUE}
+DEG_LPS_SVZ <- read.table("DEG_LPS_SVZ.txt")
 set3 <- subset(DEG_LPS_SVZ, log2FoldChange > 1)
 set4 <- subset(DEG_baseline_SVZ, log2FoldChange > 1)
 
@@ -606,7 +607,7 @@ setEnrichment( set1 = set1_v, set2 = set2_v)
 
 ### Overlap down LPS SVZ + in vitro SVZ down (logFC < -1)
 
-```{r overlap_down, echo=TRUE}
+```{r overlap_down2, echo=TRUE}
 set3 <- subset(DEG_LPS_SVZ, log2FoldChange < -1)
 set4 <- subset(DEG_baseline_SVZ, log2FoldChange < -1)
 
@@ -623,9 +624,9 @@ setEnrichment( set1 = set1_v, set2 = set2_v)
 
 ```
 
-### Overlap up LPS SVZ + in vitro down SVZ (logFC |1|)
+### Overlap up LPS SVZ + in vitro down SVZ (logFC < -1)
 
-```{r overlap_down2, echo=TRUE}
+```{r overlap_down3, echo=TRUE}
 set3 <- subset(DEG_LPS_SVZ, log2FoldChange > 1)
 set4 <- subset(DEG_baseline_SVZ, log2FoldChange < -1)
 
@@ -641,7 +642,7 @@ set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap down SVZ LPS genes + in vitro up SVZ (logFC |1|) 
+### Overlap down SV LPS genes + in vitro up SVZ (logFC > 1) 
 
 ```{r overlap_down4, echo=TRUE}
 set3 <- subset(DEG_LPS_SVZ, log2FoldChange < -1)
@@ -659,6 +660,105 @@ set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
+
+## IFNy
+
+### Overlap up IFNy SVZ up + in vitro SVZ up (logFC > 1)
+
+```{r overlap_up5, echo=TRUE}
+DEG_LPS_SVZ <- read.table("DEG_IFNy_SVZ.txt")
+set3 <- subset(DEG_LPS_SVZ, log2FoldChange > 1)
+set4 <- subset(DEG_baseline_SVZ, log2FoldChange > 1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment <- function(set1, set2, universe = 20000){
+
+  a = sum(set1 %in% set2)
+
+  c = length(set1) - a
+
+  b = length(set2) - a
+
+  d = universe - length(set2) - c
+
+  contingency_table = matrix(c(a, c, b, d), nrow = 2)
+
+  # one-tailed test for enrichment only
+
+  fisher_results = fisher.test(contingency_table, alternative = "greater")
+
+  # returns data.frame containing the lengths of the two sets, the overlap, the enrichment ratio (odds ratio) and P value
+
+  df <- tibble::tibble( set1_length = length(set1), set2_length = length(set2), overlap = a, ratio = fisher_results$estimate, p.value = fisher_results$p.value)
+
+  return(df)
+}
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+### Overlap down IFNy SVZ + in vitro SVZ down (logFC < -1)
+
+```{r overlap_down6, echo=TRUE}
+set3 <- subset(DEG_LPS_SVZ, log2FoldChange < -1)
+set4 <- subset(DEG_baseline_SVZ, log2FoldChange < -1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+
+```
+
+### Overlap up IFNy SVZ + in vitro down SVZ (logFC < -1)
+
+```{r overlap_down7, echo=TRUE}
+set3 <- subset(DEG_LPS_SVZ, log2FoldChange > 1)
+set4 <- subset(DEG_baseline_SVZ, log2FoldChange < -1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
+
+### Overlap down SVZ IFNy genes + in vitro up SVZ (logFC > 1) 
+
+```{r overlap_down8, echo=TRUE}
+set3 <- subset(DEG_LPS_SVZ, log2FoldChange < -1)
+set4 <- subset(DEG_baseline_SVZ, log2FoldChange > 1)
+
+overlap <- merge(set3, set4, by = "symbol")
+list(overlap$symbol)
+
+set1 <- set3
+set2 <- set4
+
+set1_v <- set1$symbol
+set2_v <- set2$symbol
+
+setEnrichment( set1 = set1_v, set2 = set2_v)
+```
 
 # In vitro vs ex vivo 
 
@@ -789,7 +889,7 @@ set2_v <- set2$symbol
 setEnrichment( set1 = set1_v, set2 = set2_v)
 ```
 
-### Overlap up SVZ ex vivo + in vitro up SVZ (logFC  < -1) 
+### Overlap soqn SVZ ex vivo + in vitro down SVZ (logFC  < -1) 
 
 ```{r overlap_down5_ex_in, echo=TRUE}
 set3 <- subset(MIGA, adj.P.Val < 0.05)

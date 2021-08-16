@@ -52,7 +52,7 @@ Note. SVZ showed most significant genes up/down after stimulation.
 9. DREAM only cultured + stimulated samples 
 - Analysis in docs 2nd pass .Rmd
 - [DREAM_Vulcano](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210806_DREAM_volcanos_ms.html). Some vulcano plots for DEGs. 
-- [DREAM_heatmap](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210308_DEG_FC_heatmap_gene_names.html.html). Heatmap FDR 5% logFC |1| across stimulations.
+- [DREAM_heatmap](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210308_DEG_FC_heatmap_gene_names.html). Heatmap FDR 5% logFC |1| across stimulations.
 
 10. Aging
 - [Age_plots](https://rajlabmssm.github.io/MiGASti/docs/2nd_pass/20210806_age_plots_LPS_IFNy.html). Metadata, plots of effect of aging on immune response genes (6270 LPS and 79 IFNy genes) and overlapping genes between aging and immune response (151 LPS and 17 IFNy). Counts are voom normalized. Pairwise comparisons are not incorporated, since file is too big. 
