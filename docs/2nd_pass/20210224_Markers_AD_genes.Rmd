@@ -22,6 +22,10 @@ library(limma)
 library(DESeq2)
 library(tidyverse)
 library(data.table)
+library(ggplot2)
+library(ggpubr)
+library(ggsci)
+library(ggeasy)
 
 
 knitr::opts_chunk$set( 
@@ -150,11 +154,17 @@ ggplot(df, aes(x=Stimulation, y=V1)) +
   geom_boxplot(fill="gray")+
   labs(title="C1QB",x="Stimulation", y = "log2((TPM)+1)")+
   theme_classic()
+
 # Change  automatically color by groups
+pdf(file = "~/Documents/MiGASti/docs/2nd_pass/MS4A4A_plot2.pdf",  
+width = 8, # The width of the plot in inches
+height = 6) # The height of the plot in inches
 bp <- ggplot(df, aes(x=Stimulation, y=V1, fill=Stimulation)) + 
-  geom_boxplot()+
+  geom_boxplot(notch = F, na.rm = T, outlier.color = NA) +
+  geom_jitter()+
   labs(title="MS4A4A",x="Stimulation", y = "log2((TPM)+1)")
 bp + theme_classic()
+dev.off
 ```
 
 ### Boxplot PHC2
